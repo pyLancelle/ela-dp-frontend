@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Activity, Clock, Gauge, Route } from "lucide-react";
 
 export interface ActivityData {
@@ -25,46 +26,48 @@ export function ActivityCard({ activity }: ActivityCardProps) {
   const durationFormatted = hours > 0 ? `${hours}h${minutes}min` : `${minutes}min`;
 
   return (
-    <div className="rounded-lg border bg-card shadow-sm hover:shadow-md transition-shadow">
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-primary/10 p-3">
-              <Activity className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg">{activity.title}</h3>
-              <p className="text-sm text-muted-foreground">{activity.date}</p>
+    <Link href={`/activites/${activity.id}`}>
+      <div className="rounded-lg border bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Activity className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">{activity.title}</h3>
+                <p className="text-sm text-muted-foreground">{activity.date}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Route className="h-4 w-4" />
-              <span className="text-xs font-medium">Distance</span>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Route className="h-4 w-4" />
+                <span className="text-xs font-medium">Distance</span>
+              </div>
+              <p className="text-lg font-bold">{activity.distance.toFixed(1)} km</p>
             </div>
-            <p className="text-lg font-bold">{activity.distance.toFixed(1)} km</p>
-          </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Clock className="h-4 w-4" />
-              <span className="text-xs font-medium">Temps</span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Clock className="h-4 w-4" />
+                <span className="text-xs font-medium">Temps</span>
+              </div>
+              <p className="text-lg font-bold">{durationFormatted}</p>
             </div>
-            <p className="text-lg font-bold">{durationFormatted}</p>
-          </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Gauge className="h-4 w-4" />
-              <span className="text-xs font-medium">Allure</span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Gauge className="h-4 w-4" />
+                <span className="text-xs font-medium">Allure</span>
+              </div>
+              <p className="text-lg font-bold">{paceMin}'{paceSec.toString().padStart(2, '0')}" /km</p>
             </div>
-            <p className="text-lg font-bold">{paceMin}'{paceSec.toString().padStart(2, '0')}" /km</p>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
