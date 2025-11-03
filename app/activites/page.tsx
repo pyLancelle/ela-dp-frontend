@@ -1,4 +1,57 @@
 import { Activity, TrendingUp, Calendar, Clock } from "lucide-react";
+import { ActivityCard, ActivityData } from "@/components/activity-card";
+
+// Données d'exemple pour les activités
+const activities: ActivityData[] = [
+  {
+    id: "1",
+    title: "Course matinale",
+    distance: 5.2,
+    duration: 32,
+    date: "Il y a 2 heures",
+    type: "running",
+  },
+  {
+    id: "2",
+    title: "Sortie vélo",
+    distance: 15.8,
+    duration: 45,
+    date: "Hier",
+    type: "cycling",
+  },
+  {
+    id: "3",
+    title: "Natation",
+    distance: 1.5,
+    duration: 40,
+    date: "Il y a 2 jours",
+    type: "swimming",
+  },
+  {
+    id: "4",
+    title: "Course longue",
+    distance: 10.5,
+    duration: 68,
+    date: "Il y a 3 jours",
+    type: "running",
+  },
+  {
+    id: "5",
+    title: "Vélo de montagne",
+    distance: 25.3,
+    duration: 95,
+    date: "Il y a 4 jours",
+    type: "cycling",
+  },
+  {
+    id: "6",
+    title: "Footing du soir",
+    distance: 7.2,
+    duration: 42,
+    date: "Il y a 5 jours",
+    type: "running",
+  },
+];
 
 export default function ActivitesPage() {
   return (
@@ -60,60 +113,12 @@ export default function ActivitesPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card shadow-sm">
-        <div className="border-b p-6">
-          <h2 className="text-xl font-semibold">Activités récentes</h2>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-primary/10 p-3">
-                  <Activity className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">Course à pied</p>
-                  <p className="text-sm text-muted-foreground">Il y a 2 heures</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">5.2 km</p>
-                <p className="text-sm text-muted-foreground">32 min</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-primary/10 p-3">
-                  <Activity className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">Vélo</p>
-                  <p className="text-sm text-muted-foreground">Hier</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">15.8 km</p>
-                <p className="text-sm text-muted-foreground">45 min</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-primary/10 p-3">
-                  <Activity className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">Natation</p>
-                  <p className="text-sm text-muted-foreground">Il y a 2 jours</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">1.5 km</p>
-                <p className="text-sm text-muted-foreground">40 min</p>
-              </div>
-            </div>
-          </div>
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Mes activités</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {activities.map((activity) => (
+            <ActivityCard key={activity.id} activity={activity} />
+          ))}
         </div>
       </div>
     </div>
