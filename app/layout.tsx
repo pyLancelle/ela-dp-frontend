@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/sidebar";
+import { LayoutWrapper } from "@/components/layout-wrapper";
 
 export const metadata: Metadata = {
   title: "ELA DP - shadcn/ui App",
@@ -15,12 +15,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className="antialiased">
-        <div className="flex h-screen overflow-hidden">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto bg-background">
-            {children}
-          </main>
-        </div>
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );
