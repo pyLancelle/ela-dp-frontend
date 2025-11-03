@@ -1,5 +1,6 @@
 import { Activity, TrendingUp, Calendar, Clock } from "lucide-react";
 import { ActivityCard, ActivityData } from "@/components/activity-card";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 // Données d'exemple pour les activités
 const activities: ActivityData[] = [
@@ -56,6 +57,12 @@ const activities: ActivityData[] = [
 export default function ActivitesPage() {
   return (
     <div className="flex flex-col gap-6 p-8">
+      <Breadcrumb
+        items={[
+          { label: "Activités" },
+        ]}
+      />
+
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Activités</h1>
         <p className="text-muted-foreground mt-2">
