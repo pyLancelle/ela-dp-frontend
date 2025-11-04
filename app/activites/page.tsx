@@ -55,7 +55,7 @@ const activities: ActivityData[] = [
 
 export default function ActivitesPage() {
   return (
-    <div className="flex flex-col gap-6 p-8">
+    <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Activités</h1>
         <p className="text-muted-foreground mt-2">

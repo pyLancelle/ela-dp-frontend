@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
+import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 
 export const metadata: Metadata = {
   title: "ELA DP - shadcn/ui App",
@@ -18,7 +19,10 @@ export default function RootLayout({
         <div className="flex h-screen overflow-hidden">
           <Sidebar />
           <main className="flex-1 overflow-y-auto bg-background">
-            {children}
+            <div className="p-6">
+              <BreadcrumbNav />
+              {children}
+            </div>
           </main>
         </div>
       </body>

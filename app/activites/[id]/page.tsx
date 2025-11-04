@@ -1,7 +1,6 @@
 "use client";
 
 import { use } from "react";
-import { Breadcrumb } from "@/components/breadcrumb";
 import {
   Activity,
   Clock,
@@ -112,13 +111,7 @@ export default function ActivityAnalysisPage({
 
   if (!activity) {
     return (
-      <div className="flex flex-col gap-6 p-8">
-        <Breadcrumb
-          items={[
-            { label: "Activités", href: "/activites" },
-            { label: "Activité introuvable" },
-          ]}
-        />
+      <div className="flex flex-col gap-6">
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-2">Activité introuvable</h1>
           <p className="text-muted-foreground">
@@ -147,14 +140,7 @@ export default function ActivityAnalysisPage({
     : "0";
 
   return (
-    <div className="flex flex-col gap-6 p-8">
-      <Breadcrumb
-        items={[
-          { label: "Activités", href: "/activites" },
-          { label: activity.title },
-        ]}
-      />
-
+    <div className="flex flex-col gap-6">
       <div>
         <div className="flex items-center gap-3 mb-2">
           <div className="rounded-full bg-primary/10 p-3">

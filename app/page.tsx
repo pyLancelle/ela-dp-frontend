@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center">
       <div className="z-10 w-full max-w-5xl items-center justify-center font-mono text-sm">
         <h1 className="text-4xl font-bold text-center mb-4">
           Hello World
@@ -9,6 +9,6 @@ export default function Home() {
           Welcome to your shadcn/ui application
         </p>
       </div>
-    </main>
+    </div>
   );
 }
