@@ -36,3 +36,4 @@ yarn-error.log*
 next-env.d.ts
 
 gcs_key.json
+.env

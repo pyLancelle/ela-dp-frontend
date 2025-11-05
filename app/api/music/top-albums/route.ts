@@ -1,9 +1,11 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import { NextResponse } from 'next/server';
 
+const credentials = process.env.GCS_KEY ? JSON.parse(process.env.GCS_KEY) : undefined;
+
 const bigquery = new BigQuery({
   projectId: 'polar-scene-465223-f7',
-  keyFilename: './gcs_key.json',
+  credentials,
 });
 
 export async function GET() {
