@@ -1,59 +1,36 @@
-import { Activity, TrendingUp, Calendar, Clock } from "lucide-react";
+"use client";
+
+import { useState, useEffect } from "react";
+import { Activity, TrendingUp, Calendar, Clock, Loader2 } from "lucide-react";
 import { ActivityCard, ActivityData } from "@/components/activity-card";
 
-// Données d'exemple pour les activités
-const activities: ActivityData[] = [
-  {
-    id: "1",
-    title: "Course matinale",
-    distance: 5.2,
-    duration: 32,
-    date: "Il y a 2 heures",
-    type: "running",
-  },
-  {
-    id: "2",
-    title: "Sortie vélo",
-    distance: 15.8,
-    duration: 45,
-    date: "Hier",
-    type: "cycling",
-  },
-  {
-    id: "3",
-    title: "Natation",
-    distance: 1.5,
-    duration: 40,
-    date: "Il y a 2 jours",
-    type: "swimming",
-  },
-  {
-    id: "4",
-    title: "Course longue",
-    distance: 10.5,
-    duration: 68,
-    date: "Il y a 3 jours",
-    type: "running",
-  },
-  {
-    id: "5",
-    title: "Vélo de montagne",
-    distance: 25.3,
-    duration: 95,
-    date: "Il y a 4 jours",
-    type: "cycling",
-  },
-  {
-    id: "6",
-    title: "Footing du soir",
-    distance: 7.2,
-    duration: 42,
-    date: "Il y a 5 jours",
-    type: "running",
-  },
-];
-
 export default function ActivitesPage() {
+  const [activities, setActivities] = useState<ActivityData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchActivities() {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/activities');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch activities');
+        }
+
+        const data = await response.json();
+        setActivities(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Error fetching activities:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchActivities();
+  }, []);
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -115,11 +92,25 @@ export default function ActivitesPage() {
 
       <div>
         <h2 className="text-xl font-semibold mb-4">Mes activités</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {activities.map((activity) => (
-            <ActivityCard key={activity.id} activity={activity} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-500">
+            Erreur: {error}
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            Aucune activité trouvée
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {activities.map((activity) => (
+              <ActivityCard key={activity.id} activity={activity} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
