@@ -29,6 +29,38 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [showArtists, setShowArtists] = useState(true);
+  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; month: string; km2025: number; km2024: number } | null>(null);
+
+  // Données pour le graphique de progression (valeurs cumulées par mois)
+  // 2025: s'arrête fin août (on est en septembre, donc pas de données pour sep-déc)
+  const runningData2025 = [0, 18, 42, 68, 95, 125, 158, 189, 215, 215, 215, 215]; // km cumulés par mois
+  // 2024: année complète
+  const runningData2024 = [0, 15, 38, 62, 88, 115, 145, 172, 195, 221, 248, 278];
+
+  const handleRunningChartMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const chartWidth = rect.width;
+
+    // Calculer le mois basé sur la position x (0-11 pour 12 mois)
+    const monthIndex = Math.floor((x / chartWidth) * 12);
+    const clampedIndex = Math.max(0, Math.min(11, monthIndex));
+
+    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+    setTooltipData({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      month: months[clampedIndex],
+      km2025: runningData2025[clampedIndex],
+      km2024: runningData2024[clampedIndex]
+    });
+  };
+
+  const handleRunningChartMouseLeave = () => {
+    setTooltipData(null);
+  };
+
   return (
     <div className="container mx-auto p-6 min-h-[calc(100vh-8rem)]">
       <div className="mb-8">
@@ -122,8 +154,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Spotify Listening Time Chart - 2x1 */}
-        <Card className="md:col-span-2 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Spotify Listening Time Chart - 2x1 - Right column */}
+        <Card className="md:col-span-2 md:col-start-5 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-1 pt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -205,8 +237,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Top Artists/Tracks - 2x3 - NOW HERE AFTER TEMPS D'ÉCOUTE */}
-        <Card className="md:col-span-2 md:row-span-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Top Artists/Tracks - 2x3 - Right column under Temps d'écoute */}
+        <Card className="md:col-span-2 md:row-span-3 md:col-start-5 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -545,8 +577,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Running Card with Aerobic/Anaerobic Chart - 2x2 */}
-        <Card className="md:col-span-2 md:row-span-2 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Running Card with Aerobic/Anaerobic Chart - 2x2 - Column 2, Row 1-2 */}
+        <Card className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -727,257 +759,776 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Large featured card - spans 2x2 */}
-        <Card className="md:col-span-2 md:row-span-2 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Music className="h-5 w-5" />
-              <CardTitle>Musique</CardTitle>
-            </div>
-            <CardDescription>Statistiques d'écoute</CardDescription>
+        {/* Weekly Running Volume - 1x1 */}
+        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Volume hebdomadaire</CardTitle>
+            <CardDescription className="text-xs">10 dernières semaines</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col justify-end h-[calc(100%-5rem)]">
-            <div className="space-y-2">
-              <div className="text-4xl font-bold">2,847</div>
-              <p className="text-sm text-muted-foreground">Morceaux</p>
-              <div className="flex gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  142h
-                </span>
+          <CardContent className="pt-2 pb-3">
+            <div className="relative h-32">
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+              </div>
+
+              {/* Bar Chart */}
+              <div className="flex items-end justify-between h-full gap-1">
+                {/* S-10: 22 km (55%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">22</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '55%' }}></div>
+                </div>
+
+                {/* S-9: 28 km (70%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">28</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '70%' }}></div>
+                </div>
+
+                {/* S-8: 18 km (45%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5 opacity-60">18</span>
+                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '45%' }}></div>
+                </div>
+
+                {/* S-7: 32 km (80%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">32</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '80%' }}></div>
+                </div>
+
+                {/* S-6: 25 km (62.5%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">25</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '62.5%' }}></div>
+                </div>
+
+                {/* S-5: 35 km (87.5%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">35</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '87.5%' }}></div>
+                </div>
+
+                {/* S-4: 30 km (75%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">30</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '75%' }}></div>
+                </div>
+
+                {/* S-3: 38 km (95%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">38</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '95%' }}></div>
+                </div>
+
+                {/* S-2: 40 km (100%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">40</span>
+                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '100%' }}></div>
+                </div>
+
+                {/* S-1 (semaine en cours): 18.5 km (46.25%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5 text-blue-500">18.5</span>
+                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '46.25%' }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats en dessous */}
+            <div className="mt-3 pt-2 border-t flex justify-between text-xs">
+              <div>
+                <div className="text-muted-foreground">Moyenne</div>
+                <div className="font-semibold">28.7 km</div>
+              </div>
+              <div className="text-right">
+                <div className="text-muted-foreground">Max</div>
+                <div className="font-semibold">40 km</div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Trending card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <TrendingUp className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Croissance</CardTitle>
+        {/* Acute:Chronic Workload Ratio - 1x1 - Central column (sport) */}
+        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Ratio de charge</CardTitle>
+            <CardDescription className="text-xs">Aiguë / Chronique</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+24%</div>
-            <p className="text-xs text-muted-foreground">vs. mois dernier</p>
-          </CardContent>
-        </Card>
-
-        {/* Activity card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <Activity className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Activité</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">328</div>
-            <p className="text-xs text-muted-foreground">Cette semaine</p>
-          </CardContent>
-        </Card>
-
-        {/* Tall Analytics card */}
-        <Card className="md:col-span-2 md:row-span-2 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              <CardTitle>Analytics</CardTitle>
-            </div>
-            <CardDescription>Métriques</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-muted-foreground">Vues</span>
-                <span className="text-sm font-medium">45.2K</span>
-              </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-foreground w-[75%]"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-muted-foreground">Engagement</span>
-                <span className="text-sm font-medium">89%</span>
-              </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-foreground w-[89%]"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-muted-foreground">Conversion</span>
-                <span className="text-sm font-medium">12.4%</span>
-              </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-foreground w-[12%]"></div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Super Tall Statistics card - 3 rows! */}
-        <Card className="md:col-span-1 md:row-span-3 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              <CardTitle className="text-base">Stats</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-1">
+          <CardContent className="pt-2 pb-2">
+            <div className="space-y-2.5">
+              {/* Ratio principal */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Revenus</span>
-                <ArrowUpRight className="h-3 w-3" />
+                <div>
+                  <div className="text-xs text-muted-foreground mb-0.5">Ratio actuel</div>
+                  <div className="text-2xl font-bold">1.15</div>
+                </div>
+                <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle2 className="h-8 w-8 text-green-500" />
+                </div>
               </div>
-              <div className="text-2xl font-bold">$45.2K</div>
-              <p className="text-xs text-muted-foreground">+12.5%</p>
-            </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Users</span>
-                <ArrowUpRight className="h-3 w-3" />
-              </div>
-              <div className="text-2xl font-bold">8,234</div>
-              <p className="text-xs text-muted-foreground">+8.1%</p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Sessions</span>
-                <ArrowDownRight className="h-3 w-3" />
-              </div>
-              <div className="text-2xl font-bold">12.4K</div>
-              <p className="text-xs text-muted-foreground">-2.3%</p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Taux conv.</span>
-                <ArrowUpRight className="h-3 w-3" />
-              </div>
-              <div className="text-2xl font-bold">3.2%</div>
-              <p className="text-xs text-muted-foreground">+0.4%</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Calendar card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <Calendar className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">À venir</p>
-          </CardContent>
-        </Card>
-
-        {/* Target card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <Target className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Goals</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8/10</div>
-            <p className="text-xs text-muted-foreground">Complétés</p>
-          </CardContent>
-        </Card>
-
-        {/* Wide Users card */}
-        <Card className="md:col-span-3 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              <CardTitle>Communauté</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-6">
+              {/* Zone de sécurité */}
               <div>
-                <div className="text-3xl font-bold">1,234</div>
-                <p className="text-xs text-muted-foreground">Membres</p>
+                <div className="text-xs text-muted-foreground mb-1.5">Zone (0.8 - 1.3)</div>
+                <div className="relative h-2.5 bg-muted rounded-full overflow-hidden">
+                  {/* Zone rouge basse < 0.8 */}
+                  <div className="absolute left-0 top-0 h-full bg-red-500/30" style={{ width: '20%' }}></div>
+                  {/* Zone verte 0.8 - 1.3 */}
+                  <div className="absolute left-[20%] top-0 h-full bg-green-500/30" style={{ width: '50%' }}></div>
+                  {/* Zone rouge haute > 1.3 */}
+                  <div className="absolute left-[70%] top-0 h-full bg-red-500/30" style={{ width: '30%' }}></div>
+                  {/* Indicateur position actuelle (1.15 = 57.5% de l'échelle 0-2) */}
+                  <div className="absolute top-0 h-full w-1 bg-blue-500 shadow-sm" style={{ left: '57.5%' }}></div>
+                </div>
               </div>
-              <div>
-                <div className="text-2xl font-semibold">856</div>
-                <p className="text-xs text-muted-foreground">En ligne</p>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold">45</div>
-                <p className="text-xs text-muted-foreground">Nouveaux</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Globe card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <Globe className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Mondial</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">45</div>
-            <p className="text-xs text-muted-foreground">Pays</p>
-          </CardContent>
-        </Card>
-
-        {/* Heart/Likes card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <Heart className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Favoris</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2.4K</div>
-            <p className="text-xs text-muted-foreground">Ce mois</p>
-          </CardContent>
-        </Card>
-
-        {/* Documents card */}
-        <Card className="md:col-span-2 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              <CardTitle>Documents</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-6">
-              <div>
-                <div className="text-2xl font-bold">156</div>
-                <p className="text-xs text-muted-foreground">Fichiers</p>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">2.4GB</div>
-                <p className="text-xs text-muted-foreground">Storage</p>
+              {/* Charges */}
+              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t">
+                <div>
+                  <div className="text-[10px] text-muted-foreground">Aiguë (7j)</div>
+                  <div className="text-sm font-semibold">23 km</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] text-muted-foreground">Chronique (28j)</div>
+                  <div className="text-sm font-semibold">20 km</div>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Performance card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <Zap className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Perf.</CardTitle>
+        {/* VO2 Max Trend - 1x1 */}
+        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">VO2 Max</CardTitle>
+            <CardDescription className="text-xs">Tendance 6 mois</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">98%</div>
-            <p className="text-xs text-muted-foreground">Uptime</p>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex items-end justify-between mb-2">
+              <div>
+                <div className="text-3xl font-bold">54</div>
+                <p className="text-xs text-muted-foreground">ml/kg/min</p>
+              </div>
+              <div className="flex items-center gap-1 text-green-500">
+                <ArrowUpRight className="h-4 w-4" />
+                <span className="text-sm font-semibold">+2</span>
+              </div>
+            </div>
+
+            <div className="relative h-20 mt-3">
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+              </div>
+
+              {/* Line chart */}
+              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polyline
+                  points="0,60 17,58 33,55 50,52 67,48 83,45 100,40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-green-500"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Awards card */}
-        <Card className="md:col-span-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
-            <Award className="h-5 w-5 mb-1" />
-            <CardTitle className="text-base">Awards</CardTitle>
+        {/* Race Predictions - 1x3 */}
+        <Card className="md:col-span-1 md:row-span-3 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Prédictions courses</CardTitle>
+            <CardDescription className="text-xs">Temps estimés</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">Débloqués</p>
+          <CardContent className="pt-2 pb-3">
+            <div className="space-y-3">
+              {/* 5K */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
+                <div>
+                  <div className="text-xs text-muted-foreground mb-0.5">5K</div>
+                  <div className="text-xl font-bold">20:25</div>
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <ArrowDownRight className="h-3.5 w-3.5" />
+                  <span className="text-xs font-semibold">-1:15</span>
+                </div>
+              </div>
+
+              {/* 10K */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
+                <div>
+                  <div className="text-xs text-muted-foreground mb-0.5">10K</div>
+                  <div className="text-xl font-bold">42:15</div>
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <ArrowDownRight className="h-3.5 w-3.5" />
+                  <span className="text-xs font-semibold">-2:30</span>
+                </div>
+              </div>
+
+              {/* Semi Marathon */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
+                <div>
+                  <div className="text-xs text-muted-foreground mb-0.5">Semi-Marathon</div>
+                  <div className="text-xl font-bold">1:32:45</div>
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <ArrowDownRight className="h-3.5 w-3.5" />
+                  <span className="text-xs font-semibold">-5:15</span>
+                </div>
+              </div>
+
+              {/* Marathon */}
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
+                <div>
+                  <div className="text-xs text-muted-foreground mb-0.5">Marathon</div>
+                  <div className="text-xl font-bold">3:18:30</div>
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <ArrowDownRight className="h-3.5 w-3.5" />
+                  <span className="text-xs font-semibold">-12:20</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Health Metrics Gauges - 2x1 - Left column (health) row 2 */}
+        <Card className="md:col-span-2 md:col-start-1 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Indicateurs Santé</CardTitle>
+            <CardDescription className="text-xs">Valeurs actuelles</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="grid grid-cols-4 gap-4">
+              {/* Sleep Score Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - 88% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-blue-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.88)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">88</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">Sommeil</div>
+              </div>
+
+              {/* HRV Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - 58/100 = 58% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-green-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.58)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">58</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">HRV (ms)</div>
+              </div>
+
+              {/* Resting Heart Rate Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - Lower is better, 52/100 = inverse 48% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-orange-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.52)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">52</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">BPM repos</div>
+              </div>
+
+              {/* Body Battery Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - 75% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-purple-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.75)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">75</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">Body Battery</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* HRV Recent Days - 1x1 - Left column (health) row 3 */}
+        <Card className="md:col-span-1 md:col-start-1 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">HRV</CardTitle>
+            <CardDescription className="text-xs">7 derniers jours</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <div className="text-3xl font-bold">58</div>
+                <p className="text-xs text-muted-foreground">ms</p>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Baseline: 52ms
+              </div>
+            </div>
+
+            <div className="relative h-24">
+              {/* Baseline zone */}
+              <div className="absolute inset-x-0 top-[30%] h-[40%] bg-green-500/10 rounded"></div>
+
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+              </div>
+
+              {/* Bar Chart */}
+              <div className="flex items-end justify-between h-full gap-1.5">
+                {/* J-6: 52ms (65%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">52</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '65%' }}></div>
+                </div>
+
+                {/* J-5: 48ms (60%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5 opacity-60">48</span>
+                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '60%' }}></div>
+                </div>
+
+                {/* J-4: 55ms (68%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">55</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '68%' }}></div>
+                </div>
+
+                {/* J-3: 61ms (76%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">61</span>
+                  <div className="w-full bg-green-500 rounded-t" style={{ height: '76%' }}></div>
+                </div>
+
+                {/* J-2: 54ms (67%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">54</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '67%' }}></div>
+                </div>
+
+                {/* J-1: 50ms (62%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">50</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '62%' }}></div>
+                </div>
+
+                {/* Aujourd'hui: 58ms (72%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5 text-blue-500">58</span>
+                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '72%' }}></div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Weight Trend - 1x1 - Left column (health) row 4 */}
+        <Card className="md:col-span-1 md:col-start-1 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Poids</CardTitle>
+            <CardDescription className="text-xs">Tendance 30 jours</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <div className="text-3xl font-bold">72.5</div>
+                <p className="text-xs text-muted-foreground">kg</p>
+              </div>
+              <div className="flex items-center gap-1 text-green-500">
+                <ArrowDownRight className="h-4 w-4" />
+                <span className="text-sm font-semibold">-1.2 kg</span>
+              </div>
+            </div>
+
+            <div className="relative h-24">
+              {/* Target zone */}
+              <div className="absolute inset-x-0 top-[40%] h-[20%] bg-green-500/10 rounded"></div>
+
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+              </div>
+
+              {/* Line chart */}
+              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polyline
+                  points="0,35 10,36 20,37 30,38 40,40 50,42 60,45 70,47 80,48 90,49 100,50"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-blue-500"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+            </div>
+
+            <div className="mt-3 pt-2 border-t flex justify-between text-xs">
+              <div>
+                <div className="text-muted-foreground">Objectif</div>
+                <div className="font-semibold">71.0 kg</div>
+              </div>
+              <div className="text-right">
+                <div className="text-muted-foreground">Reste</div>
+                <div className="font-semibold">-1.5 kg</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily Stress - 1x1 - Left column (health) row 5 */}
+        <Card className="md:col-span-1 md:col-start-1 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Stress quotidien</CardTitle>
+            <CardDescription className="text-xs">Aujourd'hui</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex flex-col items-center justify-center h-32">
+              <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                <span className="text-3xl font-bold text-green-500">32</span>
+              </div>
+              <span className="text-sm px-3 py-1.5 rounded-full bg-green-500/20 text-green-500 font-medium">Faible</span>
+            </div>
+            <div className="mt-3 pt-2 border-t text-xs text-center text-muted-foreground">
+              Échelle 0-100
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sleep Stages Timeline - 2x1 - Left column (health) row 6 */}
+        <Card className="md:col-span-2 md:col-start-1 md:row-start-6 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Phases de sommeil</CardTitle>
+            <CardDescription className="text-xs">Dernière nuit - 7h 32m</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="space-y-4">
+              {/* Timeline bar */}
+              <div className="relative">
+                <div className="flex h-6 w-full rounded-full overflow-hidden shadow-sm">
+                  {/* Awake (début) - 5m - Gris clair */}
+                  <div className="bg-gray-300/60" style={{ width: '1.1%' }} title="Éveillé: 5m">
+                  </div>
+
+                  {/* Light Sleep - 45m - Bleu clair */}
+                  <div className="bg-blue-300" style={{ width: '10%' }} title="Léger: 45m">
+                  </div>
+
+                  {/* Deep Sleep - 1h 20m - Bleu foncé */}
+                  <div className="bg-blue-900" style={{ width: '17.7%' }} title="Profond: 1h 20m">
+                  </div>
+
+                  {/* Light Sleep - 1h 15m - Bleu clair */}
+                  <div className="bg-blue-300" style={{ width: '16.5%' }} title="Léger: 1h 15m">
+                  </div>
+
+                  {/* REM - 1h 53m - Rose/magenta */}
+                  <div className="bg-pink-500" style={{ width: '25%' }} title="REM: 1h 53m">
+                  </div>
+
+                  {/* Light Sleep - 1h 01m - Bleu clair */}
+                  <div className="bg-blue-300" style={{ width: '13.5%' }} title="Léger: 1h 01m">
+                  </div>
+
+                  {/* Awake - 12m - Gris clair */}
+                  <div className="bg-gray-300/60" style={{ width: '2.6%' }} title="Éveillé: 12m">
+                  </div>
+
+                  {/* Deep Sleep - 46m - Bleu foncé */}
+                  <div className="bg-blue-900" style={{ width: '10.2%' }} title="Profond: 46m">
+                  </div>
+
+                  {/* Awake (fin) - 15m - Gris clair */}
+                  <div className="bg-gray-300/60" style={{ width: '3.3%' }} title="Éveillé: 15m">
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend and stats */}
+              <div className="grid grid-cols-4 gap-3 pt-2 border-t">
+                {/* Deep Sleep */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-900 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">Profond</div>
+                    <div className="text-sm font-semibold">2h 06m</div>
+                  </div>
+                </div>
+
+                {/* REM Sleep */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-pink-500 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">REM</div>
+                    <div className="text-sm font-semibold">1h 53m</div>
+                  </div>
+                </div>
+
+                {/* Light Sleep */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-300 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">Léger</div>
+                    <div className="text-sm font-semibold">3h 01m</div>
+                  </div>
+                </div>
+
+                {/* Awake */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-300/60 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">Éveillé</div>
+                    <div className="text-sm font-semibold">32m</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Annual Running Distance - 1x1 - Central column (sport) */}
+        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Kilométrage annuel</CardTitle>
+            <CardDescription className="text-xs">Au même jour</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="space-y-4">
+              {/* 2025 - Année en cours */}
+              <div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground">2025</span>
+                  <span className="text-2xl font-bold">215 km</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+
+              {/* 2024 - Année précédente au même jour */}
+              <div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-xs text-muted-foreground">2024</span>
+                  <span className="text-2xl font-bold opacity-60">195 km</span>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-foreground opacity-40 rounded-full" style={{ width: '90.7%' }}></div>
+                </div>
+              </div>
+
+              {/* Comparaison */}
+              <div className="pt-2 border-t flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Différence</span>
+                <div className="flex items-center gap-1 text-green-500">
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                  <span className="text-sm font-semibold">+20 km</span>
+                  <span className="text-xs text-muted-foreground ml-1">(+10.3%)</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Running Progress Year Comparison - 1x1 - Central column (sport) */}
+        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden relative">
+          <CardHeader className="pb-0 pt-3">
+            <CardTitle className="text-sm">Progression annuelle</CardTitle>
+            <CardDescription className="text-xs">Cumul km à date</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-1 pb-2">
+            {/* Interactive Tooltip */}
+            {tooltipData && (
+              <div
+                className="absolute bg-popover text-popover-foreground px-3 py-2 rounded-md shadow-md z-20 whitespace-nowrap text-xs pointer-events-none"
+                style={{
+                  left: `${tooltipData.x}px`,
+                  top: `${tooltipData.y - 60}px`,
+                  transform: 'translateX(-50%)'
+                }}
+              >
+                <div className="font-semibold mb-1">{tooltipData.month}</div>
+                <div className="space-y-0.5">
+                  <div className="text-blue-500 font-medium">2025: {tooltipData.km2025} km</div>
+                  <div className="opacity-60">2024: {tooltipData.km2024} km</div>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="relative h-[140px] cursor-crosshair"
+              onMouseMove={handleRunningChartMouseMove}
+              onMouseLeave={handleRunningChartMouseLeave}
+            >
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-[30px]">
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+              </div>
+
+              {/* SVG for line chart */}
+              <svg className="w-full h-[calc(100%-30px)]" viewBox="0 0 365 100" preserveAspectRatio="none">
+                {/* 2024 curve (previous year) - dashed, année complète */}
+                <polyline
+                  points="0,95 10,93 20,91 30,89 40,87 50,85 60,83 70,81 80,79 90,77 100,75 110,73 120,71 130,69 140,67 150,66 160,65 170,64 180,63 190,62 200,61 210,60 220,59 230,58 240,58 250,57 260,57 270,56 280,56 290,56 300,55 310,55 320,55 330,55 340,55 350,55 365,55"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  strokeDasharray="2,2"
+                  className="opacity-40"
+                  vectorEffect="non-scaling-stroke"
+                />
+
+                {/* 2025 curve (current year) - solid, s'arrête fin août (jour ~243) puis plateau */}
+                <polyline
+                  points="0,95 10,92 20,89 30,86 40,83 50,80 60,77 70,74 80,71 90,68 100,65 110,62 120,60 130,58 140,56 150,54 160,52 170,50 180,48 190,46 200,44 210,42 220,41 230,40 240,39 243,38 250,38 260,38 270,38 280,38 290,38 300,38 310,38 320,38 330,38 340,38 350,38 365,38"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="text-blue-500"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+
+              {/* X-axis labels (months) */}
+              <div className="absolute bottom-[14px] left-0 right-0 flex justify-between text-[9px] text-muted-foreground px-1">
+                <span>J</span>
+                <span>F</span>
+                <span>M</span>
+                <span>A</span>
+                <span>M</span>
+                <span>J</span>
+                <span>J</span>
+                <span>A</span>
+                <span>S</span>
+                <span>O</span>
+                <span>N</span>
+                <span>D</span>
+              </div>
+
+              {/* Legend */}
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-2 text-[9px]">
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-0.5 bg-blue-500"></div>
+                  <span className="text-muted-foreground">2025</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-0.5 bg-foreground opacity-40 border-dashed" style={{ borderTop: '1px dashed currentColor', height: 0 }}></div>
+                  <span className="text-muted-foreground">2024</span>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
