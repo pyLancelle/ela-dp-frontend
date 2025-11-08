@@ -71,21 +71,164 @@ export default function Home() {
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[200px]">
 
-        {/* Sleep Chart - 2x1 */}
-        <Card className="md:col-span-2 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-1 pt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Moon className="h-5 w-5" />
-                <CardTitle>Sommeil</CardTitle>
+        {/* Health Metrics Gauges - 2x1 - Left column (health) row 1 */}
+        <Card className="md:col-span-2 md:col-start-1 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Indicateurs Santé</CardTitle>
+            <CardDescription className="text-xs">Valeurs actuelles</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="grid grid-cols-4 gap-4">
+              {/* Sleep Score Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - 88% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-blue-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.88)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">88</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">Sommeil</div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">82</div>
-                <p className="text-xs text-muted-foreground">Score moyen</p>
+
+              {/* HRV Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - 58/100 = 58% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-green-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.58)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">58</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">HRV (ms)</div>
+              </div>
+
+              {/* Resting Heart Rate Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - Lower is better, 52/100 = inverse 48% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-orange-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.52)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">52</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">BPM repos</div>
+              </div>
+
+              {/* Body Battery Gauge */}
+              <div className="flex flex-col items-center">
+                <div className="relative w-16 h-16">
+                  <svg className="w-full h-full transform -rotate-90">
+                    {/* Background circle */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted opacity-20"
+                    />
+                    {/* Progress circle - 75% */}
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="28"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-purple-500"
+                      strokeDasharray={`${2 * Math.PI * 28}`}
+                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.75)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-bold">75</span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1 text-center">Body Battery</div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Sleep Chart - 1x1 - Left column row 2 */}
+        <Card className="md:col-span-1 md:col-start-1 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Sommeil</CardTitle>
+            <CardDescription className="text-xs">7 derniers jours</CardDescription>
           </CardHeader>
-          <CardContent className="pt-2 pb-8">
+          <CardContent className="pt-1 pb-3">
             <div className="relative h-24 mb-6">
               {/* Grid lines */}
               <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
@@ -95,67 +238,279 @@ export default function Home() {
                 <div className="h-px bg-border opacity-20"></div>
               </div>
 
-              {/* Bar Chart */}
-              <div className="flex items-end justify-between h-full gap-2 px-1">
-                {/* Lun - 55% */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">55</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '55%' }}></div>
-                </div>
-
-                {/* Mar - 75% */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">75</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '75%' }}></div>
-                </div>
-
-                {/* Mer - 38% */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1 opacity-60">38</span>
-                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '38%' }}></div>
-                </div>
-
-                {/* Jeu - 78% */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">78</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '78%' }}></div>
-                </div>
-
-                {/* Ven - 69% */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">69</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '69%' }}></div>
-                </div>
-
-                {/* Sam - 85% */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">85</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '85%' }}></div>
-                </div>
-
-                {/* Dim - 88% */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">88</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '88%' }}></div>
-                </div>
-              </div>
-
-              {/* Day labels */}
-              <div className="absolute -bottom-6 left-0 right-0 flex justify-between text-xs text-muted-foreground px-1">
-                <span className="flex-1 text-center">Lun</span>
-                <span className="flex-1 text-center">Mar</span>
-                <span className="flex-1 text-center">Mer</span>
-                <span className="flex-1 text-center">Jeu</span>
-                <span className="flex-1 text-center">Ven</span>
-                <span className="flex-1 text-center">Sam</span>
-                <span className="flex-1 text-center">Dim</span>
+              {/* Bar Chart - Mock data structure that will come from API */}
+              <div className="flex items-end h-full gap-2 px-1">
+                {[
+                  { day: 'L', score: 55, isLow: false },
+                  { day: 'M', score: 75, isLow: false },
+                  { day: 'M', score: 38, isLow: true },
+                  { day: 'J', score: 78, isLow: false },
+                  { day: 'V', score: 69, isLow: false },
+                  { day: 'S', score: 85, isLow: false },
+                  { day: 'D', score: 88, isLow: false },
+                ].map((data, index) => (
+                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-end relative">
+                    <span className={`text-xs font-medium mb-1 ${data.isLow ? 'opacity-60' : ''}`}>
+                      {data.score}
+                    </span>
+                    <div
+                      className={`w-full bg-foreground rounded-t ${data.isLow ? 'opacity-60' : ''}`}
+                      style={{ height: `${data.score}%` }}
+                    ></div>
+                    {/* Day label directly below each bar */}
+                    <span className="absolute -bottom-6 text-xs text-muted-foreground">{data.day}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Spotify Listening Time Chart - 2x1 - Right column */}
-        <Card className="md:col-span-2 md:col-start-5 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* HRV Recent Days - 1x1 - Left column row 2 */}
+        <Card className="md:col-span-1 md:col-start-2 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">HRV</CardTitle>
+            <CardDescription className="text-xs">7 derniers jours</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <div className="text-3xl font-bold">58</div>
+                <p className="text-xs text-muted-foreground">ms</p>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Baseline: 52ms
+              </div>
+            </div>
+
+            <div className="relative h-24">
+              {/* Baseline zone */}
+              <div className="absolute inset-x-0 top-[30%] h-[40%] bg-green-500/10 rounded"></div>
+
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+                <div className="h-px bg-border opacity-20"></div>
+              </div>
+
+              {/* Bar Chart */}
+              <div className="flex items-end justify-between h-full gap-1.5">
+                {/* J-6: 52ms (65%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">52</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '65%' }}></div>
+                </div>
+
+                {/* J-5: 48ms (60%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5 opacity-60">48</span>
+                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '60%' }}></div>
+                </div>
+
+                {/* J-4: 55ms (68%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">55</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '68%' }}></div>
+                </div>
+
+                {/* J-3: 61ms (76%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">61</span>
+                  <div className="w-full bg-green-500 rounded-t" style={{ height: '76%' }}></div>
+                </div>
+
+                {/* J-2: 54ms (67%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">54</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '67%' }}></div>
+                </div>
+
+                {/* J-1: 50ms (62%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5">50</span>
+                  <div className="w-full bg-foreground rounded-t" style={{ height: '62%' }}></div>
+                </div>
+
+                {/* Aujourd'hui: 58ms (72%) */}
+                <div className="flex flex-col items-center flex-1 h-full justify-end">
+                  <span className="text-[9px] font-medium mb-0.5 text-blue-500">58</span>
+                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '72%' }}></div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Weight Trend - 1x1 - Left column row 3 */}
+        <Card className="md:col-span-1 md:col-start-1 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Poids</CardTitle>
+            <CardDescription className="text-xs">Tendance 30 jours</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <div className="text-3xl font-bold">72.5</div>
+                <p className="text-xs text-muted-foreground">kg</p>
+              </div>
+              <div className="flex items-center gap-1 text-green-500">
+                <ArrowDownRight className="h-4 w-4" />
+                <span className="text-sm font-semibold">-1.2 kg</span>
+              </div>
+            </div>
+
+            <div className="relative h-24">
+              {/* Target zone */}
+              <div className="absolute inset-x-0 top-[40%] h-[20%] bg-green-500/10 rounded"></div>
+
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+                <div className="h-px bg-border opacity-10"></div>
+              </div>
+
+              {/* Line chart */}
+              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polyline
+                  points="0,35 10,36 20,37 30,38 40,40 50,42 60,45 70,47 80,48 90,49 100,50"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-blue-500"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+            </div>
+
+            <div className="mt-3 pt-2 border-t flex justify-between text-xs">
+              <div>
+                <div className="text-muted-foreground">Objectif</div>
+                <div className="font-semibold">71.0 kg</div>
+              </div>
+              <div className="text-right">
+                <div className="text-muted-foreground">Reste</div>
+                <div className="font-semibold">-1.5 kg</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily Stress - 1x1 - Left column row 3 */}
+        <Card className="md:col-span-1 md:col-start-2 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Stress quotidien</CardTitle>
+            <CardDescription className="text-xs">Aujourd'hui</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex flex-col items-center justify-center h-32">
+              <div className="w-15 h-15 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                <span className="text-1xl font-bold text-green-500">32</span>
+              </div>
+              <span className="text-sm px-3 py-1.5 rounded-full bg-green-500/20 text-green-500 font-medium">Faible</span>
+            </div>
+            <div className="mt-3 pt-2 border-t text-xs text-center text-muted-foreground">
+              Échelle 0-100
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sleep Stages Timeline - 2x1 - Left column row 4 */}
+        <Card className="md:col-span-2 md:col-start-1 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Phases de sommeil</CardTitle>
+            <CardDescription className="text-xs">Dernière nuit - 7h 32m</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="space-y-4">
+              {/* Timeline bar */}
+              <div className="relative">
+                <div className="flex h-6 w-full rounded-full overflow-hidden shadow-sm">
+                  {/* Awake (début) - 5m - Gris clair */}
+                  <div className="bg-gray-300/60" style={{ width: '1.1%' }} title="Éveillé: 5m">
+                  </div>
+
+                  {/* Light Sleep - 45m - Bleu clair */}
+                  <div className="bg-blue-300" style={{ width: '10%' }} title="Léger: 45m">
+                  </div>
+
+                  {/* Deep Sleep - 1h 20m - Bleu foncé */}
+                  <div className="bg-blue-900" style={{ width: '17.7%' }} title="Profond: 1h 20m">
+                  </div>
+
+                  {/* Light Sleep - 1h 15m - Bleu clair */}
+                  <div className="bg-blue-300" style={{ width: '16.5%' }} title="Léger: 1h 15m">
+                  </div>
+
+                  {/* REM - 1h 53m - Rose/magenta */}
+                  <div className="bg-pink-500" style={{ width: '25%' }} title="REM: 1h 53m">
+                  </div>
+
+                  {/* Light Sleep - 1h 01m - Bleu clair */}
+                  <div className="bg-blue-300" style={{ width: '13.5%' }} title="Léger: 1h 01m">
+                  </div>
+
+                  {/* Awake - 12m - Gris clair */}
+                  <div className="bg-gray-300/60" style={{ width: '2.6%' }} title="Éveillé: 12m">
+                  </div>
+
+                  {/* Deep Sleep - 46m - Bleu foncé */}
+                  <div className="bg-blue-900" style={{ width: '10.2%' }} title="Profond: 46m">
+                  </div>
+
+                  {/* Awake (fin) - 15m - Gris clair */}
+                  <div className="bg-gray-300/60" style={{ width: '3.3%' }} title="Éveillé: 15m">
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend and stats */}
+              <div className="grid grid-cols-4 gap-3 pt-2 border-t">
+                {/* Deep Sleep */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-900 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">Profond</div>
+                    <div className="text-sm font-semibold">2h 06m</div>
+                  </div>
+                </div>
+
+                {/* REM Sleep */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-pink-500 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">REM</div>
+                    <div className="text-sm font-semibold">1h 53m</div>
+                  </div>
+                </div>
+
+                {/* Light Sleep */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-300 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">Léger</div>
+                    <div className="text-sm font-semibold">3h 01m</div>
+                  </div>
+                </div>
+
+                {/* Awake */}
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-300/60 rounded"></div>
+                  <div className="flex-1">
+                    <div className="text-xs text-muted-foreground">Éveillé</div>
+                    <div className="text-sm font-semibold">32m</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Spotify Listening Time Chart - 2x1 - Right column row 1 */}
+        <Card className="md:col-span-2 md:col-start-5 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-1 pt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -225,13 +580,13 @@ export default function Home() {
 
               {/* Day labels */}
               <div className="absolute -bottom-6 left-0 right-0 flex justify-between text-xs text-muted-foreground px-1">
-                <span className="flex-1 text-center">Lun</span>
-                <span className="flex-1 text-center">Mar</span>
-                <span className="flex-1 text-center">Mer</span>
-                <span className="flex-1 text-center">Jeu</span>
-                <span className="flex-1 text-center">Ven</span>
-                <span className="flex-1 text-center">Sam</span>
-                <span className="flex-1 text-center">Dim</span>
+                <span className="flex-1 text-center">L</span>
+                <span className="flex-1 text-center">M</span>
+                <span className="flex-1 text-center">M</span>
+                <span className="flex-1 text-center">J</span>
+                <span className="flex-1 text-center">V</span>
+                <span className="flex-1 text-center">S</span>
+                <span className="flex-1 text-center">D</span>
               </div>
             </div>
           </CardContent>
@@ -577,190 +932,115 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Running Card with Aerobic/Anaerobic Chart - 2x2 - Column 2, Row 1-2 */}
+        {/* Running Card with Aerobic/Anaerobic Chart - 2x2 - Central column row 1-2 */}
         <Card className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 pt-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Footprints className="h-5 w-5" />
-                <CardTitle>Course à pied</CardTitle>
+                <CardTitle className="text-sm">Course à pied</CardTitle>
               </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1 text-xs text-green-500">
-                  <CheckCircle2 className="h-3 w-3" />
-                  <span>Objectif atteint</span>
-                </div>
-              </div>
+              <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-medium flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" />
+                Objectif atteint
+              </span>
             </div>
-            <CardDescription>Scores Aérobie / Anaérobie</CardDescription>
+            <CardDescription className="text-xs">Scores Aérobie / Anaérobie</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Métriques principales */}
-            <div className="grid grid-cols-3 gap-4">
-              <div>
+          <CardContent className="pt-2 pb-3">
+            {/* Stats du haut */}
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="text-center">
                 <div className="text-2xl font-bold">18.5</div>
-                <p className="text-xs text-muted-foreground">km total</p>
+                <div className="text-xs text-muted-foreground">km total</div>
               </div>
-              <div>
+              <div className="text-center">
                 <div className="text-2xl font-bold">4</div>
-                <p className="text-xs text-muted-foreground">sessions</p>
+                <div className="text-xs text-muted-foreground">sessions</div>
               </div>
-              <div>
+              <div className="text-center">
                 <div className="text-2xl font-bold">4.6</div>
-                <p className="text-xs text-muted-foreground">km/session</p>
+                <div className="text-xs text-muted-foreground">km/session</div>
               </div>
             </div>
 
-            {/* Mini Bar Chart - Daily km */}
-            <div className="relative h-16">
-              <div className="flex items-end justify-between h-full gap-1.5">
-                {/* Lun - No session */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <div className="w-full bg-muted rounded-t" style={{ height: '5%' }}></div>
-                  <span className="text-[10px] text-muted-foreground mt-1">L</span>
-                </div>
-
-                {/* Mar - 5.2 km */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[10px] font-medium mb-0.5">5.2</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '65%' }}></div>
-                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">M</span>
-                </div>
-
-                {/* Mer - No session */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <div className="w-full bg-muted rounded-t" style={{ height: '5%' }}></div>
-                  <span className="text-[10px] text-muted-foreground mt-1">M</span>
-                </div>
-
-                {/* Jeu - 8.5 km */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[10px] font-medium mb-0.5">8.5</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '100%' }}></div>
-                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">J</span>
-                </div>
-
-                {/* Ven - No session */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <div className="w-full bg-muted rounded-t" style={{ height: '5%' }}></div>
-                  <span className="text-[10px] text-muted-foreground mt-1">V</span>
-                </div>
-
-                {/* Sam - 4.8 km */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[10px] font-medium mb-0.5">4.8</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '56%' }}></div>
-                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">S</span>
-                </div>
-
-                {/* Dim - No session */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <div className="w-full bg-muted rounded-t" style={{ height: '5%' }}></div>
-                  <span className="text-[10px] text-muted-foreground mt-1">D</span>
-                </div>
+            {/* Mini bar chart pour km par jour */}
+            <div className="relative h-12 mb-3">
+              <div className="flex items-end justify-between h-full gap-1">
+                {[
+                  { day: 'L', km: 0 },
+                  { day: 'M', km: 5.2 },
+                  { day: 'M', km: 0 },
+                  { day: 'J', km: 4.8 },
+                  { day: 'V', km: 8.5 },
+                  { day: 'S', km: 0 },
+                  { day: 'D', km: 0 },
+                ].map((data, index) => (
+                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-end relative">
+                    {data.km > 0 && (
+                      <>
+                        <span className="text-[8px] font-medium mb-0.5">{data.km}</span>
+                        <div className="w-full bg-blue-500 rounded-t" style={{ height: `${(data.km / 8.5) * 100}%` }}></div>
+                      </>
+                    )}
+                    {data.km === 0 && <div className="w-full h-1 bg-muted rounded"></div>}
+                    <span className="absolute -bottom-4 text-[9px] text-muted-foreground">{data.day}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Symmetric Bar Chart - Scale -3 to +3 for display, real values in labels */}
-            <div className="relative h-32">
-              {/* Axis line at 0 */}
-              <div className="absolute left-0 right-0 top-1/2 h-px bg-border"></div>
+            {/* Symmetric bar chart pour aérobie/anaérobie */}
+            <div className="relative h-32 mb-2 mt-6">
+              {/* Zero line */}
+              <div className="absolute inset-x-0 top-1/2 h-px bg-border"></div>
 
-              <div className="flex items-center justify-between h-full gap-2 px-1">
-                {/* Lun - No session */}
-                <div className="flex flex-col items-center flex-1 h-full">
-                  <div className="flex-1 flex items-end w-full">
-                    <div className="w-full bg-blue-500 opacity-20 rounded-t" style={{ height: '2%' }}></div>
+              <div className="flex items-center justify-between h-full gap-1.5">
+                {[
+                  { day: 'L', aerobic: 0, anaerobic: 0 },
+                  { day: 'M', aerobic: 85, anaerobic: 15 },
+                  { day: 'M', aerobic: 0, anaerobic: 0 },
+                  { day: 'J', aerobic: 78, anaerobic: 22 },
+                  { day: 'V', aerobic: 92, anaerobic: 38 },
+                  { day: 'S', aerobic: 0, anaerobic: 0 },
+                  { day: 'D', aerobic: 0, anaerobic: 0 },
+                ].map((data, index) => (
+                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-center">
+                    {/* Aerobic (top half) */}
+                    <div className="w-full flex items-end justify-center" style={{ height: '50%' }}>
+                      {data.aerobic > 0 && (
+                        <div className="w-full bg-blue-500 rounded-t" style={{ height: `${data.aerobic}%` }} title={`Aérobie: ${data.aerobic}`}></div>
+                      )}
+                    </div>
+                    {/* Anaerobic (bottom half) */}
+                    <div className="w-full flex items-start justify-center" style={{ height: '50%' }}>
+                      {data.anaerobic > 0 && (
+                        <div className="w-full bg-orange-500 rounded-b" style={{ height: `${data.anaerobic}%` }} title={`Anaérobie: ${data.anaerobic}`}></div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 flex items-start w-full">
-                    <div className="w-full bg-orange-500 opacity-20 rounded-b" style={{ height: '2%' }}></div>
-                  </div>
-                </div>
-
-                {/* Mar - Aero: +3.5 (display as 3.5/3*100% = 100%), Anaero: -1.2 (display as 1.2/3*100% = 40%) */}
-                <div className="flex flex-col items-center flex-1 h-full">
-                  <div className="flex-1 flex flex-col items-center justify-end w-full">
-                    <span className="text-[10px] font-medium mb-0.5 text-blue-600">+3.5</span>
-                    <div className="w-full bg-blue-500 rounded-t" style={{ height: '100%' }}></div>
-                  </div>
-                  <div className="flex-1 flex flex-col items-center justify-start w-full">
-                    <div className="w-full bg-orange-500 rounded-b" style={{ height: '40%' }}></div>
-                    <span className="text-[10px] font-medium mt-0.5 text-orange-600">-1.2</span>
-                  </div>
-                </div>
-
-                {/* Mer - No session */}
-                <div className="flex flex-col items-center flex-1 h-full">
-                  <div className="flex-1 flex items-end w-full">
-                    <div className="w-full bg-blue-500 opacity-20 rounded-t" style={{ height: '2%' }}></div>
-                  </div>
-                  <div className="flex-1 flex items-start w-full">
-                    <div className="w-full bg-orange-500 opacity-20 rounded-b" style={{ height: '2%' }}></div>
-                  </div>
-                </div>
-
-                {/* Jeu - Aero: +2.8 (display as 2.8/3*100% = 93%), Anaero: -3.5 but capped at -3 (display as 3/3*100% = 100%) */}
-                <div className="flex flex-col items-center flex-1 h-full">
-                  <div className="flex-1 flex flex-col items-center justify-end w-full">
-                    <span className="text-[10px] font-medium mb-0.5 text-blue-600">+2.8</span>
-                    <div className="w-full bg-blue-500 rounded-t" style={{ height: '93%' }}></div>
-                  </div>
-                  <div className="flex-1 flex flex-col items-center justify-start w-full">
-                    <div className="w-full bg-orange-500 rounded-b" style={{ height: '100%' }}></div>
-                    <span className="text-[10px] font-medium mt-0.5 text-orange-600">-3.5</span>
-                  </div>
-                </div>
-
-                {/* Ven - No session */}
-                <div className="flex flex-col items-center flex-1 h-full">
-                  <div className="flex-1 flex items-end w-full">
-                    <div className="w-full bg-blue-500 opacity-20 rounded-t" style={{ height: '2%' }}></div>
-                  </div>
-                  <div className="flex-1 flex items-start w-full">
-                    <div className="w-full bg-orange-500 opacity-20 rounded-b" style={{ height: '2%' }}></div>
-                  </div>
-                </div>
-
-                {/* Sam - Aero: +4.2 but capped at +3 (display as 3/3*100% = 100%), Anaero: -0.8 (display as 0.8/3*100% = 27%) */}
-                <div className="flex flex-col items-center flex-1 h-full">
-                  <div className="flex-1 flex flex-col items-center justify-end w-full">
-                    <span className="text-[10px] font-medium mb-0.5 text-blue-600">+4.2</span>
-                    <div className="w-full bg-blue-500 rounded-t" style={{ height: '100%' }}></div>
-                  </div>
-                  <div className="flex-1 flex flex-col items-center justify-start w-full">
-                    <div className="w-full bg-orange-500 rounded-b" style={{ height: '27%' }}></div>
-                    <span className="text-[10px] font-medium mt-0.5 text-orange-600">-0.8</span>
-                  </div>
-                </div>
-
-                {/* Dim - No session */}
-                <div className="flex flex-col items-center flex-1 h-full">
-                  <div className="flex-1 flex items-end w-full">
-                    <div className="w-full bg-blue-500 opacity-20 rounded-t" style={{ height: '2%' }}></div>
-                  </div>
-                  <div className="flex-1 flex items-start w-full">
-                    <div className="w-full bg-orange-500 opacity-20 rounded-b" style={{ height: '2%' }}></div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Legend at bottom */}
-            <div className="flex justify-center gap-4 text-xs">
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-4 pt-2 border-t text-xs">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                <span className="text-muted-foreground">Aérobie (+5 max)</span>
+                <span className="text-muted-foreground">Aérobie</span>
+                <span className="text-green-500 font-medium text-[10px]">(+5 max)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                <span className="text-muted-foreground">Anaérobie (-5 max)</span>
+                <span className="text-muted-foreground">Anaérobie</span>
+                <span className="text-orange-500 font-medium text-[10px]">(-5 max)</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Weekly Running Volume - 1x1 */}
-        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Weekly Running Volume - 1x1 - Central column row 3 */}
+        <Card className="md:col-span-1 md:col-start-3 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Volume hebdomadaire</CardTitle>
             <CardDescription className="text-xs">10 dernières semaines</CardDescription>
@@ -853,8 +1133,24 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Acute:Chronic Workload Ratio - 1x1 - Central column (sport) */}
-        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Training Status - 1x1 - Central column row 4 */}
+        <Card className="md:col-span-1 md:col-start-3 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm">Status d'entraînement</CardTitle>
+            <CardDescription className="text-xs">Forme actuelle</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 pb-3">
+            <div className="flex flex-col items-center justify-center h-32">
+              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                <CheckCircle2 className="h-10 w-10 text-green-500" />
+              </div>
+              <span className="text-sm px-3 py-1.5 rounded-full bg-green-500/20 text-green-500 font-medium">Productif</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Acute:Chronic Workload Ratio - 1x1 - Central column row 5 */}
+        <Card className="md:col-span-1 md:col-start-3 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Ratio de charge</CardTitle>
             <CardDescription className="text-xs">Aiguë / Chronique</CardDescription>
@@ -886,24 +1182,12 @@ export default function Home() {
                   <div className="absolute top-0 h-full w-1 bg-blue-500 shadow-sm" style={{ left: '57.5%' }}></div>
                 </div>
               </div>
-
-              {/* Charges */}
-              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t">
-                <div>
-                  <div className="text-[10px] text-muted-foreground">Aiguë (7j)</div>
-                  <div className="text-sm font-semibold">23 km</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-muted-foreground">Chronique (28j)</div>
-                  <div className="text-sm font-semibold">20 km</div>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* VO2 Max Trend - 1x1 */}
-        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* VO2 Max Trend - 1x1 - Central column row 6 */}
+        <Card className="md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">VO2 Max</CardTitle>
             <CardDescription className="text-xs">Tendance 6 mois</CardDescription>
@@ -943,8 +1227,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Race Predictions - 1x3 */}
-        <Card className="md:col-span-1 md:row-span-3 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Race Predictions - 1x2 - Column 4 row 3 */}
+        <Card className="md:col-span-1 md:row-span-2 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Prédictions courses</CardTitle>
             <CardDescription className="text-xs">Temps estimés</CardDescription>
@@ -1002,402 +1286,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Health Metrics Gauges - 2x1 - Left column (health) row 2 */}
-        <Card className="md:col-span-2 md:col-start-1 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Indicateurs Santé</CardTitle>
-            <CardDescription className="text-xs">Valeurs actuelles</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="grid grid-cols-4 gap-4">
-              {/* Sleep Score Gauge */}
-              <div className="flex flex-col items-center">
-                <div className="relative w-16 h-16">
-                  <svg className="w-full h-full transform -rotate-90">
-                    {/* Background circle */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-muted opacity-20"
-                    />
-                    {/* Progress circle - 88% */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-blue-500"
-                      strokeDasharray={`${2 * Math.PI * 28}`}
-                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.88)}`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-bold">88</span>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1 text-center">Sommeil</div>
-              </div>
-
-              {/* HRV Gauge */}
-              <div className="flex flex-col items-center">
-                <div className="relative w-16 h-16">
-                  <svg className="w-full h-full transform -rotate-90">
-                    {/* Background circle */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-muted opacity-20"
-                    />
-                    {/* Progress circle - 58/100 = 58% */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-green-500"
-                      strokeDasharray={`${2 * Math.PI * 28}`}
-                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.58)}`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-bold">58</span>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1 text-center">HRV (ms)</div>
-              </div>
-
-              {/* Resting Heart Rate Gauge */}
-              <div className="flex flex-col items-center">
-                <div className="relative w-16 h-16">
-                  <svg className="w-full h-full transform -rotate-90">
-                    {/* Background circle */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-muted opacity-20"
-                    />
-                    {/* Progress circle - Lower is better, 52/100 = inverse 48% */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-orange-500"
-                      strokeDasharray={`${2 * Math.PI * 28}`}
-                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.52)}`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-bold">52</span>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1 text-center">BPM repos</div>
-              </div>
-
-              {/* Body Battery Gauge */}
-              <div className="flex flex-col items-center">
-                <div className="relative w-16 h-16">
-                  <svg className="w-full h-full transform -rotate-90">
-                    {/* Background circle */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-muted opacity-20"
-                    />
-                    {/* Progress circle - 75% */}
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="none"
-                      className="text-purple-500"
-                      strokeDasharray={`${2 * Math.PI * 28}`}
-                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - 0.75)}`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-bold">75</span>
-                  </div>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1 text-center">Body Battery</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* HRV Recent Days - 1x1 - Left column (health) row 3 */}
-        <Card className="md:col-span-1 md:col-start-1 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">HRV</CardTitle>
-            <CardDescription className="text-xs">7 derniers jours</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <div className="text-3xl font-bold">58</div>
-                <p className="text-xs text-muted-foreground">ms</p>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Baseline: 52ms
-              </div>
-            </div>
-
-            <div className="relative h-24">
-              {/* Baseline zone */}
-              <div className="absolute inset-x-0 top-[30%] h-[40%] bg-green-500/10 rounded"></div>
-
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-              </div>
-
-              {/* Bar Chart */}
-              <div className="flex items-end justify-between h-full gap-1.5">
-                {/* J-6: 52ms (65%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">52</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '65%' }}></div>
-                </div>
-
-                {/* J-5: 48ms (60%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5 opacity-60">48</span>
-                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '60%' }}></div>
-                </div>
-
-                {/* J-4: 55ms (68%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">55</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '68%' }}></div>
-                </div>
-
-                {/* J-3: 61ms (76%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">61</span>
-                  <div className="w-full bg-green-500 rounded-t" style={{ height: '76%' }}></div>
-                </div>
-
-                {/* J-2: 54ms (67%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">54</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '67%' }}></div>
-                </div>
-
-                {/* J-1: 50ms (62%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">50</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '62%' }}></div>
-                </div>
-
-                {/* Aujourd'hui: 58ms (72%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5 text-blue-500">58</span>
-                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '72%' }}></div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Weight Trend - 1x1 - Left column (health) row 4 */}
-        <Card className="md:col-span-1 md:col-start-1 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Poids</CardTitle>
-            <CardDescription className="text-xs">Tendance 30 jours</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <div className="text-3xl font-bold">72.5</div>
-                <p className="text-xs text-muted-foreground">kg</p>
-              </div>
-              <div className="flex items-center gap-1 text-green-500">
-                <ArrowDownRight className="h-4 w-4" />
-                <span className="text-sm font-semibold">-1.2 kg</span>
-              </div>
-            </div>
-
-            <div className="relative h-24">
-              {/* Target zone */}
-              <div className="absolute inset-x-0 top-[40%] h-[20%] bg-green-500/10 rounded"></div>
-
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-              </div>
-
-              {/* Line chart */}
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <polyline
-                  points="0,35 10,36 20,37 30,38 40,40 50,42 60,45 70,47 80,48 90,49 100,50"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-blue-500"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
-            </div>
-
-            <div className="mt-3 pt-2 border-t flex justify-between text-xs">
-              <div>
-                <div className="text-muted-foreground">Objectif</div>
-                <div className="font-semibold">71.0 kg</div>
-              </div>
-              <div className="text-right">
-                <div className="text-muted-foreground">Reste</div>
-                <div className="font-semibold">-1.5 kg</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Daily Stress - 1x1 - Left column (health) row 5 */}
-        <Card className="md:col-span-1 md:col-start-1 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Stress quotidien</CardTitle>
-            <CardDescription className="text-xs">Aujourd'hui</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="flex flex-col items-center justify-center h-32">
-              <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
-                <span className="text-3xl font-bold text-green-500">32</span>
-              </div>
-              <span className="text-sm px-3 py-1.5 rounded-full bg-green-500/20 text-green-500 font-medium">Faible</span>
-            </div>
-            <div className="mt-3 pt-2 border-t text-xs text-center text-muted-foreground">
-              Échelle 0-100
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Sleep Stages Timeline - 2x1 - Left column (health) row 6 */}
-        <Card className="md:col-span-2 md:col-start-1 md:row-start-6 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Phases de sommeil</CardTitle>
-            <CardDescription className="text-xs">Dernière nuit - 7h 32m</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="space-y-4">
-              {/* Timeline bar */}
-              <div className="relative">
-                <div className="flex h-6 w-full rounded-full overflow-hidden shadow-sm">
-                  {/* Awake (début) - 5m - Gris clair */}
-                  <div className="bg-gray-300/60" style={{ width: '1.1%' }} title="Éveillé: 5m">
-                  </div>
-
-                  {/* Light Sleep - 45m - Bleu clair */}
-                  <div className="bg-blue-300" style={{ width: '10%' }} title="Léger: 45m">
-                  </div>
-
-                  {/* Deep Sleep - 1h 20m - Bleu foncé */}
-                  <div className="bg-blue-900" style={{ width: '17.7%' }} title="Profond: 1h 20m">
-                  </div>
-
-                  {/* Light Sleep - 1h 15m - Bleu clair */}
-                  <div className="bg-blue-300" style={{ width: '16.5%' }} title="Léger: 1h 15m">
-                  </div>
-
-                  {/* REM - 1h 53m - Rose/magenta */}
-                  <div className="bg-pink-500" style={{ width: '25%' }} title="REM: 1h 53m">
-                  </div>
-
-                  {/* Light Sleep - 1h 01m - Bleu clair */}
-                  <div className="bg-blue-300" style={{ width: '13.5%' }} title="Léger: 1h 01m">
-                  </div>
-
-                  {/* Awake - 12m - Gris clair */}
-                  <div className="bg-gray-300/60" style={{ width: '2.6%' }} title="Éveillé: 12m">
-                  </div>
-
-                  {/* Deep Sleep - 46m - Bleu foncé */}
-                  <div className="bg-blue-900" style={{ width: '10.2%' }} title="Profond: 46m">
-                  </div>
-
-                  {/* Awake (fin) - 15m - Gris clair */}
-                  <div className="bg-gray-300/60" style={{ width: '3.3%' }} title="Éveillé: 15m">
-                  </div>
-                </div>
-              </div>
-
-              {/* Legend and stats */}
-              <div className="grid grid-cols-4 gap-3 pt-2 border-t">
-                {/* Deep Sleep */}
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-900 rounded"></div>
-                  <div className="flex-1">
-                    <div className="text-xs text-muted-foreground">Profond</div>
-                    <div className="text-sm font-semibold">2h 06m</div>
-                  </div>
-                </div>
-
-                {/* REM Sleep */}
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-pink-500 rounded"></div>
-                  <div className="flex-1">
-                    <div className="text-xs text-muted-foreground">REM</div>
-                    <div className="text-sm font-semibold">1h 53m</div>
-                  </div>
-                </div>
-
-                {/* Light Sleep */}
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-300 rounded"></div>
-                  <div className="flex-1">
-                    <div className="text-xs text-muted-foreground">Léger</div>
-                    <div className="text-sm font-semibold">3h 01m</div>
-                  </div>
-                </div>
-
-                {/* Awake */}
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-300/60 rounded"></div>
-                  <div className="flex-1">
-                    <div className="text-xs text-muted-foreground">Éveillé</div>
-                    <div className="text-sm font-semibold">32m</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Annual Running Distance - 1x1 - Central column (sport) */}
-        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Annual Running Distance - 1x1 - Central column row 7 */}
+        <Card className="md:col-span-1 md:col-start-3 md:row-start-7 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Kilométrage annuel</CardTitle>
             <CardDescription className="text-xs">Au même jour</CardDescription>
@@ -1439,8 +1329,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Running Progress Year Comparison - 1x1 - Central column (sport) */}
-        <Card className="md:col-span-1 md:col-start-3 hover:shadow-lg transition-shadow overflow-hidden relative">
+        {/* Running Progress Year Comparison - 1x1 - Central column row 8 */}
+        <Card className="md:col-span-1 md:col-start-3 md:row-start-8 hover:shadow-lg transition-shadow overflow-hidden relative">
           <CardHeader className="pb-0 pt-3">
             <CardTitle className="text-sm">Progression annuelle</CardTitle>
             <CardDescription className="text-xs">Cumul km à date</CardDescription>
