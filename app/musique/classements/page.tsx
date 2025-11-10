@@ -10,6 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Trophy, Music, User, Loader2, Disc } from "lucide-react";
 import Image from "next/image";
 
@@ -30,6 +37,13 @@ interface TopArtist {
   total_duration: string;
   play_count: number;
   track_count: number;
+  tracks?: Array<{
+    rank: number;
+    trackname: string;
+    percentage: number;
+    duration: string;
+    play_count: number;
+  }>;
 }
 
 interface TopAlbum {
@@ -42,11 +56,32 @@ interface TopAlbum {
   albumimageurl: string;
 }
 
+interface ArtistTrackBreakdown {
+  trackName: string;
+  duration: string;
+  playCount: number;
+  percentage: number;
+}
+
 // Fonction pour tronquer le texte avec points de suspension
 function truncateText(text: string | undefined | null, maxLength: number): string {
   if (!text) return '';
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
+}
+
+// Données mockées pour la répartition des chansons d'un artiste
+function getMockedArtistTracks(artistName: string): ArtistTrackBreakdown[] {
+  return [
+    { trackName: "Song A", duration: "2h 45m", playCount: 87, percentage: 27.5 },
+    { trackName: "Song B", duration: "1h 58m", playCount: 64, percentage: 19.8 },
+    { trackName: "Song C", duration: "1h 32m", playCount: 51, percentage: 15.3 },
+    { trackName: "Song D", duration: "1h 15m", playCount: 42, percentage: 12.5 },
+    { trackName: "Song E", duration: "58m", playCount: 28, percentage: 9.7 },
+    { trackName: "Song F", duration: "45m", playCount: 21, percentage: 7.5 },
+    { trackName: "Song G", duration: "32m", playCount: 15, percentage: 5.3 },
+    { trackName: "Song H", duration: "15m", playCount: 8, percentage: 2.4 },
+  ];
 }
 
 export default function ClassementsPage() {
@@ -55,6 +90,36 @@ export default function ClassementsPage() {
   const [topAlbums, setTopAlbums] = useState<TopAlbum[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State pour le dialog de détails de l'artiste
+  const [selectedArtist, setSelectedArtist] = useState<TopArtist | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [artistTracks, setArtistTracks] = useState<ArtistTrackBreakdown[]>([]);
+
+  const handleArtistClick = (artist: TopArtist) => {
+    setSelectedArtist(artist);
+
+    console.log('Artist clicked:', artist);
+    console.log('Artist tracks:', artist.tracks);
+
+    // Si l'artiste a des tracks dans les données, on les utilise
+    if (artist.tracks && artist.tracks.length > 0) {
+      console.log('Using real data from BigQuery');
+      const formattedTracks = artist.tracks.map(track => ({
+        trackName: track.trackname,
+        duration: track.duration,
+        playCount: track.play_count,
+        percentage: track.percentage,
+      }));
+      setArtistTracks(formattedTracks);
+    } else {
+      // Sinon on utilise les données mockées
+      console.log('Using mocked data');
+      setArtistTracks(getMockedArtistTracks(artist.artistname));
+    }
+
+    setIsDialogOpen(true);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -201,7 +266,11 @@ export default function ClassementsPage() {
                 </TableHeader>
                 <TableBody>
                   {topArtists.map((artist) => (
-                    <TableRow key={artist.rank} className="hover:bg-muted/50">
+                    <TableRow
+                      key={artist.rank}
+                      className="hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => handleArtistClick(artist)}
+                    >
                       <TableCell className="font-bold p-2 text-sm">
                         {artist.rank === 1 && "🥇"}
                         {artist.rank === 2 && "🥈"}
@@ -287,6 +356,58 @@ export default function ClassementsPage() {
         </Card>
 
       </div>
+
+      {/* Dialog pour afficher la répartition des chansons */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg flex items-center gap-2">
+              <User className="h-4 w-4" />
+              {selectedArtist?.artistname}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Répartition du temps d&apos;écoute par chanson • Total: {selectedArtist?.total_duration}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-3 space-y-2">
+            {artistTracks.map((track, index) => (
+              <div
+                key={index}
+                className="p-2 rounded border bg-card hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                    <span className="font-bold text-muted-foreground text-xs flex-shrink-0">
+                      #{index + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium truncate">{track.trackName}</h3>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{track.duration}</span>
+                        <span>•</span>
+                        <span>{track.playCount} plays</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-lg font-bold text-primary">
+                      {track.percentage}%
+                    </div>
+                  </div>
+                </div>
+                {/* Barre de progression */}
+                <div className="mt-2 w-full bg-muted rounded-full h-1 overflow-hidden">
+                  <div
+                    className="bg-primary h-full rounded-full transition-all duration-500"
+                    style={{ width: `${track.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
