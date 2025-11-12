@@ -1,5 +1,6 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 let credentials;
 try {
@@ -14,11 +15,24 @@ const bigquery = new BigQuery({
   credentials,
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const period = searchParams.get('period') || 'all_time';
+
+    // Validate period to prevent SQL injection
+    const validPeriods = ['yesterday', 'last_7_days', 'last_30_days', 'last_365_days', 'all_time'];
+    if (!validPeriods.includes(period)) {
+      return NextResponse.json(
+        { error: 'Invalid period parameter' },
+        { status: 400 }
+      );
+    }
+
     const query = `
       SELECT *
-      FROM \`polar-scene-465223-f7.dp_product_dev.pct_data4__top_track\`
+      FROM \`polar-scene-465223-f7.dp_product_dev.pct_classement__top_track_by_period\`
+      WHERE period = '${period}'
       ORDER BY rank
       LIMIT 20
     `;

@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/table";
 import { Trophy, Music, User, Loader2, Disc } from "lucide-react";
 import Image from "next/image";
+import { DateRangeFilter, DateFilterPreset } from "@/components/date-range-filter";
+import { DateRange } from "react-day-picker";
 
 // Interface pour les données BigQuery
 interface TopTrack {
@@ -30,6 +32,8 @@ interface TopArtist {
   total_duration: string;
   play_count: number;
   track_count: number;
+  albumimageurl: string;
+  artistexternalurl: string;
 }
 
 interface TopAlbum {
@@ -40,6 +44,7 @@ interface TopAlbum {
   play_count: number;
   track_count: number;
   albumimageurl: string;
+  albumexternalurl: string;
 }
 
 // Fonction pour tronquer le texte avec points de suspension
@@ -49,21 +54,60 @@ function truncateText(text: string | undefined | null, maxLength: number): strin
   return text.substring(0, maxLength) + '...';
 }
 
+// Fonction pour obtenir l'URL de l'image ou un placeholder
+function getImageUrl(imageUrl: string | undefined | null): string {
+  if (!imageUrl || imageUrl.trim() === '') {
+    return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"%3E%3Crect width="32" height="32" fill="%23e5e7eb"/%3E%3Cpath d="M16 10a3 3 0 100 6 3 3 0 000-6zm-5 12a2 2 0 012-2h6a2 2 0 012 2v2H11v-2z" fill="%239ca3af"/%3E%3C/svg%3E';
+  }
+  return imageUrl;
+}
+
 export default function ClassementsPage() {
   const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
   const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
   const [topAlbums, setTopAlbums] = useState<TopAlbum[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<DateFilterPreset>("allTime");
+
+  // Map frontend presets to BigQuery period values
+  const mapPresetToPeriod = (preset: DateFilterPreset): string => {
+    switch (preset) {
+      case "yesterday":
+        return "yesterday";
+      case "7days":
+        return "last_7_days";
+      case "30days":
+        return "last_30_days";
+      case "thisYear":
+        return "last_365_days";
+      case "allTime":
+        return "all_time";
+      case "custom":
+        return "all_time"; // Fallback to all_time for custom (not supported yet)
+      default:
+        return "all_time";
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
       try {
         setIsLoading(true);
+
+        // Build query parameters
+        const period = mapPresetToPeriod(selectedPreset);
+        const params = new URLSearchParams();
+        params.append('period', period);
+
+        const queryString = params.toString();
+        const urlSuffix = queryString ? `?${queryString}` : '';
+
         const [tracksResponse, artistsResponse, albumsResponse] = await Promise.all([
-          fetch('/api/music/top-tracks'),
-          fetch('/api/music/top-artists'),
-          fetch('/api/music/top-albums'),
+          fetch(`/api/music/top-tracks${urlSuffix}`),
+          fetch(`/api/music/top-artists${urlSuffix}`),
+          fetch(`/api/music/top-albums${urlSuffix}`),
         ]);
 
         if (!tracksResponse.ok || !artistsResponse.ok || !albumsResponse.ok) {
@@ -81,29 +125,24 @@ export default function ClassementsPage() {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsLoading(false);
+        setIsInitialLoad(false);
       }
     }
 
     fetchData();
-  }, []);
+  }, [selectedPreset]);
 
-  if (isLoading) {
+  const handleFilterChange = (preset: DateFilterPreset, range?: DateRange) => {
+    setSelectedPreset(preset);
+  };
+
+  // Only show full-page loading on initial load
+  if (isInitialLoad && isLoading) {
     return (
       <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">Chargement des classements...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
-          <p className="font-semibold">Erreur</p>
-          <p>{error}</p>
         </div>
       </div>
     );
@@ -121,6 +160,17 @@ export default function ClassementsPage() {
         </p>
       </div>
 
+      {/* Date Range Filter */}
+      <DateRangeFilter selectedPreset={selectedPreset} onFilterChange={handleFilterChange} />
+
+      {/* Error display */}
+      {error && (
+        <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+          <p className="font-semibold">Erreur</p>
+          <p>{error}</p>
+        </div>
+      )}
+
       {/* Tableaux côte à côte */}
       <div className="grid grid-cols-3 gap-6">
         {/* Top Titres */}
@@ -129,6 +179,7 @@ export default function ClassementsPage() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Music className="h-4 w-4" />
               Top Titres
+              {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden">
@@ -152,13 +203,20 @@ export default function ClassementsPage() {
                       </TableCell>
                       <TableCell className="p-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <Image
-                            src={track.albumimageurl}
-                            alt={track.trackname}
-                            width={32}
-                            height={32}
-                            className="rounded flex-shrink-0"
-                          />
+                          <a
+                            href={track.trackExternalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                          >
+                            <Image
+                              src={getImageUrl(track.albumimageurl)}
+                              alt={track.trackname}
+                              width={32}
+                              height={32}
+                              className="rounded"
+                            />
+                          </a>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium truncate" title={track.trackname}>
                               {truncateText(track.trackname, 40)}
@@ -187,6 +245,7 @@ export default function ClassementsPage() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <User className="h-4 w-4" />
               Top Artistes
+              {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden">
@@ -209,11 +268,26 @@ export default function ClassementsPage() {
                         {artist.rank > 3 && artist.rank}
                       </TableCell>
                       <TableCell className="p-2">
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate" title={artist.artistname}>
-                            {truncateText(artist.artistname, 40)}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <a
+                            href={artist.artistexternalurl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                          >
+                            <Image
+                              src={getImageUrl(artist.albumimageurl)}
+                              alt={artist.artistname}
+                              width={32}
+                              height={32}
+                              className="rounded"
+                            />
+                          </a>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate" title={artist.artistname}>
+                              {truncateText(artist.artistname, 40)}
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">{artist.track_count} titres</div>
                         </div>
                       </TableCell>
                       <TableCell className="text-right p-2 whitespace-nowrap">
@@ -234,6 +308,7 @@ export default function ClassementsPage() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Disc className="h-4 w-4" />
               Top Albums
+              {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden">
@@ -257,13 +332,20 @@ export default function ClassementsPage() {
                       </TableCell>
                       <TableCell className="p-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <Image
-                            src={album.albumimageurl}
-                            alt={album.albumname}
-                            width={32}
-                            height={32}
-                            className="rounded flex-shrink-0"
-                          />
+                          <a
+                            href={album.albumexternalurl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                          >
+                            <Image
+                              src={getImageUrl(album.albumimageurl)}
+                              alt={album.albumname}
+                              width={32}
+                              height={32}
+                              className="rounded"
+                            />
+                          </a>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium truncate" title={album.albumname}>
                               {truncateText(album.albumname, 40)}
