@@ -10,6 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Trophy, Music, User, Loader2, Disc } from "lucide-react";
 import Image from "next/image";
 import { DateRangeFilter, DateFilterPreset } from "@/components/date-range-filter";
@@ -45,6 +52,13 @@ interface TopAlbum {
   track_count: number;
   albumimageurl: string;
   albumexternalurl: string;
+}
+
+interface ArtistTrackBreakdown {
+  trackName: string;
+  duration: string;
+  playCount: number;
+  percentage: number;
 }
 
 // Fonction pour tronquer le texte avec points de suspension
@@ -89,6 +103,36 @@ export default function ClassementsPage() {
       default:
         return "all_time";
     }
+  };
+
+  // State pour le dialog de détails de l'artiste
+  const [selectedArtist, setSelectedArtist] = useState<TopArtist | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [artistTracks, setArtistTracks] = useState<ArtistTrackBreakdown[]>([]);
+
+  const handleArtistClick = (artist: TopArtist) => {
+    setSelectedArtist(artist);
+
+    console.log('Artist clicked:', artist);
+    console.log('Artist tracks:', artist.tracks);
+
+    // Si l'artiste a des tracks dans les données, on les utilise
+    if (artist.tracks && artist.tracks.length > 0) {
+      console.log('Using real data from BigQuery');
+      const formattedTracks = artist.tracks.map(track => ({
+        trackName: track.trackname,
+        duration: track.duration,
+        playCount: track.play_count,
+        percentage: track.percentage,
+      }));
+      setArtistTracks(formattedTracks);
+    } else {
+      // Sinon on utilise les données mockées
+      console.log('Using mocked data');
+      setArtistTracks(getMockedArtistTracks(artist.artistname));
+    }
+
+    setIsDialogOpen(true);
   };
 
   useEffect(() => {
@@ -260,7 +304,11 @@ export default function ClassementsPage() {
                 </TableHeader>
                 <TableBody>
                   {topArtists.map((artist) => (
-                    <TableRow key={artist.rank} className="hover:bg-muted/50">
+                    <TableRow
+                      key={artist.rank}
+                      className="hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => handleArtistClick(artist)}
+                    >
                       <TableCell className="font-bold p-2 text-sm">
                         {artist.rank === 1 && "🥇"}
                         {artist.rank === 2 && "🥈"}
@@ -369,6 +417,58 @@ export default function ClassementsPage() {
         </Card>
 
       </div>
+
+      {/* Dialog pour afficher la répartition des chansons */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg flex items-center gap-2">
+              <User className="h-4 w-4" />
+              {selectedArtist?.artistname}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Répartition du temps d&apos;écoute par chanson • Total: {selectedArtist?.total_duration}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-3 space-y-2">
+            {artistTracks.map((track, index) => (
+              <div
+                key={index}
+                className="p-2 rounded border bg-card hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                    <span className="font-bold text-muted-foreground text-xs flex-shrink-0">
+                      #{index + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium truncate">{track.trackName}</h3>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{track.duration}</span>
+                        <span>•</span>
+                        <span>{track.playCount} plays</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-lg font-bold text-primary">
+                      {track.percentage}%
+                    </div>
+                  </div>
+                </div>
+                {/* Barre de progression */}
+                <div className="mt-2 w-full bg-muted rounded-full h-1 overflow-hidden">
+                  <div
+                    className="bg-primary h-full rounded-full transition-all duration-500"
+                    style={{ width: `${track.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
