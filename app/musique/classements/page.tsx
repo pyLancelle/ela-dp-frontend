@@ -41,6 +41,12 @@ interface TopArtist {
   track_count: number;
   albumimageurl: string;
   artistexternalurl: string;
+  tracks?: {
+    trackname: string;
+    duration: string;
+    play_count: number;
+    percentage: number;
+  }[];
 }
 
 interface TopAlbum {
@@ -66,6 +72,11 @@ function truncateText(text: string | undefined | null, maxLength: number): strin
   if (!text) return '';
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
+}
+
+// Fonction pour obtenir des données mockées de tracks d'artiste
+function getMockedArtistTracks(artistName: string): ArtistTrackBreakdown[] {
+  return [];
 }
 
 // Fonction pour obtenir l'URL de l'image ou un placeholder
