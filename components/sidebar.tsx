@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Activity, Music, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { Dumbbell, Activity, Music, Trophy, ChevronLeft, ChevronRight, Headphones } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -36,6 +36,11 @@ const navSections: NavSection[] = [
         title: "Classements",
         href: "/musique/classements",
         icon: Trophy,
+      },
+      {
+        title: "Habitudes",
+        href: "/musique/habitudes",
+        icon: Headphones,
       },
     ],
   },
