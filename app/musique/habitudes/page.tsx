@@ -173,38 +173,42 @@ export default function ListeningHabitsPage() {
             <svg viewBox="0 0 240 240" className="w-full h-full">
               <defs>
                 <linearGradient id="barGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.6" />
                 </linearGradient>
               </defs>
 
-              {/* Background concentric circles */}
-              {[20, 40, 60, 80].map((percentage) => (
+              {/* Background concentric circles - more visible */}
+              {[25, 50, 75, 100].map((percentage) => (
                 <circle
                   key={percentage}
                   cx="120"
                   cy="120"
-                  r={30 + (percentage / 100) * 70}
+                  r={20 + (percentage / 100) * 85}
                   fill="none"
                   stroke="hsl(var(--muted))"
-                  strokeWidth="0.5"
-                  opacity="0.3"
+                  strokeWidth="1"
+                  opacity="0.2"
                 />
               ))}
 
-              {/* Listening bars */}
+              {/* Listening bars - thicker and more colorful */}
               {mockData.listeningByHour.map((item) => {
-                // Start from top (12 o'clock position) and go clockwise
                 const angle = (item.hour * 15) - 90;
                 const normalizedValue = item.plays / maxHourlyPlays;
-                const barLength = normalizedValue * 70; // Max length of 70
-                const innerRadius = 30;
+                const barLength = normalizedValue * 85;
+                const innerRadius = 20;
                 const outerRadius = innerRadius + barLength;
 
                 const x1 = 120 + innerRadius * Math.cos((angle * Math.PI) / 180);
                 const y1 = 120 + innerRadius * Math.sin((angle * Math.PI) / 180);
                 const x2 = 120 + outerRadius * Math.cos((angle * Math.PI) / 180);
                 const y2 = 120 + outerRadius * Math.sin((angle * Math.PI) / 180);
+
+                // Color intensity based on value
+                const hue = 220 + (normalizedValue * 60); // Blue to purple gradient
+                const saturation = 70 + (normalizedValue * 30);
+                const lightness = 50 + (normalizedValue * 10);
 
                 return (
                   <g key={item.hour}>
@@ -213,76 +217,52 @@ export default function ListeningHabitsPage() {
                       y1={y1}
                       x2={x2}
                       y2={y2}
-                      stroke="url(#barGradient)"
-                      strokeWidth="6"
+                      stroke={`hsl(${hue}, ${saturation}%, ${lightness}%)`}
+                      strokeWidth="8"
                       strokeLinecap="round"
-                      opacity={0.5 + normalizedValue * 0.5}
-                      className="transition-all duration-300 hover:opacity-100"
+                      opacity={0.7 + normalizedValue * 0.3}
+                      className="transition-all duration-300 hover:opacity-100 cursor-pointer"
                     />
                   </g>
                 );
               })}
 
-              {/* Hour labels at key positions */}
-              {[0, 6, 12, 18].map((hour) => {
-                const angle = (hour * 15) - 90;
-                const labelRadius = 110;
+              {/* All hour labels */}
+              {mockData.listeningByHour.map((item) => {
+                const angle = (item.hour * 15) - 90;
+                const labelRadius = 112;
                 const labelX = 120 + labelRadius * Math.cos((angle * Math.PI) / 180);
                 const labelY = 120 + labelRadius * Math.sin((angle * Math.PI) / 180);
 
+                // Only show every 3rd hour to avoid clutter
+                if (item.hour % 3 !== 0) return null;
+
                 return (
                   <text
-                    key={hour}
+                    key={item.hour}
                     x={labelX}
                     y={labelY}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="fill-foreground font-semibold"
-                    style={{ fontSize: '14px' }}
+                    className="fill-muted-foreground"
+                    style={{ fontSize: '11px', fontWeight: item.hour % 6 === 0 ? 'bold' : 'normal' }}
                   >
-                    {hour}
+                    {item.hour}
                   </text>
                 );
               })}
 
-              {/* Hour markers for all 24 hours */}
-              {mockData.listeningByHour.map((item) => {
-                const angle = (item.hour * 15) - 90;
-                const markerRadius = 105;
-                const x = 120 + markerRadius * Math.cos((angle * Math.PI) / 180);
-                const y = 120 + markerRadius * Math.sin((angle * Math.PI) / 180);
-
-                return (
-                  <circle
-                    key={`marker-${item.hour}`}
-                    cx={x}
-                    cy={y}
-                    r="1.5"
-                    fill="hsl(var(--muted-foreground))"
-                    opacity="0.5"
-                  />
-                );
-              })}
-
               {/* Center circle with stats */}
-              <circle cx="120" cy="120" r="25" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="2" />
+              <circle cx="120" cy="120" r="18" fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth="2" />
               <text
                 x="120"
-                y="118"
+                y="123"
                 textAnchor="middle"
-                className="fill-foreground font-bold"
-                style={{ fontSize: '16px' }}
-              >
-                {maxHourlyPlays}
-              </text>
-              <text
-                x="120"
-                y="130"
-                textAnchor="middle"
+                dominantBaseline="middle"
                 className="fill-muted-foreground"
-                style={{ fontSize: '9px' }}
+                style={{ fontSize: '8px' }}
               >
-                max/h
+                24h
               </text>
             </svg>
           </CardContent>
