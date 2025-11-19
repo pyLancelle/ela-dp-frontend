@@ -10,7 +10,7 @@ interface ArtistHeaderProps {
 
 export function ArtistHeader({ artistName, artistImageUrl, totalPlays, totalListenTime }: ArtistHeaderProps) {
   return (
-    <Card className="md:col-span-2 md:row-span-2 flex flex-col">
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle data-testid="artist-name">{artistName}</CardTitle>
       </CardHeader>
@@ -18,17 +18,17 @@ export function ArtistHeader({ artistName, artistImageUrl, totalPlays, totalList
         <img
           src={artistImageUrl}
           alt={artistName}
-          width={128}
-          height={128}
-          className="rounded-full mb-4"
+          width={96}
+          height={96}
+          className="rounded-full mb-3"
         />
         <div className="text-center">
-          <p className="text-4xl font-bold">{totalPlays.toLocaleString()}</p>
-          <p className="text-muted-foreground">écoutes</p>
+          <p className="text-3xl font-bold">{totalPlays.toLocaleString()}</p>
+          <p className="text-sm text-muted-foreground">écoutes</p>
         </div>
-        <div className="text-center mt-4">
-          <p className="text-2xl font-bold">{totalListenTime}</p>
-          <p className="text-muted-foreground">temps d'écoute</p>
+        <div className="text-center mt-3">
+          <p className="text-xl font-bold">{totalListenTime}</p>
+          <p className="text-sm text-muted-foreground">temps d'écoute</p>
         </div>
       </CardContent>
     </Card>

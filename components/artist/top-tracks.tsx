@@ -15,20 +15,20 @@ interface TopTracksProps {
 
 export function TopTracks({ tracks }: TopTracksProps) {
   return (
-    <Card className="md:col-span-2">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Music /> Top Titres
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Music className="h-5 w-5" /> Top Titres
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableBody>
-            {tracks.map(track => (
+            {tracks.slice(0, 3).map(track => (
               <TableRow key={track.rank}>
-                <TableCell className="font-medium">{track.rank}</TableCell>
-                <TableCell>{track.name}</TableCell>
-                <TableCell className="text-right">{track.plays.toLocaleString()} écoutes</TableCell>
+                <TableCell className="font-medium w-8 text-center">{track.rank}</TableCell>
+                <TableCell className="truncate">{track.name}</TableCell>
+                <TableCell className="text-right text-muted-foreground whitespace-nowrap">{track.plays.toLocaleString()} écoutes</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -20,4 +20,7 @@ test('Artist focus page', async ({ page }) => {
 
   // Check that the artist name in the header is "Daft Punk"
   await expect(page.locator('[data-testid="artist-name"]')).toHaveText('Daft Punk');
+
+  // Check that the new "Listening by Hour" chart is visible
+  await expect(page.locator('text="Écoutes par heure"')).toBeVisible();
 });

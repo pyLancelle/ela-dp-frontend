@@ -10,6 +10,7 @@ import { ArtistHeader } from "@/components/artist/artist-header";
 import { TopTracks } from "@/components/artist/top-tracks";
 import { TopAlbums } from "@/components/artist/top-albums";
 import { ListeningEvolution } from "@/components/artist/listening-evolution";
+import { ListeningByHour } from "@/components/artist/listening-by-hour";
 
 const artists = [
   { id: "the-weeknd", name: "The Weeknd" },
@@ -40,6 +41,12 @@ const mockData = {
       { date: "Avr", plays: 1300 },
       { date: "Mai", plays: 1600 },
       { date: "Juin", plays: 1800 },
+    ],
+    listeningByHour: [
+      { name: 'Matin', plays: 400, fill: '#8884d8' },
+      { name: 'Après-midi', plays: 800, fill: '#83a6ed' },
+      { name: 'Soir', plays: 1200, fill: '#8dd1e1' },
+      { name: 'Nuit', plays: 600, fill: '#a4de6c' },
     ]
   },
   "daft-punk": {
@@ -64,6 +71,12 @@ const mockData = {
         { date: "Avr", plays: 1000 },
         { date: "Mai", plays: 1200 },
         { date: "Juin", plays: 1400 },
+    ],
+    listeningByHour: [
+      { name: 'Matin', plays: 300, fill: '#8884d8' },
+      { name: 'Après-midi', plays: 700, fill: '#83a6ed' },
+      { name: 'Soir', plays: 1100, fill: '#8dd1e1' },
+      { name: 'Nuit', plays: 500, fill: '#a4de6c' },
     ]
   },
   "arctic-monkeys": {
@@ -88,6 +101,12 @@ const mockData = {
         { date: "Avr", plays: 800 },
         { date: "Mai", plays: 1000 },
         { date: "Juin", plays: 1200 },
+    ],
+    listeningByHour: [
+      { name: 'Matin', plays: 200, fill: '#8884d8' },
+      { name: 'Après-midi', plays: 600, fill: '#83a6ed' },
+      { name: 'Soir', plays: 1000, fill: '#8dd1e1' },
+      { name: 'Nuit', plays: 400, fill: '#a4de6c' },
     ]
   }
 };
@@ -134,20 +153,26 @@ export default function ArtistFocusPage() {
       </div>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-min">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-min">
 
-        <ArtistHeader
-          artistName={currentArtistData.name}
-          artistImageUrl={currentArtistData.imageUrl}
-          totalPlays={currentArtistData.totalPlays}
-          totalListenTime={currentArtistData.totalListenTime}
-        />
+        <div className="md:col-span-1 md:row-span-2">
+          <ArtistHeader
+            artistName={currentArtistData.name}
+            artistImageUrl={currentArtistData.imageUrl}
+            totalPlays={currentArtistData.totalPlays}
+            totalListenTime={currentArtistData.totalListenTime}
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <ListeningEvolution data={currentArtistData.evolution} />
+        </div>
 
         <TopTracks tracks={currentArtistData.topTracks} />
 
         <TopAlbums albums={currentArtistData.topAlbums} />
 
-        <ListeningEvolution data={currentArtistData.evolution} />
+        <ListeningByHour data={currentArtistData.listeningByHour} />
 
       </div>
     </div>

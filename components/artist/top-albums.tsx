@@ -15,20 +15,20 @@ interface TopAlbumsProps {
 
 export function TopAlbums({ albums }: TopAlbumsProps) {
   return (
-    <Card className="md:col-span-2">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Disc /> Top Albums
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Disc className="h-5 w-5" /> Top Albums
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableBody>
-            {albums.map(album => (
+            {albums.slice(0, 3).map(album => (
               <TableRow key={album.rank}>
-                <TableCell className="font-medium">{album.rank}</TableCell>
-                <TableCell>{album.name}</TableCell>
-                <TableCell className="text-right">{album.plays.toLocaleString()} écoutes</TableCell>
+                <TableCell className="font-medium w-8 text-center">{album.rank}</TableCell>
+                <TableCell className="truncate">{album.name}</TableCell>
+                <TableCell className="text-right text-muted-foreground whitespace-nowrap">{album.plays.toLocaleString()} écoutes</TableCell>
               </TableRow>
             ))}
           </TableBody>
