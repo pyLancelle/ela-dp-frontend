@@ -37,6 +37,11 @@ const navSections: NavSection[] = [
         href: "/musique/classements",
         icon: Trophy,
       },
+      {
+        title: "Focus Artiste",
+        href: "/musique/artiste/orelsan",
+        icon: Music,
+      },
     ],
   },
 ];
