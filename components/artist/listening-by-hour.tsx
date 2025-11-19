@@ -44,7 +44,6 @@ export function ListeningByHour({ data }: ListeningByHourProps) {
               background
               dataKey='plays'
               angleAxisId={0}
-              data={data}
             />
             <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" />
           </RadialBarChart>
