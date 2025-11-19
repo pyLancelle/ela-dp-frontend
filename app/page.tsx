@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { MusicDashboardData } from "@/types/dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Music,
@@ -30,6 +31,25 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   const [showArtists, setShowArtists] = useState(true);
   const [tooltipData, setTooltipData] = useState<{ x: number; y: number; month: string; km2025: number; km2024: number } | null>(null);
+  const [musicData, setMusicData] = useState<MusicDashboardData | null>(null);
+  const [loadingMusic, setLoadingMusic] = useState(true);
+
+  useEffect(() => {
+    async function fetchMusicData() {
+      try {
+        const res = await fetch('/api/dashboard/music?period=last_7_days');
+        if (res.ok) {
+          const data = await res.json();
+          setMusicData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch music data", error);
+      } finally {
+        setLoadingMusic(false);
+      }
+    }
+    fetchMusicData();
+  }, []);
 
   // Données pour le graphique de progression (valeurs cumulées par mois)
   // 2025: s'arrête fin août (on est en septembre, donc pas de données pour sep-déc)
@@ -535,58 +555,24 @@ export default function Home() {
 
               {/* Bar Chart */}
               <div className="flex items-end justify-between h-full gap-2 px-1">
-                {/* Lun - 3h 15m (65%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">3h 15m</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '65%' }}></div>
-                </div>
-
-                {/* Mar - 5h 30m (92%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">5h 30m</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '92%' }}></div>
-                </div>
-
-                {/* Mer - 2h 45m (46%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1 opacity-60">2h 45m</span>
-                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '46%' }}></div>
-                </div>
-
-                {/* Jeu - 4h 20m (72%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">4h 20m</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '72%' }}></div>
-                </div>
-
-                {/* Ven - 3h 50m (64%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">3h 50m</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '64%' }}></div>
-                </div>
-
-                {/* Sam - 6h 00m (100%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">6h 00m</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '100%' }}></div>
-                </div>
-
-                {/* Dim - 3h 30m (58%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-xs font-medium mb-1">3h 30m</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '58%' }}></div>
-                </div>
+                {loadingMusic ? (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">Chargement...</div>
+                ) : musicData?.listeningTime?.days.map((day, index) => (
+                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-end">
+                    <span className={`text-xs font-medium mb-1 ${day.heightPercentage < 50 ? 'opacity-60' : ''}`}>{day.formatted}</span>
+                    <div
+                      className={`w-full bg-foreground rounded-t ${day.heightPercentage < 50 ? 'opacity-60' : ''}`}
+                      style={{ height: `${day.heightPercentage}%` }}
+                    ></div>
+                  </div>
+                ))}
               </div>
 
               {/* Day labels */}
               <div className="absolute -bottom-6 left-0 right-0 flex justify-between text-xs text-muted-foreground px-1">
-                <span className="flex-1 text-center">L</span>
-                <span className="flex-1 text-center">M</span>
-                <span className="flex-1 text-center">M</span>
-                <span className="flex-1 text-center">J</span>
-                <span className="flex-1 text-center">V</span>
-                <span className="flex-1 text-center">S</span>
-                <span className="flex-1 text-center">D</span>
+                {loadingMusic ? null : musicData?.listeningTime?.days.map((day, index) => (
+                  <span key={index} className="flex-1 text-center">{day.day}</span>
+                ))}
               </div>
             </div>
           </CardContent>
@@ -623,317 +609,55 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="space-y-1">
-              {showArtists ? (
+              {loadingMusic ? (
+                <div className="text-center py-10 text-muted-foreground">Chargement...</div>
+              ) : showArtists ? (
                 <>
-                  {/* Artist 1 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-sm font-semibold w-5">🥇</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">The Weeknd</div>
-                        <div className="text-xs text-muted-foreground">42 titres</div>
+                  {musicData?.topArtists.map((artist, index) => (
+                    <div key={index} className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className={`text-sm font-semibold w-5 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : artist.rank}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">{artist.name}</div>
+                          <div className="text-xs text-muted-foreground">{artist.trackCount} titres</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{artist.totalDuration}</div>
+                        <div className="text-xs text-muted-foreground">{artist.playCount} plays</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">12h 34m</div>
-                      <div className="text-xs text-muted-foreground">342 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 2 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-sm font-semibold w-5">🥈</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Daft Punk</div>
-                        <div className="text-xs text-muted-foreground">38 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">10h 22m</div>
-                      <div className="text-xs text-muted-foreground">289 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 3 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-sm font-semibold w-5">🥉</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Arctic Monkeys</div>
-                        <div className="text-xs text-muted-foreground">31 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">8h 45m</div>
-                      <div className="text-xs text-muted-foreground">234 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 4 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">4</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Tame Impala</div>
-                        <div className="text-xs text-muted-foreground">28 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">7h 18m</div>
-                      <div className="text-xs text-muted-foreground">198 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 5 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">5</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Flume</div>
-                        <div className="text-xs text-muted-foreground">24 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">6h 52m</div>
-                      <div className="text-xs text-muted-foreground">176 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 6 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">6</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Frank Ocean</div>
-                        <div className="text-xs text-muted-foreground">22 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">5h 30m</div>
-                      <div className="text-xs text-muted-foreground">145 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 7 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">7</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Radiohead</div>
-                        <div className="text-xs text-muted-foreground">19 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">4h 55m</div>
-                      <div className="text-xs text-muted-foreground">132 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 8 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">8</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Bon Iver</div>
-                        <div className="text-xs text-muted-foreground">17 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">4h 12m</div>
-                      <div className="text-xs text-muted-foreground">118 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 9 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">9</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Mac DeMarco</div>
-                        <div className="text-xs text-muted-foreground">15 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">3h 48m</div>
-                      <div className="text-xs text-muted-foreground">102 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Artist 10 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">10</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Phoenix</div>
-                        <div className="text-xs text-muted-foreground">14 titres</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">3h 21m</div>
-                      <div className="text-xs text-muted-foreground">89 plays</div>
-                    </div>
-                  </div>
+                  ))}
                 </>
               ) : (
                 <>
-                  {/* Track 1 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-sm font-semibold w-5">🥇</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Blinding Lights</div>
-                        <div className="text-xs text-muted-foreground">The Weeknd</div>
+                  {musicData?.topTracks.map((track, index) => (
+                    <div key={index} className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className={`text-sm font-semibold w-5 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : track.rank}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">{track.name}</div>
+                          <div className="text-xs text-muted-foreground">{track.artistName}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{track.totalDuration}</div>
+                        <div className="text-xs text-muted-foreground">{track.playCount} plays</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">3h 45m</div>
-                      <div className="text-xs text-muted-foreground">68 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 2 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-sm font-semibold w-5">🥈</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">One More Time</div>
-                        <div className="text-xs text-muted-foreground">Daft Punk</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">3h 12m</div>
-                      <div className="text-xs text-muted-foreground">52 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 3 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-sm font-semibold w-5">🥉</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Do I Wanna Know?</div>
-                        <div className="text-xs text-muted-foreground">Arctic Monkeys</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">2h 56m</div>
-                      <div className="text-xs text-muted-foreground">47 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 4 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">4</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">The Less I Know The Better</div>
-                        <div className="text-xs text-muted-foreground">Tame Impala</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">2h 34m</div>
-                      <div className="text-xs text-muted-foreground">42 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 5 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">5</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Never Be Like You</div>
-                        <div className="text-xs text-muted-foreground">Flume</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">2h 18m</div>
-                      <div className="text-xs text-muted-foreground">38 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 6 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">6</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Nights</div>
-                        <div className="text-xs text-muted-foreground">Frank Ocean</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">2h 02m</div>
-                      <div className="text-xs text-muted-foreground">31 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 7 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">7</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Karma Police</div>
-                        <div className="text-xs text-muted-foreground">Radiohead</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">1h 51m</div>
-                      <div className="text-xs text-muted-foreground">28 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 8 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">8</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Holocene</div>
-                        <div className="text-xs text-muted-foreground">Bon Iver</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">1h 42m</div>
-                      <div className="text-xs text-muted-foreground">25 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 9 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">9</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">Chamber of Reflection</div>
-                        <div className="text-xs text-muted-foreground">Mac DeMarco</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">1h 33m</div>
-                      <div className="text-xs text-muted-foreground">23 plays</div>
-                    </div>
-                  </div>
-
-                  {/* Track 10 */}
-                  <div className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-xs text-muted-foreground w-5">10</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">1901</div>
-                        <div className="text-xs text-muted-foreground">Phoenix</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium">1h 24m</div>
-                      <div className="text-xs text-muted-foreground">21 plays</div>
-                    </div>
-                  </div>
+                  ))}
                 </>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </div >
+          </CardContent >
+        </Card >
 
-        {/* Running Card with Aerobic/Anaerobic Chart - 2x2 - Central column row 1-2 */}
-        <Card className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
+  {/* Running Card with Aerobic/Anaerobic Chart - 2x2 - Central column row 1-2 */ }
+  < Card className = "md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1037,10 +761,10 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-        {/* Weekly Running Volume - 1x1 - Central column row 3 */}
-        <Card className="md:col-span-1 md:col-start-3 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+  {/* Weekly Running Volume - 1x1 - Central column row 3 */ }
+  < Card className = "md:col-span-1 md:col-start-3 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Volume hebdomadaire</CardTitle>
             <CardDescription className="text-xs">10 dernières semaines</CardDescription>
@@ -1131,10 +855,10 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-        {/* Training Status - 1x1 - Central column row 4 */}
-        <Card className="md:col-span-1 md:col-start-3 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
+  {/* Training Status - 1x1 - Central column row 4 */ }
+  < Card className = "md:col-span-1 md:col-start-3 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Status d'entraînement</CardTitle>
             <CardDescription className="text-xs">Forme actuelle</CardDescription>
@@ -1147,10 +871,10 @@ export default function Home() {
               <span className="text-sm px-3 py-1.5 rounded-full bg-green-500/20 text-green-500 font-medium">Productif</span>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-        {/* Acute:Chronic Workload Ratio - 1x1 - Central column row 5 */}
-        <Card className="md:col-span-1 md:col-start-3 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
+  {/* Acute:Chronic Workload Ratio - 1x1 - Central column row 5 */ }
+  < Card className = "md:col-span-1 md:col-start-3 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Ratio de charge</CardTitle>
             <CardDescription className="text-xs">Aiguë / Chronique</CardDescription>
@@ -1184,10 +908,10 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-        {/* VO2 Max Trend - 1x1 - Central column row 6 */}
-        <Card className="md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
+  {/* VO2 Max Trend - 1x1 - Central column row 6 */ }
+  < Card className = "md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">VO2 Max</CardTitle>
             <CardDescription className="text-xs">Tendance 6 mois</CardDescription>
@@ -1225,10 +949,10 @@ export default function Home() {
               </svg>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-        {/* Race Predictions - 1x2 - Column 4 row 3 */}
-        <Card className="md:col-span-1 md:row-span-2 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+  {/* Race Predictions - 1x2 - Column 4 row 3 */ }
+  < Card className = "md:col-span-1 md:row-span-2 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Prédictions courses</CardTitle>
             <CardDescription className="text-xs">Temps estimés</CardDescription>
@@ -1284,10 +1008,10 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-        {/* Annual Running Distance - 1x1 - Central column row 7 */}
-        <Card className="md:col-span-1 md:col-start-3 md:row-start-7 hover:shadow-lg transition-shadow overflow-hidden">
+  {/* Annual Running Distance - 1x1 - Central column row 7 */ }
+  < Card className = "md:col-span-1 md:col-start-3 md:row-start-7 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Kilométrage annuel</CardTitle>
             <CardDescription className="text-xs">Au même jour</CardDescription>
@@ -1327,10 +1051,10 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-        {/* Running Progress Year Comparison - 1x1 - Central column row 8 */}
-        <Card className="md:col-span-1 md:col-start-3 md:row-start-8 hover:shadow-lg transition-shadow overflow-hidden relative">
+  {/* Running Progress Year Comparison - 1x1 - Central column row 8 */ }
+  < Card className = "md:col-span-1 md:col-start-3 md:row-start-8 hover:shadow-lg transition-shadow overflow-hidden relative" >
           <CardHeader className="pb-0 pt-3">
             <CardTitle className="text-sm">Progression annuelle</CardTitle>
             <CardDescription className="text-xs">Cumul km à date</CardDescription>
@@ -1420,9 +1144,9 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card >
 
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
