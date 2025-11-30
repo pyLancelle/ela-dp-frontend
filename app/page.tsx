@@ -27,17 +27,20 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SleepStagesChart } from "@/components/sleep-stages-chart";
 
 export default function Home() {
   const [showArtists, setShowArtists] = useState(true);
   const [tooltipData, setTooltipData] = useState<{ x: number; y: number; month: string; km2025: number; km2024: number } | null>(null);
   const [musicData, setMusicData] = useState<MusicDashboardData | null>(null);
   const [loadingMusic, setLoadingMusic] = useState(true);
+  const [sleepData, setSleepData] = useState<any[] | undefined>(undefined);
+  const [loadingSleep, setLoadingSleep] = useState(true);
 
   useEffect(() => {
     async function fetchMusicData() {
       try {
-        const res = await fetch('/api/dashboard/music?period=last_7_days');
+        const res = await fetch('/api/homepage/music?period=last_7_days');
         if (res.ok) {
           const data = await res.json();
           setMusicData(data);
@@ -49,6 +52,27 @@ export default function Home() {
       }
     }
     fetchMusicData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchSleepData() {
+      try {
+        const res = await fetch('/api/homepage/sleep/stages?date=2025-11-28');
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Sleep data received:', data);
+          console.log('Number of records:', data?.length);
+          setSleepData(data);
+        } else {
+          console.error('API error:', res.status, await res.text());
+        }
+      } catch (error) {
+        console.error("Failed to fetch sleep data", error);
+      } finally {
+        setLoadingSleep(false);
+      }
+    }
+    fetchSleepData();
   }, []);
 
   // Données pour le graphique de progression (valeurs cumulées par mois)
@@ -528,6 +552,11 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Sleep Stages Chart (Apple Health Style) - 2x1 - Left column row 5 */}
+        <div className="md:col-span-2 md:col-start-1 md:row-start-5">
+          <SleepStagesChart data={sleepData} />
+        </div>
 
         {/* Spotify Listening Time Chart - 2x1 - Right column row 1 */}
         <Card className="md:col-span-2 md:col-start-5 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">

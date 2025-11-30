@@ -160,9 +160,9 @@ export default function ClassementsPage() {
         const urlSuffix = queryString ? `?${queryString}` : '';
 
         const [tracksResponse, artistsResponse, albumsResponse] = await Promise.all([
-          fetch(`/api/music/top-tracks${urlSuffix}`),
-          fetch(`/api/music/top-artists${urlSuffix}`),
-          fetch(`/api/music/top-albums${urlSuffix}`),
+          fetch(`/api/musique/classements/top-tracks${urlSuffix}`),
+          fetch(`/api/musique/classements/top-artists${urlSuffix}`),
+          fetch(`/api/musique/classements/top-albums${urlSuffix}`),
         ]);
 
         if (!tracksResponse.ok || !artistsResponse.ok || !albumsResponse.ok) {
@@ -262,14 +262,13 @@ export default function ClassementsPage() {
                             href={track.trackExternalUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                            className="flex-shrink-0 hover:opacity-80 transition-opacity block w-8 h-8 relative overflow-hidden rounded"
                           >
                             <Image
                               src={getImageUrl(track.albumimageurl)}
                               alt={track.trackname}
-                              width={32}
-                              height={32}
-                              className="rounded"
+                              fill
+                              className="object-cover"
                             />
                           </a>
                           <div className="flex-1 min-w-0">
@@ -332,14 +331,13 @@ export default function ClassementsPage() {
                             href={artist.artistexternalurl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                            className="flex-shrink-0 hover:opacity-80 transition-opacity block w-8 h-8 relative overflow-hidden rounded"
                           >
                             <Image
                               src={getImageUrl(artist.albumimageurl)}
                               alt={artist.artistname}
-                              width={32}
-                              height={32}
-                              className="rounded"
+                              fill
+                              className="object-cover"
                             />
                           </a>
                           <div className="flex-1 min-w-0">
@@ -395,14 +393,13 @@ export default function ClassementsPage() {
                             href={album.albumexternalurl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                            className="flex-shrink-0 hover:opacity-80 transition-opacity block w-8 h-8 relative overflow-hidden rounded"
                           >
                             <Image
                               src={getImageUrl(album.albumimageurl)}
                               alt={album.albumname}
-                              width={32}
-                              height={32}
-                              className="rounded"
+                              fill
+                              className="object-cover"
                             />
                           </a>
                           <div className="flex-1 min-w-0">

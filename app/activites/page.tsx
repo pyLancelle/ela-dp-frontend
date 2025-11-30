@@ -13,7 +13,7 @@ export default function ActivitesPage() {
     async function fetchActivities() {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/activities');
+        const response = await fetch('/api/activites');
 
         if (!response.ok) {
           throw new Error('Failed to fetch activities');
