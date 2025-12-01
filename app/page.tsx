@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SleepStagesChart } from "@/components/sleep-stages-chart";
+import { BodyBatteryChart } from "@/components/body-battery-chart";
+
 
 export default function Home() {
   const [showArtists, setShowArtists] = useState(true);
@@ -115,8 +117,13 @@ export default function Home() {
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[200px]">
 
-        {/* Health Metrics Gauges - 2x1 - Left column (health) row 1 */}
-        <Card className="md:col-span-2 md:col-start-1 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Sleep Stages Chart (Apple Health Style) - 2x1 - Left column row 1 */}
+        <div className="md:col-span-2 md:col-start-1 md:row-start-1">
+          <SleepStagesChart data={sleepData} />
+        </div>
+
+        {/* Health Metrics Gauges - 2x1 - Left column (health) row 3 */}
+        <Card className="md:col-span-2 md:col-start-1 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Indicateurs Santé</CardTitle>
             <CardDescription className="text-xs">Valeurs actuelles</CardDescription>
@@ -266,8 +273,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Sleep Chart - 1x1 - Left column row 2 */}
-        <Card className="md:col-span-1 md:col-start-1 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Sleep Chart - 1x1 - Left column row 4 */}
+        <Card className="md:col-span-1 md:col-start-1 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Sommeil</CardTitle>
             <CardDescription className="text-xs">7 derniers jours</CardDescription>
@@ -310,8 +317,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* HRV Recent Days - 1x1 - Left column row 2 */}
-        <Card className="md:col-span-1 md:col-start-2 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* HRV Recent Days - 1x1 - Left column row 4 */}
+        <Card className="md:col-span-1 md:col-start-2 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">HRV</CardTitle>
             <CardDescription className="text-xs">7 derniers jours</CardDescription>
@@ -387,8 +394,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Weight Trend - 1x1 - Left column row 3 */}
-        <Card className="md:col-span-1 md:col-start-1 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Weight Trend - 1x1 - Left column row 5 */}
+        <Card className="md:col-span-1 md:col-start-1 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Poids</CardTitle>
             <CardDescription className="text-xs">Tendance 30 jours</CardDescription>
@@ -443,8 +450,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Daily Stress - 1x1 - Left column row 3 */}
-        <Card className="md:col-span-1 md:col-start-2 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        {/* Daily Stress - 1x1 - Left column row 5 */}
+        <Card className="md:col-span-1 md:col-start-2 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Stress quotidien</CardTitle>
             <CardDescription className="text-xs">Aujourd'hui</CardDescription>
@@ -462,10 +469,12 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Sleep Stages Chart (Apple Health Style) - 2x1 - Left column row 5 */}
-        <div className="md:col-span-2 md:col-start-1 md:row-start-5">
-          <SleepStagesChart data={sleepData} />
+        {/* Body Battery Chart - 1x1 - Left column row 6 */}
+        <div className="md:col-span-1 md:col-start-1 md:row-start-6">
+          <BodyBatteryChart />
         </div>
+
+
 
         {/* Spotify Listening Time Chart - 2x1 - Right column row 1 */}
         <Card className="md:col-span-2 md:col-start-5 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
@@ -594,8 +603,8 @@ export default function Home() {
           </CardContent >
         </Card >
 
-  {/* Running Card with Aerobic/Anaerobic Chart - 2x2 - Central column row 1-2 */ }
-  < Card className = "md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden" >
+        {/* Running Card with Aerobic/Anaerobic Chart - 2x2 - Central column row 1-2 */}
+        < Card className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -701,8 +710,8 @@ export default function Home() {
           </CardContent>
         </Card >
 
-  {/* Weekly Running Volume - 1x1 - Central column row 3 */ }
-  < Card className = "md:col-span-1 md:col-start-3 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
+        {/* Weekly Running Volume - 1x1 - Central column row 3 */}
+        < Card className="md:col-span-1 md:col-start-3 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Volume hebdomadaire</CardTitle>
             <CardDescription className="text-xs">10 dernières semaines</CardDescription>
@@ -795,8 +804,8 @@ export default function Home() {
           </CardContent>
         </Card >
 
-  {/* Training Status - 1x1 - Central column row 4 */ }
-  < Card className = "md:col-span-1 md:col-start-3 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden" >
+        {/* Training Status - 1x1 - Central column row 4 */}
+        < Card className="md:col-span-1 md:col-start-3 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Status d'entraînement</CardTitle>
             <CardDescription className="text-xs">Forme actuelle</CardDescription>
@@ -811,8 +820,8 @@ export default function Home() {
           </CardContent>
         </Card >
 
-  {/* Acute:Chronic Workload Ratio - 1x1 - Central column row 5 */ }
-  < Card className = "md:col-span-1 md:col-start-3 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden" >
+        {/* Acute:Chronic Workload Ratio - 1x1 - Central column row 5 */}
+        < Card className="md:col-span-1 md:col-start-3 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Ratio de charge</CardTitle>
             <CardDescription className="text-xs">Aiguë / Chronique</CardDescription>
@@ -848,8 +857,8 @@ export default function Home() {
           </CardContent>
         </Card >
 
-  {/* VO2 Max Trend - 1x1 - Central column row 6 */ }
-  < Card className = "md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden" >
+        {/* VO2 Max Trend - 1x1 - Central column row 6 */}
+        < Card className="md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">VO2 Max</CardTitle>
             <CardDescription className="text-xs">Tendance 6 mois</CardDescription>
@@ -889,8 +898,8 @@ export default function Home() {
           </CardContent>
         </Card >
 
-  {/* Race Predictions - 1x2 - Column 4 row 3 */ }
-  < Card className = "md:col-span-1 md:row-span-2 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
+        {/* Race Predictions - 1x2 - Column 4 row 3 */}
+        < Card className="md:col-span-1 md:row-span-2 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Prédictions courses</CardTitle>
             <CardDescription className="text-xs">Temps estimés</CardDescription>
@@ -948,8 +957,8 @@ export default function Home() {
           </CardContent>
         </Card >
 
-  {/* Annual Running Distance - 1x1 - Central column row 7 */ }
-  < Card className = "md:col-span-1 md:col-start-3 md:row-start-7 hover:shadow-lg transition-shadow overflow-hidden" >
+        {/* Annual Running Distance - 1x1 - Central column row 7 */}
+        < Card className="md:col-span-1 md:col-start-3 md:row-start-7 hover:shadow-lg transition-shadow overflow-hidden" >
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Kilométrage annuel</CardTitle>
             <CardDescription className="text-xs">Au même jour</CardDescription>
@@ -991,8 +1000,8 @@ export default function Home() {
           </CardContent>
         </Card >
 
-  {/* Running Progress Year Comparison - 1x1 - Central column row 8 */ }
-  < Card className = "md:col-span-1 md:col-start-3 md:row-start-8 hover:shadow-lg transition-shadow overflow-hidden relative" >
+        {/* Running Progress Year Comparison - 1x1 - Central column row 8 */}
+        < Card className="md:col-span-1 md:col-start-3 md:row-start-8 hover:shadow-lg transition-shadow overflow-hidden relative" >
           <CardHeader className="pb-0 pt-3">
             <CardTitle className="text-sm">Progression annuelle</CardTitle>
             <CardDescription className="text-xs">Cumul km à date</CardDescription>
