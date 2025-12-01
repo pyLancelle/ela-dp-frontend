@@ -1,24 +1,15 @@
 import { NextResponse } from 'next/server';
 import { bigquery } from '@/lib/bigquery';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const date = searchParams.get('date') || '2025-11-28'; // Date par défaut
-
     const query = `
       SELECT *
       FROM \`polar-scene-465223-f7.dp_product_dev.pct_homepage__sleep_stages\`
-      WHERE DATE(start_time) = @date
-      ORDER BY start_time ASC
+      ORDER BY 1,2
     `;
 
-    const options = {
-      query: query,
-      params: { date: date },
-    };
-
-    const [rows] = await bigquery.query(options);
+    const [rows] = await bigquery.query(query);
 
     // Mapper les stages aux noms attendus par le composant
     const mappedData = rows.map((row: any) => {

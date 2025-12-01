@@ -57,7 +57,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchSleepData() {
       try {
-        const res = await fetch('/api/homepage/sleep/stages?date=2025-11-28');
+        const res = await fetch('/api/homepage/sleep/stages');
         if (res.ok) {
           const data = await res.json();
           console.log('Sleep data received:', data);
