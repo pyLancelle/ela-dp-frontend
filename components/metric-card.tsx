@@ -11,6 +11,7 @@ interface MetricCardProps {
     children: React.ReactNode
     className?: string
     contentClassName?: string
+    hasChart?: boolean
 }
 
 export function MetricCard({
@@ -21,7 +22,8 @@ export function MetricCard({
     kpiLabel,
     children,
     className,
-    contentClassName
+    contentClassName,
+    hasChart = true
 }: MetricCardProps) {
     return (
         <Card className={cn("flex flex-col overflow-hidden h-full", className)}>
@@ -40,8 +42,16 @@ export function MetricCard({
                 </div>
                 {description && <CardDescription className="text-xs mt-1">{description}</CardDescription>}
             </CardHeader>
-            <CardContent className={cn("flex-1 min-h-0 pt-0 pb-3", contentClassName)}>
-                {children}
+            <CardContent className={cn("flex-1 min-h-0 pt-0 relative", contentClassName)}>
+                {hasChart ? (
+                    <div className="w-full h-full">
+                        <div className="absolute inset-0 bottom-4 px-2">
+                            {children}
+                        </div>
+                    </div>
+                ) : (
+                    children
+                )}
             </CardContent>
         </Card>
     )

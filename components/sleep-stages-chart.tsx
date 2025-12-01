@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { MetricCard } from "@/components/metric-card"
 import { Moon } from "lucide-react"
 
 // Type pour les phases de sommeil
@@ -115,80 +115,69 @@ export function SleepStagesChart({ data }: SleepStagesChartProps = { data: undef
   const endTime = sleepSegments.length > 0 ? sleepSegments[sleepSegments.length - 1].endTime : new Date()
 
   return (
-    <Card className="h-full flex flex-col overflow-hidden">
-      <CardHeader className="pb-1 pt-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Moon className="h-3.5 w-3.5" />
-            <CardTitle className="text-xs">Phases de sommeil</CardTitle>
+    <MetricCard
+      title="Phases de sommeil"
+      description={`Dernière nuit (${formatTime(startTime)} - ${formatTime(endTime)})`}
+      icon={Moon}
+      kpi={totalFormatted}
+      contentClassName="flex flex-col pt-1"
+    >
+      {/* Graphique des phases de sommeil */}
+      <div className="relative flex-1 bg-background rounded-lg p-2">
+        {/* Labels verticaux sur la gauche avec durées */}
+        <div className="absolute left-0.2 top-0 bottom-4 text-muted-foreground">
+          {/* Awake - center at 12.5% (middle of 0-25% range) */}
+          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '12.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[8px] font-medium leading-none">Awake</span>
+            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.awake || 0)}</span>
           </div>
-          <div className="text-right">
-            <div className="text-sm font-bold leading-none">{totalFormatted}</div>
-            <p className="text-[10px] text-muted-foreground">Total</p>
+          {/* REM - center at 37.5% (middle of 25-50% range) */}
+          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '37.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[8px] font-medium leading-none">REM</span>
+            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.rem || 0)}</span>
+          </div>
+          {/* Core - center at 62.5% (middle of 50-75% range) */}
+          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '62.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[8px] font-medium leading-none">Core</span>
+            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.core || 0)}</span>
+          </div>
+          {/* Deep - center at 87.5% (middle of 75-100% range) */}
+          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '87.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[8px] font-medium leading-none">Deep</span>
+            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.deep || 0)}</span>
           </div>
         </div>
-        <CardDescription className="text-[10px] mt-0.5">
-          Dernière nuit ({formatTime(startTime)} - {formatTime(endTime)})
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 pt-1 pb-2 flex flex-col">
-        {/* Graphique des phases de sommeil */}
-        <div className="relative flex-1 bg-background rounded-lg p-2">
-          {/* Labels verticaux sur la gauche avec durées */}
-          <div className="absolute left-0.2 top-0 bottom-4 text-muted-foreground">
-            {/* Awake - center at 12.5% (middle of 0-25% range) */}
-            <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '12.5%', transform: 'translateY(-50%)' }}>
-              <span className="text-[8px] font-medium leading-none">Awake</span>
-              <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.awake || 0)}</span>
-            </div>
-            {/* REM - center at 37.5% (middle of 25-50% range) */}
-            <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '37.5%', transform: 'translateY(-50%)' }}>
-              <span className="text-[8px] font-medium leading-none">REM</span>
-              <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.rem || 0)}</span>
-            </div>
-            {/* Core - center at 62.5% (middle of 50-75% range) */}
-            <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '62.5%', transform: 'translateY(-50%)' }}>
-              <span className="text-[8px] font-medium leading-none">Core</span>
-              <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.core || 0)}</span>
-            </div>
-            {/* Deep - center at 87.5% (middle of 75-100% range) */}
-            <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '87.5%', transform: 'translateY(-50%)' }}>
-              <span className="text-[8px] font-medium leading-none">Deep</span>
-              <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.deep || 0)}</span>
-            </div>
-          </div>
 
-          {/* Barres de sommeil - chaque barre occupe toute la hauteur et se positionne selon sa phase */}
-          <div className="absolute left-16 right-2 top-0 bottom-4 flex gap-[2px]">
-            {sleepSegments.map((segment, index) => {
-              const widthPercent = (segment.duration / totalMinutes) * 100
-              const topPercent = getStagePosition(segment.stage)
+        {/* Barres de sommeil - chaque barre occupe toute la hauteur et se positionne selon sa phase */}
+        <div className="absolute left-16 right-2 top-0 bottom-4 flex gap-[2px]">
+          {sleepSegments.map((segment, index) => {
+            const widthPercent = (segment.duration / totalMinutes) * 100
+            const topPercent = getStagePosition(segment.stage)
 
-              return (
+            return (
+              <div
+                key={index}
+                className="relative"
+                style={{
+                  width: `${widthPercent}%`,
+                  height: '100%'
+                }}
+              >
                 <div
-                  key={index}
-                  className="relative"
+                  className="absolute left-0 right-0 rounded-sm"
                   style={{
-                    width: `${widthPercent}%`,
-                    height: '100%'
+                    backgroundColor: getStageColor(segment.stage),
+                    top: `${topPercent}%`,
+                    height: '25%',
+                    transform: 'translateY(-50%)'
                   }}
-                >
-                  <div
-                    className="absolute left-0 right-0 rounded-sm"
-                    style={{
-                      backgroundColor: getStageColor(segment.stage),
-                      top: `${topPercent}%`,
-                      height: '25%',
-                      transform: 'translateY(-50%)'
-                    }}
-                    title={`${segment.stage}: ${formatDuration(segment.duration)}`}
-                  />
-                </div>
-              )
-            })}
-          </div>
+                  title={`${segment.stage}: ${formatDuration(segment.duration)}`}
+                />
+              </div>
+            )
+          })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </MetricCard>
   )
 }

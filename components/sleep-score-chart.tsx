@@ -1,38 +1,38 @@
 "use client"
 
-import { Bar, BarChart, XAxis, LabelList } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, LabelList } from "recharts"
 import {
     ChartConfig,
     ChartContainer,
 } from "@/components/ui/chart"
-import { Battery } from "lucide-react"
+import { Moon } from "lucide-react"
 import { MetricCard } from "@/components/metric-card"
 
 const chartConfig = {
-    range: {
-        label: "Body Battery",
-        color: "hsl(var(--chart-1))",
+    score: {
+        label: "Score de sommeil",
+        color: "hsl(var(--foreground))",
     },
 } satisfies ChartConfig
 
-interface BodyBatteryChartProps {
+interface SleepScoreChartProps {
     data?: {
         average: number;
-        daily: { day: string; range: [number, number]; delta: number; date: string }[];
+        daily: { day: string; score: number; date: string }[];
     };
 }
 
-export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
+export function SleepScoreChart({ data }: SleepScoreChartProps) {
     const defaultData = {
-        average: 81,
+        average: 72,
         daily: [
-            { day: "L", range: [15, 85] as [number, number], delta: 70, date: "" },
-            { day: "M", range: [20, 92] as [number, number], delta: 72, date: "" },
-            { day: "M", range: [10, 65] as [number, number], delta: 55, date: "" },
-            { day: "J", range: [25, 88] as [number, number], delta: 63, date: "" },
-            { day: "V", range: [18, 95] as [number, number], delta: 77, date: "" },
-            { day: "S", range: [30, 98] as [number, number], delta: 68, date: "" },
-            { day: "D", range: [10, 91] as [number, number], delta: 81, date: "" },
+            { day: "L", score: 55, date: "" },
+            { day: "M", score: 75, date: "" },
+            { day: "M", score: 38, date: "" },
+            { day: "J", score: 78, date: "" },
+            { day: "V", score: 69, date: "" },
+            { day: "S", score: 85, date: "" },
+            { day: "D", score: 88, date: "" },
         ]
     };
 
@@ -40,10 +40,10 @@ export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
 
     return (
         <MetricCard
-            title="Body Battery"
+            title="Sommeil"
             description=""
-            icon={Battery}
-            kpi={`+${displayData.average}`}
+            icon={Moon}
+            kpi={displayData.average.toString()}
             kpiLabel=""
             className="h-full"
             hasChart={true}
@@ -54,6 +54,7 @@ export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
                     data={displayData.daily}
                     margin={{ top: 15, bottom: 0, left: 0, right: 0 }}
                 >
+                    <YAxis domain={[0, 100]} hide={true} />
                     <XAxis
                         dataKey="day"
                         tickLine={false}
@@ -64,17 +65,17 @@ export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
                         tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                     />
                     <Bar
-                        dataKey="range"
-                        fill="var(--color-range)"
+                        dataKey="score"
+                        fill="var(--color-score)"
                         radius={4}
                         barSize={20}
                     >
                         <LabelList
-                            dataKey="delta"
+                            dataKey="score"
                             position="top"
                             offset={5}
                             className="fill-foreground"
-                            fontSize={10}
+                            fontSize={12}
                         />
                     </Bar>
                 </BarChart>

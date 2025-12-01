@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MusicDashboardData } from "@/types/dashboard";
+import { MusicDashboardData, SleepBodyBatteryData } from "@/types/dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Music,
@@ -28,7 +28,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SleepStagesChart } from "@/components/sleep-stages-chart";
+import { MetricCard } from "@/components/metric-card";
 import { BodyBatteryChart } from "@/components/body-battery-chart";
+import { SleepScoreChart } from "@/components/sleep-score-chart";
 
 
 export default function Home() {
@@ -38,6 +40,8 @@ export default function Home() {
   const [loadingMusic, setLoadingMusic] = useState(true);
   const [sleepData, setSleepData] = useState<any[] | undefined>(undefined);
   const [loadingSleep, setLoadingSleep] = useState(true);
+  const [sleepBodyBatteryData, setSleepBodyBatteryData] = useState<SleepBodyBatteryData | null>(null);
+  const [loadingSleepBodyBattery, setLoadingSleepBodyBattery] = useState(true);
 
   useEffect(() => {
     async function fetchMusicData() {
@@ -75,6 +79,26 @@ export default function Home() {
       }
     }
     fetchSleepData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchSleepBodyBatteryData() {
+      try {
+        const res = await fetch('/api/homepage/sleep-body-battery');
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Sleep & Body Battery data received:', data);
+          setSleepBodyBatteryData(data);
+        } else {
+          console.error('API error:', res.status, await res.text());
+        }
+      } catch (error) {
+        console.error("Failed to fetch sleep & body battery data", error);
+      } finally {
+        setLoadingSleepBodyBattery(false);
+      }
+    }
+    fetchSleepBodyBatteryData();
   }, []);
 
   // Données pour le graphique de progression (valeurs cumulées par mois)
@@ -273,49 +297,15 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Sleep Chart - 1x1 - Left column row 4 */}
-        <Card className="md:col-span-1 md:col-start-1 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Sommeil</CardTitle>
-            <CardDescription className="text-xs">7 derniers jours</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-1 pb-3">
-            <div className="relative h-24 mb-6">
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-              </div>
+        {/* Sleep Score Chart - 1x1 - Left column row 2 */}
+        <div className="md:col-span-1 md:col-start-1 md:row-start-2">
+          <SleepScoreChart data={sleepBodyBatteryData?.sleepScores} />
+        </div>
 
-              {/* Bar Chart - Mock data structure that will come from API */}
-              <div className="flex items-end h-full gap-2 px-1">
-                {[
-                  { day: 'L', score: 55, isLow: false },
-                  { day: 'M', score: 75, isLow: false },
-                  { day: 'M', score: 38, isLow: true },
-                  { day: 'J', score: 78, isLow: false },
-                  { day: 'V', score: 69, isLow: false },
-                  { day: 'S', score: 85, isLow: false },
-                  { day: 'D', score: 88, isLow: false },
-                ].map((data, index) => (
-                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-end relative">
-                    <span className={`text-xs font-medium mb-1 ${data.isLow ? 'opacity-60' : ''}`}>
-                      {data.score}
-                    </span>
-                    <div
-                      className={`w-full bg-foreground rounded-t ${data.isLow ? 'opacity-60' : ''}`}
-                      style={{ height: `${data.score}%` }}
-                    ></div>
-                    {/* Day label directly below each bar */}
-                    <span className="absolute -bottom-6 text-xs text-muted-foreground">{data.day}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Body Battery Chart - 1x1 - Left column row 6 */}
+        <div className="md:col-span-1 md:col-start-2 md:row-start-2">
+          <BodyBatteryChart data={sleepBodyBatteryData?.bodyBattery} />
+        </div>
 
         {/* HRV Recent Days - 1x1 - Left column row 4 */}
         <Card className="md:col-span-1 md:col-start-2 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
@@ -469,10 +459,7 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Body Battery Chart - 1x1 - Left column row 6 */}
-        <div className="md:col-span-1 md:col-start-1 md:row-start-6">
-          <BodyBatteryChart />
-        </div>
+
 
 
 

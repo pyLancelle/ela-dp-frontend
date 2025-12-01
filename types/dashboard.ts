@@ -122,3 +122,24 @@ export interface RunningDashboardData {
         previousYear: { year: number; data: { month: number; monthName: string; cumulativeKm: number }[] };
     };
 }
+
+// Types pour la vue BigQuery pct_homepage__sleep_body_battery
+export interface SleepBodyBatteryRow {
+    date: string;
+    day_abbr_french: string;
+    sleep_score: number;
+    battery_at_bedtime: number;
+    battery_at_waketime: number;
+    battery_gain: number;
+}
+
+export interface SleepBodyBatteryData {
+    sleepScores: {
+        average: number;
+        daily: { day: string; score: number; date: string }[];
+    };
+    bodyBattery: {
+        average: number;
+        daily: { day: string; range: [number, number]; delta: number; date: string }[];
+    };
+}
