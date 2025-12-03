@@ -123,33 +123,33 @@ export function SleepStagesChart({ data }: SleepStagesChartProps = { data: undef
       contentClassName="flex flex-col pt-1"
     >
       {/* Graphique des phases de sommeil */}
-      <div className="relative flex-1 bg-background rounded-lg p-2">
+      <div className="relative flex-1 bg-background rounded-lg p-2 min-h-[120px]">
         {/* Labels verticaux sur la gauche avec durées */}
-        <div className="absolute left-0.2 top-0 bottom-4 text-muted-foreground">
+        <div className="absolute left-1 top-0 bottom-4 text-muted-foreground w-12">
           {/* Awake - center at 12.5% (middle of 0-25% range) */}
-          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '12.5%', transform: 'translateY(-50%)' }}>
-            <span className="text-[8px] font-medium leading-none">Awake</span>
-            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.awake || 0)}</span>
+          <div className="absolute flex flex-col" style={{ top: '12.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[9px] font-medium leading-tight">Awake</span>
+            <span className="text-[9px] opacity-70 leading-tight">{formatDuration(totals.awake || 0)}</span>
           </div>
           {/* REM - center at 37.5% (middle of 25-50% range) */}
-          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '37.5%', transform: 'translateY(-50%)' }}>
-            <span className="text-[8px] font-medium leading-none">REM</span>
-            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.rem || 0)}</span>
+          <div className="absolute flex flex-col" style={{ top: '37.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[9px] font-medium leading-tight">REM</span>
+            <span className="text-[9px] opacity-70 leading-tight">{formatDuration(totals.rem || 0)}</span>
           </div>
           {/* Core - center at 62.5% (middle of 50-75% range) */}
-          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '62.5%', transform: 'translateY(-50%)' }}>
-            <span className="text-[8px] font-medium leading-none">Core</span>
-            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.core || 0)}</span>
+          <div className="absolute flex flex-col" style={{ top: '62.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[9px] font-medium leading-tight">Core</span>
+            <span className="text-[9px] opacity-70 leading-tight">{formatDuration(totals.core || 0)}</span>
           </div>
           {/* Deep - center at 87.5% (middle of 75-100% range) */}
-          <div className="absolute flex flex-col whitespace-nowrap" style={{ top: '87.5%', transform: 'translateY(-50%)' }}>
-            <span className="text-[8px] font-medium leading-none">Deep</span>
-            <span className="text-[8px] opacity-70 leading-none">{formatDuration(totals.deep || 0)}</span>
+          <div className="absolute flex flex-col" style={{ top: '87.5%', transform: 'translateY(-50%)' }}>
+            <span className="text-[9px] font-medium leading-tight">Deep</span>
+            <span className="text-[9px] opacity-70 leading-tight">{formatDuration(totals.deep || 0)}</span>
           </div>
         </div>
 
         {/* Barres de sommeil - chaque barre occupe toute la hauteur et se positionne selon sa phase */}
-        <div className="absolute left-16 right-2 top-0 bottom-4 flex gap-[2px]">
+        <div className="absolute left-14 right-2 top-0 bottom-4 flex gap-[2px]">
           {sleepSegments.map((segment, index) => {
             const widthPercent = (segment.duration / totalMinutes) * 100
             const topPercent = getStagePosition(segment.stage)
