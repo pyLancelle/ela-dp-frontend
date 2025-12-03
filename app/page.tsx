@@ -31,6 +31,8 @@ import { SleepStagesChart } from "@/components/sleep-stages-chart";
 import { MetricCard } from "@/components/metric-card";
 import { BodyBatteryChart } from "@/components/body-battery-chart";
 import { SleepScoreChart } from "@/components/sleep-score-chart";
+import { HrvCard } from "@/components/hrv-card";
+import { RestingHrCard } from "@/components/resting-hr-card";
 
 
 export default function Home() {
@@ -147,7 +149,7 @@ export default function Home() {
         </div>
 
         {/* Health Metrics Gauges - 2x1 - Left column (health) row 3 */}
-        <Card className="md:col-span-2 md:col-start-1 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden">
+        <Card className="md:col-span-2 md:col-start-1 md:row-start-6 hover:shadow-lg transition-shadow overflow-hidden">
           <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">Indicateurs Santé</CardTitle>
             <CardDescription className="text-xs">Valeurs actuelles</CardDescription>
@@ -308,81 +310,10 @@ export default function Home() {
         </div>
 
         {/* HRV Recent Days - 1x1 - Left column row 4 */}
-        <Card className="md:col-span-1 md:col-start-2 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">HRV</CardTitle>
-            <CardDescription className="text-xs">7 derniers jours</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <div className="text-3xl font-bold">58</div>
-                <p className="text-xs text-muted-foreground">ms</p>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Baseline: 52ms
-              </div>
-            </div>
+        <HrvCard data={sleepBodyBatteryData?.hrv} />
 
-            <div className="relative h-24">
-              {/* Baseline zone */}
-              <div className="absolute inset-x-0 top-[30%] h-[40%] bg-green-500/10 rounded"></div>
-
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-              </div>
-
-              {/* Bar Chart */}
-              <div className="flex items-end justify-between h-full gap-1.5">
-                {/* J-6: 52ms (65%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">52</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '65%' }}></div>
-                </div>
-
-                {/* J-5: 48ms (60%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5 opacity-60">48</span>
-                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '60%' }}></div>
-                </div>
-
-                {/* J-4: 55ms (68%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">55</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '68%' }}></div>
-                </div>
-
-                {/* J-3: 61ms (76%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">61</span>
-                  <div className="w-full bg-green-500 rounded-t" style={{ height: '76%' }}></div>
-                </div>
-
-                {/* J-2: 54ms (67%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">54</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '67%' }}></div>
-                </div>
-
-                {/* J-1: 50ms (62%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">50</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '62%' }}></div>
-                </div>
-
-                {/* Aujourd'hui: 58ms (72%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5 text-blue-500">58</span>
-                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '72%' }}></div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Resting Heart Rate - 1x1 - Left column row 4 */}
+        <RestingHrCard data={sleepBodyBatteryData?.restingHr} />
 
         {/* Weight Trend - 1x1 - Left column row 5 */}
         <Card className="md:col-span-1 md:col-start-1 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">

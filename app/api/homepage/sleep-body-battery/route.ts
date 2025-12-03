@@ -11,7 +11,9 @@ export async function GET() {
         sleep_score,
         battery_at_bedtime,
         battery_at_waketime,
-        battery_gain
+        battery_gain,
+        avg_hrv,
+        resting_hr
       FROM \`polar-scene-465223-f7.dp_product_dev.pct_homepage__sleep_body_battery\`
       ORDER BY date ASC
     `;
@@ -31,6 +33,18 @@ export async function GET() {
       ? Math.round(validDeltas.reduce((sum, row) => sum + row.battery_gain, 0) / validSleepScores.length)
       : 0;
 
+    // Calculer la moyenne des HRV
+    const validHrv = data.filter(row => row.avg_hrv !== null);
+    const averageHrv = validHrv.length > 0
+      ? Math.round(validHrv.reduce((sum, row) => sum + row.avg_hrv, 0) / validHrv.length)
+      : 0;
+
+    // Calculer la moyenne des Resting HR
+    const validRestingHr = data.filter(row => row.resting_hr !== null);
+    const averageRestingHr = validRestingHr.length > 0
+      ? Math.round(validRestingHr.reduce((sum, row) => sum + row.resting_hr, 0) / validRestingHr.length)
+      : 0;
+
     // Formater les données pour les composants
     const response: SleepBodyBatteryData = {
       sleepScores: {
@@ -47,6 +61,22 @@ export async function GET() {
           day: row.day_abbr_french || '',
           range: [row.battery_at_bedtime || 0, row.battery_at_waketime || 0] as [number, number],
           delta: row.battery_gain || 0,
+          date: row.date
+        }))
+      },
+      hrv: {
+        average: averageHrv,
+        daily: data.map(row => ({
+          day: row.day_abbr_french || '',
+          hrv: row.avg_hrv || 0,
+          date: row.date
+        }))
+      },
+      restingHr: {
+        average: averageRestingHr,
+        daily: data.map(row => ({
+          day: row.day_abbr_french || '',
+          hr: row.resting_hr || 0,
           date: row.date
         }))
       }

@@ -131,6 +131,8 @@ export interface SleepBodyBatteryRow {
     battery_at_bedtime: number;
     battery_at_waketime: number;
     battery_gain: number;
+    avg_hrv: number;
+    resting_hr: number;
 }
 
 export interface SleepBodyBatteryData {
@@ -141,5 +143,13 @@ export interface SleepBodyBatteryData {
     bodyBattery: {
         average: number;
         daily: { day: string; range: [number, number]; delta: number; date: string }[];
+    };
+    hrv: {
+        average: number;
+        daily: { day: string; hrv: number; date: string }[];
+    };
+    restingHr: {
+        average: number;
+        daily: { day: string; hr: number; date: string }[];
     };
 }
