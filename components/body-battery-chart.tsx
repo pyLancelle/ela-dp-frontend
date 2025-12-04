@@ -70,7 +70,7 @@ export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
                         barSize={20}
                     >
                         <LabelList
-                            dataKey="delta"
+                            dataKey="range[1]"
                             position="top"
                             offset={5}
                             className="fill-foreground"
