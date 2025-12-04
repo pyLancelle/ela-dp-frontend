@@ -76,6 +76,13 @@ export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
                             className="fill-foreground"
                             fontSize={10}
                         />
+                        <LabelList
+                            dataKey="range[0]"
+                            position="bottom"
+                            offset={5}
+                            className="fill-foreground"
+                            fontSize={10}
+                        />
                     </Bar>
                 </BarChart>
             </ChartContainer>
