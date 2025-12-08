@@ -29,6 +29,20 @@
     --chart-3: 217 91% 60%; /* Bleu moyen pour Core */
     --chart-4: 221 83% 53%; /* Bleu foncé pour Deep */
     --chart-5: 27 87% 67%;
+
+    /* Heart Rate Zones */
+    --chart-zone-1: 0 0% 61%; /* Gris - Récupération */
+    --chart-zone-2: 217 91% 68%; /* Bleu - Endurance */
+    --chart-zone-3: 142 71% 45%; /* Vert - Tempo */
+    --chart-zone-4: 25 95% 53%; /* Orange - Seuil */
+    --chart-zone-5: 0 84% 60%; /* Rouge - VO2Max */
+
+    /* Interval Types */
+    --interval-warmup: 217 91% 68%; /* Bleu clair - Échauffement */
+    --interval-work: 25 95% 53%; /* Orange/Rouge - Effort */
+    --interval-recovery: 142 71% 55%; /* Vert - Récupération */
+    --interval-cooldown: 271 71% 73%; /* Violet - Retour au calme */
+    --interval-rest: 0 0% 61%; /* Gris - Repos */
   }
 
   .dark {
@@ -56,6 +70,20 @@
     --chart-3: 217 91% 60%; /* Bleu moyen pour Core */
     --chart-4: 221 83% 53%; /* Bleu foncé pour Deep */
     --chart-5: 340 75% 55%;
+
+    /* Heart Rate Zones - Dark Mode */
+    --chart-zone-1: 0 0% 50%; /* Gris - Récupération */
+    --chart-zone-2: 217 91% 60%; /* Bleu - Endurance */
+    --chart-zone-3: 142 71% 45%; /* Vert - Tempo */
+    --chart-zone-4: 25 95% 53%; /* Orange - Seuil */
+    --chart-zone-5: 0 84% 60%; /* Rouge - VO2Max */
+
+    /* Interval Types - Dark Mode */
+    --interval-warmup: 217 91% 60%; /* Bleu clair - Échauffement */
+    --interval-work: 25 95% 53%; /* Orange/Rouge - Effort */
+    --interval-recovery: 142 71% 50%; /* Vert - Récupération */
+    --interval-cooldown: 271 71% 65%; /* Violet - Retour au calme */
+    --interval-rest: 0 0% 50%; /* Gris - Repos */
   }
 }
 
@@ -66,4 +94,17 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Leaflet Map Styles */
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply bg-popover text-popover-foreground rounded-md;
+}
+
+.leaflet-popup-tip {
+  @apply bg-popover;
 }
