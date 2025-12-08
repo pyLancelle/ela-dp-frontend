@@ -1,5 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { ActivityInterval, IntervalType } from "@/types/activity-detail";
 import { Activity } from "lucide-react";
 
@@ -16,11 +23,11 @@ const intervalTypeLabels: Record<IntervalType, string> = {
 };
 
 const intervalTypeColors: Record<IntervalType, string> = {
-  warmup: "bg-blue-500/20 border-blue-500/50",
-  work: "bg-orange-500/20 border-orange-500/50",
-  recovery: "bg-green-500/20 border-green-500/50",
-  cooldown: "bg-purple-500/20 border-purple-500/50",
-  rest: "bg-gray-500/20 border-gray-500/50",
+  warmup: "text-blue-500",
+  work: "text-orange-500",
+  recovery: "text-green-500",
+  cooldown: "text-purple-500",
+  rest: "text-gray-500",
 };
 
 export function IntervalsListCard({ intervals }: IntervalsListCardProps) {
@@ -44,60 +51,49 @@ export function IntervalsListCard({ intervals }: IntervalsListCardProps) {
           Intervalles
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4">
-          <div className="space-y-3">
-            {intervals.map((interval, index) => (
-              <div
-                key={interval.id}
-                className={`border rounded-lg p-3 ${intervalTypeColors[interval.type]}`}
-              >
-                {/* Header avec numéro et nom */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-background text-xs font-bold">
-                      {index + 1}
+       <CardContent className="flex-1 overflow-auto">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[60px]">N°</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right">Distance</TableHead>
+                <TableHead className="text-right">Temps</TableHead>
+                <TableHead className="text-right">Allure moy</TableHead>
+                <TableHead className="text-right">BPM moy</TableHead>
+                <TableHead className="text-right">D+</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {intervals.map((interval, index) => (
+                <TableRow key={interval.id}>
+                  <TableCell className="font-medium">{index + 1}</TableCell>
+                  <TableCell>
+                    <span className={`font-medium ${intervalTypeColors[interval.type]}`}>
+                      {intervalTypeLabels[interval.type]}
                     </span>
-                    <span className="font-semibold text-sm">
-                      {interval.name}
-                    </span>
-                  </div>
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {intervalTypeLabels[interval.type]}
-                  </span>
-                </div>
-
-                {/* KPIs Grid */}
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="space-y-0.5">
-                    <div className="text-muted-foreground">Distance</div>
-                    <div className="font-semibold">{interval.distance.toFixed(2)} km</div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-muted-foreground">Temps</div>
-                    <div className="font-semibold">{formatDuration(interval.duration)}</div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-muted-foreground">Allure moy</div>
-                    <div className="font-semibold">{formatPace(interval.avgPace)}/km</div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-muted-foreground">FC moy</div>
-                    <div className="font-semibold">{interval.avgHeartRate} bpm</div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-muted-foreground">FC max</div>
-                    <div className="font-semibold">{interval.maxHeartRate} bpm</div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="text-muted-foreground">D+</div>
-                    <div className="font-semibold">{interval.elevationGain} m</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {interval.distance.toFixed(2)} km
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatDuration(interval.duration)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatPace(interval.avgPace)}/km
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {interval.avgHeartRate} bpm
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {interval.elevationGain} m
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
