@@ -14,14 +14,16 @@ const bigquery = new BigQuery({
   credentials,
 });
 
-// BigQuery view schema
+// BigQuery view schema from pct_activites__last_run
+// Note: We do basic transformations in SQL for consistency and performance
 interface BigQueryActivity {
-  activityname: string;
-  starttimelocal: { value: string }; // BigQuery TIMESTAMP
-  distance: number;
-  duration: string;
-  speed: string;
-  pace_numeric: number;
+  activityId: number;
+  activityName: string;
+  startTimeGMT: string; // ISO timestamp string
+  distance_km: number | null; // Already converted from meters to km in SQL
+  duration_minutes: number | null; // Already converted from seconds to minutes in SQL
+  averageSpeed: number | null; // in m/s
+  typeKey: string | null; // Activity type from source
 }
 
 // Frontend Activity interface
@@ -34,23 +36,11 @@ export interface Activity {
   type: string;
 }
 
-function parseDuration(durationStr: string): number {
-  // Parse duration string (e.g., "00:32:15" or "32:15") to minutes
-  const parts = durationStr.split(':');
-  if (parts.length === 3) {
-    // HH:MM:SS
-    const hours = parseInt(parts[0], 10);
-    const minutes = parseInt(parts[1], 10);
-    const seconds = parseInt(parts[2], 10);
-    return hours * 60 + minutes + Math.round(seconds / 60);
-  } else if (parts.length === 2) {
-    // MM:SS
-    const minutes = parseInt(parts[0], 10);
-    const seconds = parseInt(parts[1], 10);
-    return minutes + Math.round(seconds / 60);
-  }
-  // Fallback: try to parse as number
-  return Math.round(parseFloat(durationStr));
+// Note: Duration conversion is now handled in SQL
+// Keeping this function for backward compatibility and potential future use
+function parseDuration(durationSeconds: number): number {
+  if (durationSeconds == null) return 0;
+  return Math.round(durationSeconds / 60);
 }
 
 function formatDate(timestamp: string): string {
@@ -77,32 +67,33 @@ export async function GET() {
   try {
     const query = `
       SELECT
-        activityname,
-        starttimelocal,
-        distance,
-        duration,
-        speed,
-        pace_numeric
-      FROM \`polar-scene-465223-f7.dp_product_dev.pct_data4__list_activities\`
-      ORDER BY starttimelocal DESC
+        activityId,
+        activityName,
+        startTimeGMT,
+        -- Convert meters to kilometers (better precision handling in SQL)
+        ROUND(distance / 1000, 2) AS distance_km,
+        -- Convert seconds to minutes (avoid client-side calculation)
+        ROUND(duration / 60, 0) AS duration_minutes,
+        averageSpeed,
+        -- Include activity type for better categorization
+        typeKey
+      FROM \`polar-scene-465223-f7.dp_product_dev.pct_activites__last_run\`
+      ORDER BY startTimeGMT DESC
       LIMIT 10
     `;
 
     const [rows] = await bigquery.query(query);
 
     // Map BigQuery data to frontend format
-    const activities: Activity[] = rows.map((row: BigQueryActivity, index: number) => {
-      const timestamp = typeof row.starttimelocal === 'object'
-        ? row.starttimelocal.value
-        : row.starttimelocal;
-
+    // Note: Basic transformations (distance, duration) are now handled in SQL
+    const activities: Activity[] = rows.map((row: BigQueryActivity) => {
       return {
-        id: `${timestamp}_${index}`, // Generate unique ID from timestamp
-        title: row.activityname || 'Activité',
-        distance: row.distance || 0,
-        duration: parseDuration(row.duration),
-        date: formatDate(timestamp),
-        type: 'running', // Default type, could be enhanced later
+        id: row.activityId.toString(), // Use the real activityId from BigQuery
+        title: row.activityName || 'Activité',
+        distance: row.distance_km || 0, // Already in kilometers from SQL
+        duration: row.duration_minutes || 0, // Already in minutes from SQL
+        date: formatDate(row.startTimeGMT),
+        type: row.typeKey || 'running', // Use actual type if available, fallback to running
       };
     });
 
