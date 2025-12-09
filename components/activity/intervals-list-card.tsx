@@ -35,25 +35,25 @@ export function IntervalsListCard({ laps }: IntervalsListCardProps) {
   }
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="flex flex-col h-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Activity className="h-5 w-5" />
+          <Activity className="h-4 w-4" />
           Splits au kilomètre
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 overflow-auto">
-        <div className="rounded-md border">
+      <CardContent className="flex-1 overflow-hidden">
+        <div className="relative overflow-auto h-full">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
               <TableRow>
-                <TableHead className="w-[60px]">Km</TableHead>
-                <TableHead className="text-right">Distance</TableHead>
-                <TableHead className="text-right">Temps</TableHead>
-                <TableHead className="text-right">Allure moy</TableHead>
-                <TableHead className="text-right">BPM moy</TableHead>
-                <TableHead className="text-right">BPM max</TableHead>
-                <TableHead className="text-right">D+</TableHead>
+                <TableHead className="w-[50px] pl-4 pr-2 py-2 bg-background">Km</TableHead>
+                <TableHead className="text-right p-2 w-[90px] bg-background">Distance</TableHead>
+                <TableHead className="text-right p-2 w-[80px] bg-background">Temps</TableHead>
+                <TableHead className="text-right p-2 w-[100px] bg-background">Allure moy</TableHead>
+                <TableHead className="text-right p-2 w-[80px] bg-background">BPM moy</TableHead>
+                <TableHead className="text-right p-2 w-[80px] bg-background">BPM max</TableHead>
+                <TableHead className="text-right pl-2 pr-4 py-2 w-[60px] bg-background">D+</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -61,26 +61,24 @@ export function IntervalsListCard({ laps }: IntervalsListCardProps) {
                 const pace = msToPaceMinPerKm(lap.averageSpeed);
 
                 return (
-                  <TableRow key={lap.lapIndex}>
-                    <TableCell className="font-medium">{lap.lapIndex}</TableCell>
-                    <TableCell className="text-right">
+                  <TableRow key={lap.lapIndex} className="hover:bg-muted/50">
+                    <TableCell className="font-bold pl-4 pr-2 py-2 text-sm">{lap.lapIndex}</TableCell>
+                    <TableCell className="text-right p-2 text-sm">
                       {metersToKm(lap.distance).toFixed(2)} km
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right p-2 text-sm font-medium">
                       {formatDuration(lap.duration)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right p-2 text-sm">
                       {formatPace(pace)}/km
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right p-2 text-sm">
                       {Math.round(lap.averageHR)} bpm
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right p-2 text-sm">
                       {Math.round(lap.maxHR)} bpm
                     </TableCell>
-                    <TableCell className="text-right">
-                      {lap.elevationGain} m
-                    </TableCell>
+                    <TableCell className="text-right pl-2 pr-4 py-2 text-sm font-medium">{lap.elevationGain} m</TableCell>
                   </TableRow>
                 );
               })}

@@ -75,6 +75,16 @@ interface TrainingInterval {
   elevationLoss: number | null;
 }
 
+interface TrackPlayed {
+  played_at: { value: string } | null;
+  track_name: string | null;
+  artists: string | null;
+  album_name: string | null;
+  album_image: string | null;
+  duration_ms: number | null;
+  track_url: string | null;
+}
+
 export interface Activity {
   activityId: number;
   activityName: string;
@@ -101,6 +111,7 @@ export interface Activity {
   power_zones: PowerZones | null;
   kilometer_laps: KilometerLap[] | null;
   training_intervals: TrainingInterval[] | null;
+  tracks_played: TrackPlayed[] | null;
 }
 
 export async function GET(

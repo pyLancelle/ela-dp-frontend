@@ -13,6 +13,7 @@ import { MapCard } from "@/components/activity/map-card";
 import { ActivityNotesCard } from "@/components/activity/activity-notes-card";
 import { HeartRateEvolutionCard } from "@/components/activity/heart-rate-evolution-card";
 import { IntervalsListCard } from "@/components/activity/intervals-list-card";
+import { ActivityTracksCard } from "@/components/activity/activity-tracks-card";
 
 // Exemple de tracé GPS (lon, lat converti en lat, lon pour Leaflet)
 const exampleRoute: [number, number][] = [
@@ -35,6 +36,7 @@ export default function ActivityAnalysisPage({
 }) {
   const { id } = use(params);
   const [activity, setActivity] = useState<ActivityDetail | null>(null);
+  const [bigQueryActivity, setBigQueryActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,10 +53,13 @@ export default function ActivityAnalysisPage({
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const bigQueryActivity: Activity = await response.json();
+        const bigQueryData: Activity = await response.json();
+
+        // Store BigQuery data
+        setBigQueryActivity(bigQueryData);
 
         // Convert BigQuery data to ActivityDetail format
-        const activityDetail = activityToDetail(bigQueryActivity);
+        const activityDetail = activityToDetail(bigQueryData);
         setActivity(activityDetail);
       } catch (err) {
         console.error('Error fetching activity:', err);
@@ -140,15 +145,15 @@ export default function ActivityAnalysisPage({
         </div>
 
         {/* Carte Map - 3x2 - Right side (cols 4-6, rows 1-2) */}
-        <MapCard title="Tracé de l'activité" route={exampleRoute} />
+        {/* <MapCard title="Tracé de l'activité" route={exampleRoute} /> */}
 
         {/* Carte Notes - 6x1 - (cols 1-6, row 3) */}
-        <div className="md:col-span-6 md:col-start-1 md:row-start-3">
+        {/* <div className="md:col-span-6 md:col-start-1 md:row-start-3">
           <ActivityNotesCard notes={activity.notes} />
-        </div>
+        </div> */}
 
         {/* Carte Évolution Fréquence Cardiaque - 3x2 - (cols 1-3, rows 4-5) */}
-        <div className="md:col-span-3 md:row-span-2 md:col-start-1 md:row-start-4">
+        <div className="md:col-span-3 md:row-span-3 md:col-start-1 md:row-start-3">
           <HeartRateEvolutionCard
             timeSeries={activity.timeSeries}
             zones={activity.heartRateZones}
@@ -158,7 +163,7 @@ export default function ActivityAnalysisPage({
         </div>
 
         {/* Carte Liste des Intervalles - 3x2 - (cols 4-6, rows 4-5) */}
-        <div className="md:col-span-3 md:row-span-3 md:col-start-4 md:row-start-4">
+        <div className="md:col-span-3 md:row-span-2 md:col-start-4 md:row-start-1">
           <IntervalsListCard laps={activity.intervals.map((interval) => ({
             lapIndex: interval.id,
             startTimeGMT: '',
@@ -173,6 +178,10 @@ export default function ActivityAnalysisPage({
           }))} />
         </div>
 
+        {/* Carte Titres écoutés - 3x1 - (cols 1-3, row 6) */}
+        <div className="md:col-span-3 md:col-start-4 md:row-start-3 md:row-span-3">
+          <ActivityTracksCard tracks={bigQueryActivity?.tracks_played || []} />
+        </div>
 
       </div>
     </div>

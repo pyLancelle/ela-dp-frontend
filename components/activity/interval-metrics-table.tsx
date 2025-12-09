@@ -44,65 +44,56 @@ export function IntervalMetricsTable({ intervals }: IntervalMetricsTableProps) {
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader>
+    <Card className="flex flex-col h-full">
+      <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
-          Métriques par intervalle
+          <BarChart3 className="h-4 w-4" />
+          Splits au kilomètre
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="rounded-md border overflow-x-auto">
+      <CardContent className="flex-1 overflow-hidden">
+        <div className="overflow-x-auto h-full">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12">#</TableHead>
-                <TableHead>Nom</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Distance</TableHead>
-                <TableHead className="text-right">Temps</TableHead>
-                <TableHead className="text-right">Allure</TableHead>
-                <TableHead className="text-right">FC Moy</TableHead>
-                <TableHead className="text-right">FC Max</TableHead>
-                <TableHead className="text-center">Zone</TableHead>
-                <TableHead className="text-right">D+</TableHead>
+                <TableHead className="w-[50px] p-2">Km</TableHead>
+                <TableHead className="p-2 min-w-[100px]">Temps</TableHead>
+                <TableHead className="text-right p-2 min-w-[100px]">Allure</TableHead>
+                <TableHead className="text-right p-2 w-[80px]">FC moy</TableHead>
+                <TableHead className="text-right p-2 w-[70px]">D+</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {intervals.map((interval, index) => (
-                <TableRow key={interval.id}>
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell className="font-medium">{interval.name}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
-                        intervalTypeColors[interval.type]
-                      }`}
-                    >
-                      {intervalTypeLabels[interval.type]}
-                    </span>
+                <TableRow key={interval.id} className="hover:bg-muted/50">
+                  <TableCell className="font-bold p-2 text-sm">{index + 1}</TableCell>
+                  <TableCell className="p-2">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="text-sm font-medium">
+                        {formatDuration(interval.duration)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {interval.distance.toFixed(2)} km
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell className="text-right">
-                    {interval.distance.toFixed(2)} km
+                  <TableCell className="text-right p-2">
+                    <div className="flex flex-col gap-0.5 items-end">
+                      <div className="text-sm font-medium">
+                        {formatPace(interval.avgPace)}/km
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Zone {interval.dominantZone}
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell className="text-right">
-                    {formatDuration(interval.duration)}
+                  <TableCell className="text-right p-2">
+                    <div className="flex flex-col gap-0.5 items-end">
+                      <div className="text-sm font-medium">{interval.avgHeartRate}</div>
+                      <div className="text-xs text-muted-foreground">{interval.maxHeartRate} max</div>
+                    </div>
                   </TableCell>
-                  <TableCell className="text-right">
-                    {formatPace(interval.avgPace)}/km
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {interval.avgHeartRate} bpm
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {interval.maxHeartRate} bpm
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-bold">
-                      Z{interval.dominantZone}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">{interval.elevationGain} m</TableCell>
+                  <TableCell className="text-right p-2 text-sm font-medium">{interval.elevationGain} m</TableCell>
                 </TableRow>
               ))}
             </TableBody>
