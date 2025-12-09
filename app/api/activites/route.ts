@@ -79,7 +79,6 @@ export async function GET() {
         typeKey
       FROM \`polar-scene-465223-f7.dp_product_dev.pct_activites__last_run\`
       ORDER BY startTimeGMT DESC
-      LIMIT 10
     `;
 
     const [rows] = await bigquery.query(query);
