@@ -10,6 +10,15 @@ interface HeartRateZonesChartProps {
   zones: HeartRateZone[];
 }
 
+// Fixed colors for HR zones: gray - blue - green - orange - red
+const ZONE_COLORS: Record<number, string> = {
+  1: 'hsl(var(--muted))',        // Zone 1: Gray
+  2: 'hsl(217, 91%, 60%)',        // Zone 2: Blue
+  3: 'hsl(142, 71%, 45%)',        // Zone 3: Green
+  4: 'hsl(25, 95%, 53%)',         // Zone 4: Orange
+  5: 'hsl(0, 84%, 60%)',          // Zone 5: Red
+};
+
 export function HeartRateZonesChart({ zones }: HeartRateZonesChartProps) {
   // Filter out zones with 0 time
   const activeZones = zones.filter((zone) => zone.timeInZone > 0);
@@ -18,13 +27,13 @@ export function HeartRateZonesChart({ zones }: HeartRateZonesChartProps) {
     name: `Z${zone.zone} - ${zone.name}`,
     value: zone.percentage,
     timeInZone: zone.timeInZone,
-    color: zone.color,
+    color: ZONE_COLORS[zone.zone] || ZONE_COLORS[2],
   }));
 
   const chartConfig = activeZones.reduce((acc, zone) => {
     acc[`Z${zone.zone}`] = {
       label: zone.name,
-      color: zone.color,
+      color: ZONE_COLORS[zone.zone] || ZONE_COLORS[2],
     };
     return acc;
   }, {} as Record<string, { label: string; color: string }>);

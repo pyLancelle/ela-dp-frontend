@@ -1,7 +1,9 @@
 "use client";
 
-import { use } from "react";
-import { mockActivities } from "@/lib/mock/activity-detail-mock";
+import { use, useEffect, useState } from "react";
+import { Activity } from "@/types/activity";
+import { ActivityDetail } from "@/types/activity-detail";
+import { activityToDetail } from "@/lib/adapters/activity-adapter";
 import { ActivityHeader } from "@/components/activity/activity-header";
 import { IntervalsRecharts } from "@/components/activity/intervals-recharts";
 import { ActivityKpisCard } from "@/components/activity/activity-kpis-card";
@@ -32,7 +34,59 @@ export default function ActivityAnalysisPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const activity = mockActivities[id];
+  const [activity, setActivity] = useState<ActivityDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchActivity() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch activity from BigQuery API
+        const response = await fetch(`/api/activites/${id}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const bigQueryActivity: Activity = await response.json();
+
+        // Convert BigQuery data to ActivityDetail format
+        const activityDetail = activityToDetail(bigQueryActivity);
+        setActivity(activityDetail);
+      } catch (err) {
+        console.error('Error fetching activity:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch activity');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchActivity();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-muted-foreground">Chargement de l'activité...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h2 className="text-red-800 font-semibold mb-2">Erreur</h2>
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!activity) {
     return (
@@ -88,7 +142,12 @@ export default function ActivityAnalysisPage({
         {/* Carte Map - 3x2 - Right side (cols 4-6, rows 1-2) */}
         <MapCard title="Tracé de l'activité" route={exampleRoute} />
 
-        {/* Carte Évolution Fréquence Cardiaque - 3x2 - (cols 1-3, rows 3-4) */}
+        {/* Carte Notes - 6x1 - (cols 1-6, row 3) */}
+        <div className="md:col-span-6 md:col-start-1 md:row-start-3">
+          <ActivityNotesCard notes={activity.notes} />
+        </div>
+
+        {/* Carte Évolution Fréquence Cardiaque - 3x2 - (cols 1-3, rows 4-5) */}
         <div className="md:col-span-3 md:row-span-2 md:col-start-1 md:row-start-4">
           <HeartRateEvolutionCard
             timeSeries={activity.timeSeries}
@@ -98,17 +157,23 @@ export default function ActivityAnalysisPage({
           />
         </div>
 
-        {/* Carte Liste des Intervalles - 3x2 - (cols 4-6, rows 3-4) */}
-        <div className="md:col-span-3 md:row-span-2 md:col-start-4 md:row-start-4">
-          <IntervalsListCard intervals={activity.intervals} />
+        {/* Carte Liste des Intervalles - 3x2 - (cols 4-6, rows 4-5) */}
+        <div className="md:col-span-3 md:row-span-3 md:col-start-4 md:row-start-4">
+          <IntervalsListCard laps={activity.intervals.map((interval) => ({
+            lapIndex: interval.id,
+            startTimeGMT: '',
+            distance: interval.distance * 1000,
+            duration: interval.duration,
+            averageSpeed: interval.avgPace > 0 ? 1000 / (interval.avgPace * 60) : 0,
+            calories: 0,
+            averageHR: interval.avgHeartRate,
+            maxHR: interval.maxHeartRate,
+            elevationGain: interval.elevationGain,
+            elevationLoss: 0,
+          }))} />
         </div>
 
-        {/* Carte Texte - 6x1 - Bottom (cols 1-6, row 5) */}
-        {activity.notes && (
-          <div className="md:col-span-6 md:col-start-1 md:row-start-3">
-            <ActivityNotesCard notes={activity.notes} />
-          </div>
-        )}
+
       </div>
     </div>
   );

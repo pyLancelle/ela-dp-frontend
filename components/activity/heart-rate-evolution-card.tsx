@@ -49,8 +49,8 @@ export function HeartRateEvolutionCard({
             Évolution de la fréquence cardiaque
           </div>
           <div className="flex gap-4 text-sm font-normal text-muted-foreground">
-            <div>Moyenne : {avgHeartRate} bpm</div>
-            <div>Max : {maxHeartRate} bpm</div>
+            <div>Moyenne : {Math.round(avgHeartRate)} bpm</div>
+            <div>Max : {Math.round(maxHeartRate)} bpm</div>
           </div>
         </CardTitle>
       </CardHeader>
@@ -66,7 +66,7 @@ export function HeartRateEvolutionCard({
                 y1={zone.minHR}
                 y2={zone.maxHR}
                 fill={zone.color}
-                fillOpacity={0.12}
+                fillOpacity={0.2}
                 strokeOpacity={0}
               />
             ))}
@@ -85,6 +85,7 @@ export function HeartRateEvolutionCard({
               tickLine={false}
               axisLine={false}
               tick={{ fontSize: 11 }}
+              tickFormatter={(value) => Math.round(value).toString()}
               label={{ value: "FC (bpm)", angle: -90, position: "insideLeft", fontSize: 12 }}
             />
             <ChartTooltip
@@ -103,7 +104,7 @@ export function HeartRateEvolutionCard({
                           Temps : {props.payload.time}
                         </div>
                         <div className="font-medium text-red-500">
-                          {value} bpm
+                          {Math.round(value as number)} bpm
                         </div>
                         {zone && (
                           <div

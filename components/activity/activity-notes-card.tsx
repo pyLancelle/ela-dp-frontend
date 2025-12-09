@@ -6,9 +6,7 @@ interface ActivityNotesCardProps {
 }
 
 export function ActivityNotesCard({ notes }: ActivityNotesCardProps) {
-  if (!notes) {
-    return null;
-  }
+
 
   return (
     <Card className="h-full flex flex-col">

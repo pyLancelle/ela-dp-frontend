@@ -147,10 +147,10 @@ export function IntervalsRecharts({ intervals }: IntervalsRechartsProps) {
                   Vitesse : {intervalData[hoveredIndex].speed.toFixed(1)} km/h
                 </div>
                 <div>
-                  FC moy : {intervalData[hoveredIndex].interval.avgHeartRate} bpm
+                  FC moy : {Math.round(intervalData[hoveredIndex].interval.avgHeartRate)} bpm
                 </div>
                 <div>
-                  FC max : {intervalData[hoveredIndex].interval.maxHeartRate} bpm
+                  FC max : {Math.round(intervalData[hoveredIndex].interval.maxHeartRate)} bpm
                 </div>
               </div>
             </div>
