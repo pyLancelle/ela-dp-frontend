@@ -18,16 +18,15 @@ export async function GET(request: NextRequest) {
         // Note: Adjusting query based on assumption that this table aggregates daily stats
         const listeningTimeQuery = `
       SELECT *
-      FROM \`polar-scene-465223-f7.dp_product_dev.pct_homepage__music_dashboard\`
-      WHERE period = '${period}'
-      LIMIT 1
+      FROM \`polar-scene-465223-f7.dp_product_dev.pct_homepage__music_time_daily\`
+      ORDER BY date DESC
+      LIMIT 7
     `;
 
         // 2. Top Artists
         const topArtistsQuery = `
       SELECT *
-      FROM \`polar-scene-465223-f7.dp_product_dev.pct_classement__top_artist_by_period\`
-      WHERE period = '${period}'
+      FROM \`polar-scene-465223-f7.dp_product_dev.pct_homepage__top_artist\`
       ORDER BY rank ASC
       LIMIT 10
     `;
@@ -35,8 +34,7 @@ export async function GET(request: NextRequest) {
         // 3. Top Tracks
         const topTracksQuery = `
       SELECT *
-      FROM \`polar-scene-465223-f7.dp_product_dev.pct_classement__top_track_by_period\`
-      WHERE period = '${period}'
+      FROM \`polar-scene-465223-f7.dp_product_dev.pct_homepage__top_track\`
       ORDER BY rank ASC
       LIMIT 10
     `;
@@ -51,6 +49,58 @@ export async function GET(request: NextRequest) {
         const listeningTimeRows = listeningTimeResult[0];
         const topArtistsRows = topArtistsResult[0];
         const topTracksRows = topTracksResult[0];
+
+        // Debug: Log the first row of each result to see the actual schema
+        console.log('Sample listeningTime row:', listeningTimeRows[0]);
+        console.log('All listeningTime rows count:', listeningTimeRows.length);
+        console.log('Sample topArtist row:', topArtistsRows[0]);
+        console.log('Sample topTrack row:', topTracksRows[0]);
+
+        // Process listening time data
+        const processListeningTime = () => {
+            if (listeningTimeRows.length === 0) {
+                return { averagePerDay: "0h 0m", days: [] };
+            }
+
+            // Sort by date ascending for display (oldest to newest)
+            const sortedRows = [...listeningTimeRows].reverse();
+
+            // Calculate average duration in milliseconds
+            const totalMs = listeningTimeRows.reduce((sum, row) => sum + (row.total_duration_ms || 0), 0);
+            const averageMs = totalMs / listeningTimeRows.length;
+
+            // Convert average to hours and minutes
+            const avgHours = Math.floor(averageMs / (1000 * 60 * 60));
+            const avgMinutes = Math.floor((averageMs % (1000 * 60 * 60)) / (1000 * 60));
+            const averagePerDay = `${avgHours}h ${avgMinutes}m`;
+
+            // Find max duration for percentage calculation
+            const maxDuration = Math.max(...listeningTimeRows.map(row => row.total_duration_ms || 0));
+
+            // Format days for display
+            const days = sortedRows.map(row => {
+                const dateObj = new Date(row.date.value || row.date);
+                const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+                const day = dayNames[dateObj.getDay()];
+
+                const durationMs = row.total_duration_ms || 0;
+                const hours = Math.floor(durationMs / (1000 * 60 * 60));
+                const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+                const formatted = hours > 0 ? `${hours}h${minutes}m` : `${minutes}m`;
+
+                const heightPercentage = maxDuration > 0 ? (durationMs / maxDuration) * 100 : 0;
+
+                return {
+                    date: row.date.value || row.date,
+                    day,
+                    duration: durationMs,
+                    formatted,
+                    heightPercentage
+                };
+            });
+
+            return { averagePerDay, days };
+        };
 
         // Construct response
         // Note: If listeningTimeRows is empty, we might need to handle it. 
@@ -77,24 +127,24 @@ export async function GET(request: NextRequest) {
         const response: MusicDashboardData = {
             generatedAt: new Date().toISOString(),
             period: period,
-            listeningTime: listeningTimeRows.length > 0 ? listeningTimeRows[0].listeningTime : { averagePerDay: "0h 0m", days: [] }, // Fallback if empty
+            listeningTime: processListeningTime(),
             topArtists: topArtistsRows.map((row: any) => ({
                 rank: row.rank,
-                name: row.artist_name || row.name, // Handling potential column name diffs
-                trackCount: row.track_count || 0,
+                name: row.artistname || 'Artiste inconnu',
+                trackCount: row.play_count || 0,
                 totalDuration: row.total_duration || "0h 0m",
                 playCount: row.play_count || 0,
-                imageUrl: row.image_url || null,
-                externalUrl: row.external_url || null
+                imageUrl: row.imageurllarge || row.albumimageurl || row.artistimageurl || null,
+                externalUrl: row.artistexternalurl || null
             })),
             topTracks: topTracksRows.map((row: any) => ({
                 rank: row.rank,
-                name: row.track_name || row.name,
-                artistName: row.artist_name,
+                name: row.trackname || 'Titre inconnu',
+                artistName: row.all_artist_names || row.artistname || 'Artiste inconnu',
                 totalDuration: row.total_duration || "0m 0s",
                 playCount: row.play_count || 0,
-                imageUrl: row.image_url || null,
-                externalUrl: row.external_url || null
+                imageUrl: row.albumimageurl || null,
+                externalUrl: row.trackExternalUrl || row.trackexternalurl || null
             }))
         };
 

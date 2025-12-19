@@ -45,6 +45,25 @@ export default function Home() {
   const [sleepBodyBatteryData, setSleepBodyBatteryData] = useState<SleepBodyBatteryData | null>(null);
   const [loadingSleepBodyBattery, setLoadingSleepBodyBattery] = useState(true);
 
+  // Generate a consistent color gradient based on a string
+  const getGradientColors = (name: string) => {
+    const gradients = [
+      'from-blue-500 to-purple-600',
+      'from-green-500 to-teal-600',
+      'from-orange-500 to-red-600',
+      'from-pink-500 to-rose-600',
+      'from-indigo-500 to-blue-600',
+      'from-yellow-500 to-orange-600',
+      'from-purple-500 to-pink-600',
+      'from-teal-500 to-cyan-600',
+      'from-red-500 to-pink-600',
+      'from-cyan-500 to-blue-600',
+    ];
+    // Simple hash function to get consistent color for same name
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return gradients[hash % gradients.length];
+  };
+
   useEffect(() => {
     async function fetchMusicData() {
       try {
@@ -481,12 +500,25 @@ export default function Home() {
                   {musicData?.topArtists.map((artist, index) => (
                     <div key={index} className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <span className={`text-sm font-semibold w-5 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
+                        <span className={`text-sm font-semibold w-5 flex-shrink-0 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : artist.rank}
                         </span>
+                        {artist.imageUrl ? (
+                          <img
+                            src={artist.imageUrl}
+                            alt={artist.name}
+                            className="w-10 h-10 rounded object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className={`w-10 h-10 rounded bg-gradient-to-br ${getGradientColors(artist.name)} flex items-center justify-center flex-shrink-0`}>
+                            <span className="text-white text-xs font-semibold">
+                              {artist.name.slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate">{artist.name}</div>
-                          <div className="text-xs text-muted-foreground">{artist.trackCount} titres</div>
+                          <div className="text-xs text-muted-foreground">{artist.trackCount} plays</div>
                         </div>
                       </div>
                       <div className="text-right">
@@ -501,9 +533,16 @@ export default function Home() {
                   {musicData?.topTracks.map((track, index) => (
                     <div key={index} className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <span className={`text-sm font-semibold w-5 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
+                        <span className={`text-sm font-semibold w-5 flex-shrink-0 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : track.rank}
                         </span>
+                        {track.imageUrl && (
+                          <img
+                            src={track.imageUrl}
+                            alt={track.name}
+                            className="w-10 h-10 rounded object-cover flex-shrink-0"
+                          />
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate">{track.name}</div>
                           <div className="text-xs text-muted-foreground">{track.artistName}</div>
