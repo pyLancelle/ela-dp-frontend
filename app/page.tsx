@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MusicDashboardData, SleepBodyBatteryData } from "@/types/dashboard";
+import { MusicDashboardData, SleepBodyBatteryData, RunningWeeklyData, RunningWeeklyVolumeData } from "@/types/dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Music,
@@ -33,6 +33,7 @@ import { BodyBatteryChart } from "@/components/body-battery-chart";
 import { SleepScoreChart } from "@/components/sleep-score-chart";
 import { HrvCard } from "@/components/hrv-card";
 import { RestingHrCard } from "@/components/resting-hr-card";
+import { WeeklyVolumeChart } from "@/components/weekly-volume-chart";
 
 
 export default function Home() {
@@ -44,6 +45,10 @@ export default function Home() {
   const [loadingSleep, setLoadingSleep] = useState(true);
   const [sleepBodyBatteryData, setSleepBodyBatteryData] = useState<SleepBodyBatteryData | null>(null);
   const [loadingSleepBodyBattery, setLoadingSleepBodyBattery] = useState(true);
+  const [runningData, setRunningData] = useState<RunningWeeklyData | null>(null);
+  const [loadingRunning, setLoadingRunning] = useState(true);
+  const [weeklyVolumeData, setWeeklyVolumeData] = useState<RunningWeeklyVolumeData | null>(null);
+  const [loadingWeeklyVolume, setLoadingWeeklyVolume] = useState(true);
 
   // Generate a consistent color gradient based on a string
   const getGradientColors = (name: string) => {
@@ -120,6 +125,46 @@ export default function Home() {
       }
     }
     fetchSleepBodyBatteryData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchRunningData() {
+      try {
+        const res = await fetch('/api/homepage/running');
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Running data received:', data);
+          setRunningData(data);
+        } else {
+          console.error('API error:', res.status, await res.text());
+        }
+      } catch (error) {
+        console.error("Failed to fetch running data", error);
+      } finally {
+        setLoadingRunning(false);
+      }
+    }
+    fetchRunningData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchWeeklyVolumeData() {
+      try {
+        const res = await fetch('/api/homepage/running/weekly-volume');
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Weekly volume data received:', data);
+          setWeeklyVolumeData(data);
+        } else {
+          console.error('API error:', res.status, await res.text());
+        }
+      } catch (error) {
+        console.error("Failed to fetch weekly volume data", error);
+      } finally {
+        setLoadingWeeklyVolume(false);
+      }
+    }
+    fetchWeeklyVolumeData();
   }, []);
 
   // Données pour le graphique de progression (valeurs cumulées par mois)
@@ -579,15 +624,15 @@ export default function Home() {
             {/* Stats du haut */}
             <div className="grid grid-cols-3 gap-3 mb-3">
               <div className="text-center">
-                <div className="text-2xl font-bold">18.5</div>
+                <div className="text-2xl font-bold">{runningData?.totalDistance.toFixed(1) || '0'}</div>
                 <div className="text-xs text-muted-foreground">km total</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold">4</div>
+                <div className="text-2xl font-bold">{runningData?.sessionCount || 0}</div>
                 <div className="text-xs text-muted-foreground">sessions</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold">4.6</div>
+                <div className="text-2xl font-bold">{runningData?.averagePerSession.toFixed(1) || '0'}</div>
                 <div className="text-xs text-muted-foreground">km/session</div>
               </div>
             </div>
@@ -595,26 +640,21 @@ export default function Home() {
             {/* Mini bar chart pour km par jour */}
             <div className="relative h-12 mb-3">
               <div className="flex items-end justify-between h-full gap-1">
-                {[
-                  { day: 'L', km: 0 },
-                  { day: 'M', km: 5.2 },
-                  { day: 'M', km: 0 },
-                  { day: 'J', km: 4.8 },
-                  { day: 'V', km: 8.5 },
-                  { day: 'S', km: 0 },
-                  { day: 'D', km: 0 },
-                ].map((data, index) => (
-                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-end relative">
-                    {data.km > 0 && (
-                      <>
-                        <span className="text-[8px] font-medium mb-0.5">{data.km}</span>
-                        <div className="w-full bg-blue-500 rounded-t" style={{ height: `${(data.km / 8.5) * 100}%` }}></div>
-                      </>
-                    )}
-                    {data.km === 0 && <div className="w-full h-1 bg-muted rounded"></div>}
-                    <span className="absolute -bottom-4 text-[9px] text-muted-foreground">{data.day}</span>
-                  </div>
-                ))}
+                {(runningData?.daily || []).map((data, index) => {
+                  const maxDistance = Math.max(...(runningData?.daily || []).map(d => d.distance), 1);
+                  return (
+                    <div key={index} className="flex flex-col items-center flex-1 h-full justify-end relative">
+                      {data.distance > 0 && (
+                        <>
+                          <span className="text-[8px] font-medium mb-0.5">{data.distance.toFixed(1)}</span>
+                          <div className="w-full bg-blue-500 rounded-t" style={{ height: `${(data.distance / maxDistance) * 100}%` }}></div>
+                        </>
+                      )}
+                      {data.distance === 0 && <div className="w-full h-1 bg-muted rounded"></div>}
+                      <span className="absolute -bottom-4 text-[9px] text-muted-foreground">{data.day}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -624,26 +664,18 @@ export default function Home() {
               <div className="absolute inset-x-0 top-1/2 h-px bg-border"></div>
 
               <div className="flex items-center justify-between h-full gap-1.5">
-                {[
-                  { day: 'L', aerobic: 0, anaerobic: 0 },
-                  { day: 'M', aerobic: 85, anaerobic: 15 },
-                  { day: 'M', aerobic: 0, anaerobic: 0 },
-                  { day: 'J', aerobic: 78, anaerobic: 22 },
-                  { day: 'V', aerobic: 92, anaerobic: 38 },
-                  { day: 'S', aerobic: 0, anaerobic: 0 },
-                  { day: 'D', aerobic: 0, anaerobic: 0 },
-                ].map((data, index) => (
+                {(runningData?.daily || []).map((data, index) => (
                   <div key={index} className="flex flex-col items-center flex-1 h-full justify-center">
                     {/* Aerobic (top half) */}
                     <div className="w-full flex items-end justify-center" style={{ height: '50%' }}>
-                      {data.aerobic > 0 && (
-                        <div className="w-full bg-blue-500 rounded-t" style={{ height: `${data.aerobic}%` }} title={`Aérobie: ${data.aerobic}`}></div>
+                      {data.aerobicScore > 0 && (
+                        <div className="w-full bg-blue-500 rounded-t" style={{ height: `${data.aerobicHeightPercentage}%` }} title={`Aérobie: ${data.aerobicScore.toFixed(1)}`}></div>
                       )}
                     </div>
                     {/* Anaerobic (bottom half) */}
                     <div className="w-full flex items-start justify-center" style={{ height: '50%' }}>
-                      {data.anaerobic > 0 && (
-                        <div className="w-full bg-orange-500 rounded-b" style={{ height: `${data.anaerobic}%` }} title={`Anaérobie: ${data.anaerobic}`}></div>
+                      {data.anaerobicScore > 0 && (
+                        <div className="w-full bg-orange-500 rounded-b" style={{ height: `${data.anaerobicHeightPercentage}%` }} title={`Anaérobie: ${data.anaerobicScore.toFixed(1)}`}></div>
                       )}
                     </div>
                   </div>
@@ -668,98 +700,9 @@ export default function Home() {
         </Card >
 
         {/* Weekly Running Volume - 1x1 - Central column row 3 */}
-        < Card className="md:col-span-1 md:col-start-3 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Volume hebdomadaire</CardTitle>
-            <CardDescription className="text-xs">10 dernières semaines</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="relative h-32">
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-              </div>
-
-              {/* Bar Chart */}
-              <div className="flex items-end justify-between h-full gap-1">
-                {/* S-10: 22 km (55%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">22</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '55%' }}></div>
-                </div>
-
-                {/* S-9: 28 km (70%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">28</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '70%' }}></div>
-                </div>
-
-                {/* S-8: 18 km (45%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5 opacity-60">18</span>
-                  <div className="w-full bg-foreground opacity-60 rounded-t" style={{ height: '45%' }}></div>
-                </div>
-
-                {/* S-7: 32 km (80%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">32</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '80%' }}></div>
-                </div>
-
-                {/* S-6: 25 km (62.5%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">25</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '62.5%' }}></div>
-                </div>
-
-                {/* S-5: 35 km (87.5%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">35</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '87.5%' }}></div>
-                </div>
-
-                {/* S-4: 30 km (75%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">30</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '75%' }}></div>
-                </div>
-
-                {/* S-3: 38 km (95%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">38</span>
-                  <div className="w-full bg-foreground rounded-t" style={{ height: '95%' }}></div>
-                </div>
-
-                {/* S-2: 40 km (100%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5">40</span>
-                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '100%' }}></div>
-                </div>
-
-                {/* S-1 (semaine en cours): 18.5 km (46.25%) */}
-                <div className="flex flex-col items-center flex-1 h-full justify-end">
-                  <span className="text-[9px] font-medium mb-0.5 text-blue-500">18.5</span>
-                  <div className="w-full bg-blue-500 rounded-t" style={{ height: '46.25%' }}></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Stats en dessous */}
-            <div className="mt-3 pt-2 border-t flex justify-between text-xs">
-              <div>
-                <div className="text-muted-foreground">Moyenne</div>
-                <div className="font-semibold">28.7 km</div>
-              </div>
-              <div className="text-right">
-                <div className="text-muted-foreground">Max</div>
-                <div className="font-semibold">40 km</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card >
+        <div className="md:col-span-1 md:col-start-3 md:row-start-3">
+          <WeeklyVolumeChart data={weeklyVolumeData || undefined} />
+        </div>
 
         {/* Training Status - 1x1 - Central column row 4 */}
         < Card className="md:col-span-1 md:col-start-3 md:row-start-4 hover:shadow-lg transition-shadow overflow-hidden" >
