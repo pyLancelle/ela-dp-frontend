@@ -67,7 +67,7 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                 <div className="flex items-center justify-between">
                     <div>
                         <CardTitle className="text-sm">Temps d'écoute</CardTitle>
-                        <CardDescription className="text-xs">7 derniers jours</CardDescription>
+                        <CardDescription className="text-xs">10 derniers jours</CardDescription>
                     </div>
                     <div className="text-right">
                         <div className="text-2xl font-bold">{getFormattedAverage(displayData.averagePerDay)}</div>
@@ -78,7 +78,7 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
             <CardContent className="pt-2 pb-3">
                 <div className="relative h-28">
                     {/* Bar Chart */}
-                    <div className="flex items-end justify-between h-full gap-1.5 px-1">
+                    <div className="flex items-end justify-between h-full gap-2 px-1">
                         {loading ? (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                                 Chargement...
@@ -92,7 +92,7 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                                         {day.formatted}
                                     </span>
                                     <div
-                                        className="w-full bg-black dark:bg-white rounded"
+                                        className="w-5 bg-black dark:bg-white rounded"
                                         style={{ height: `${day.heightPercentage}%` }}
                                     ></div>
                                     <span className="text-xs text-muted-foreground mt-2">{englishDay}</span>

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       SELECT *
       FROM \`polar-scene-465223-f7.dp_product_dev.pct_homepage__music_time_daily\`
       ORDER BY date DESC
-      LIMIT 7
+      LIMIT 10
     `;
 
         // 2. Top Artists

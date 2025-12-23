@@ -71,7 +71,7 @@ export function WeeklyVolumeChart({ data }: WeeklyVolumeChartProps) {
                         dataKey="volume"
                         fill="var(--color-volume)"
                         radius={4}
-                        barSize={12}
+                        barSize={20}
                     >
                         <LabelList
                             dataKey="volume"

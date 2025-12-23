@@ -35,6 +35,7 @@ import { HrvCard } from "@/components/hrv-card";
 import { RestingHrCard } from "@/components/resting-hr-card";
 import { WeeklyVolumeChart } from "@/components/weekly-volume-chart";
 import { ListeningTimeChart } from "@/components/listening-time-chart";
+import { RacePredictionsCard } from "@/components/race-predictions-card";
 
 
 export default function Home() {
@@ -757,63 +758,7 @@ export default function Home() {
         </Card >
 
         {/* Race Predictions - 1x2 - Column 4 row 3 */}
-        < Card className="md:col-span-1 md:row-span-2 md:col-start-4 md:row-start-3 hover:shadow-lg transition-shadow overflow-hidden" >
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Prédictions courses</CardTitle>
-            <CardDescription className="text-xs">Temps estimés</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="space-y-3">
-              {/* 5K */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
-                <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">5K</div>
-                  <div className="text-xl font-bold">20:25</div>
-                </div>
-                <div className="flex items-center gap-1 text-green-500">
-                  <ArrowDownRight className="h-3.5 w-3.5" />
-                  <span className="text-xs font-semibold">-1:15</span>
-                </div>
-              </div>
-
-              {/* 10K */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
-                <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">10K</div>
-                  <div className="text-xl font-bold">42:15</div>
-                </div>
-                <div className="flex items-center gap-1 text-green-500">
-                  <ArrowDownRight className="h-3.5 w-3.5" />
-                  <span className="text-xs font-semibold">-2:30</span>
-                </div>
-              </div>
-
-              {/* Semi Marathon */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
-                <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">Semi-Marathon</div>
-                  <div className="text-xl font-bold">1:32:45</div>
-                </div>
-                <div className="flex items-center gap-1 text-green-500">
-                  <ArrowDownRight className="h-3.5 w-3.5" />
-                  <span className="text-xs font-semibold">-5:15</span>
-                </div>
-              </div>
-
-              {/* Marathon */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
-                <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">Marathon</div>
-                  <div className="text-xl font-bold">3:18:30</div>
-                </div>
-                <div className="flex items-center gap-1 text-green-500">
-                  <ArrowDownRight className="h-3.5 w-3.5" />
-                  <span className="text-xs font-semibold">-12:20</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card >
+        <RacePredictionsCard />
 
         {/* Annual Running Distance - 1x1 - Central column row 7 */}
         < Card className="md:col-span-1 md:col-start-3 md:row-start-7 hover:shadow-lg transition-shadow overflow-hidden" >
