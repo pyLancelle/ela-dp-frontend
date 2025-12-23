@@ -50,12 +50,6 @@ export async function GET(request: NextRequest) {
         const topArtistsRows = topArtistsResult[0];
         const topTracksRows = topTracksResult[0];
 
-        // Debug: Log the first row of each result to see the actual schema
-        console.log('Sample listeningTime row:', listeningTimeRows[0]);
-        console.log('All listeningTime rows count:', listeningTimeRows.length);
-        console.log('Sample topArtist row:', topArtistsRows[0]);
-        console.log('Sample topTrack row:', topTracksRows[0]);
-
         // Process listening time data
         const processListeningTime = () => {
             if (listeningTimeRows.length === 0) {

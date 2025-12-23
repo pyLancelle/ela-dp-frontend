@@ -153,3 +153,41 @@ export interface SleepBodyBatteryData {
         daily: { day: string; hr: number; date: string }[];
     };
 }
+
+export interface RunningWeeklyRow {
+    date: string;
+    day_of_week: string;
+    total_distance_km: number;
+    aerobic_score: number;
+    anaerobic_score: number;
+}
+
+export interface RunningWeeklyData {
+    generatedAt: string;
+    totalDistance: number;
+    sessionCount: number;
+    averagePerSession: number;
+    daily: {
+        day: string;
+        date: string;
+        distance: number;
+        aerobicScore: number;
+        anaerobicScore: number;
+        aerobicHeightPercentage: number;
+        anaerobicHeightPercentage: number;
+    }[];
+}
+
+export interface RunningWeeklyVolumeData {
+    generatedAt: string;
+    average: number;
+    max: number;
+    weeks: {
+        week: string;
+        volume: number;
+        isCurrent: boolean;
+        weekNumber: number;
+        year: number;
+        startDate: string;
+    }[];
+}
