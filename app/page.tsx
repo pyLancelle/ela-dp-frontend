@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MusicDashboardData, SleepBodyBatteryData, RunningWeeklyData, RunningWeeklyVolumeData } from "@/types/dashboard";
+import { MusicDashboardData, SleepBodyBatteryData, RunningWeeklyData, RunningWeeklyVolumeData, RacePredictionsData } from "@/types/dashboard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Music,
@@ -51,6 +51,8 @@ export default function Home() {
   const [loadingRunning, setLoadingRunning] = useState(true);
   const [weeklyVolumeData, setWeeklyVolumeData] = useState<RunningWeeklyVolumeData | null>(null);
   const [loadingWeeklyVolume, setLoadingWeeklyVolume] = useState(true);
+  const [racePredictionsData, setRacePredictionsData] = useState<RacePredictionsData | null>(null);
+  const [loadingRacePredictions, setLoadingRacePredictions] = useState(true);
 
   // Generate a consistent color gradient based on a string
   const getGradientColors = (name: string) => {
@@ -167,6 +169,26 @@ export default function Home() {
       }
     }
     fetchWeeklyVolumeData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchRacePredictionsData() {
+      try {
+        const res = await fetch('/api/homepage/race-predictions');
+        if (res.ok) {
+          const data = await res.json();
+          console.log('Race predictions data received:', data);
+          setRacePredictionsData(data);
+        } else {
+          console.error('API error:', res.status, await res.text());
+        }
+      } catch (error) {
+        console.error("Failed to fetch race predictions data", error);
+      } finally {
+        setLoadingRacePredictions(false);
+      }
+    }
+    fetchRacePredictionsData();
   }, []);
 
   // Données pour le graphique de progression (valeurs cumulées par mois)
@@ -758,7 +780,10 @@ export default function Home() {
         </Card >
 
         {/* Race Predictions - 1x2 - Column 4 row 3 */}
-        <RacePredictionsCard />
+        <RacePredictionsCard
+          predictions={racePredictionsData?.predictions}
+          loading={loadingRacePredictions}
+        />
 
         {/* Annual Running Distance - 1x1 - Central column row 7 */}
         < Card className="md:col-span-1 md:col-start-3 md:row-start-7 hover:shadow-lg transition-shadow overflow-hidden" >

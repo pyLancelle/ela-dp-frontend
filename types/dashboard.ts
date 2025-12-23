@@ -191,3 +191,24 @@ export interface RunningWeeklyVolumeData {
         startDate: string;
     }[];
 }
+
+// Types pour les prédictions de course
+export interface RacePredictionRow {
+    distance: string;
+    current_date: string;
+    current_time: number;
+    previous_date: string;
+    previous_time: number;
+    diff_seconds: number;
+}
+
+export interface RacePredictionsData {
+    generatedAt: string;
+    predictions: {
+        distance: string;
+        time: string;
+        difference: string;
+        isImprovement: boolean;
+        diffSeconds: number;
+    }[];
+}

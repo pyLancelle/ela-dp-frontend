@@ -12,6 +12,7 @@ interface RacePrediction {
 interface RacePredictionsCardProps {
   className?: string
   predictions?: RacePrediction[]
+  loading?: boolean
 }
 
 const defaultPredictions: RacePrediction[] = [
@@ -23,7 +24,8 @@ const defaultPredictions: RacePrediction[] = [
 
 export function RacePredictionsCard({
   className,
-  predictions = defaultPredictions
+  predictions = defaultPredictions,
+  loading = false
 }: RacePredictionsCardProps) {
   return (
     <Card className={cn(
@@ -35,32 +37,38 @@ export function RacePredictionsCard({
         <CardDescription className="text-xs">Temps estimés (vs 30j)</CardDescription>
       </CardHeader>
       <CardContent className="pt-2 pb-3 flex-1 flex flex-col">
-        <div className="flex flex-col justify-between h-full">
-          {predictions.map((prediction) => {
-            const Icon = prediction.isImprovement ? ArrowDownRight : ArrowUpRight
-            const colorClass = prediction.isImprovement ? "text-green-500" : "text-red-500"
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+            Chargement...
+          </div>
+        ) : (
+          <div className="flex flex-col justify-between h-full">
+            {predictions.map((prediction) => {
+              const Icon = prediction.isImprovement ? ArrowDownRight : ArrowUpRight
+              const colorClass = prediction.isImprovement ? "text-green-500" : "text-red-500"
 
-            return (
-              <div
-                key={prediction.distance}
-                className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 -mx-2"
-              >
-                <div className="min-w-[95px]">
-                  <div className="text-xs text-muted-foreground mb-0.5">
-                    {prediction.distance}
+              return (
+                <div
+                  key={prediction.distance}
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 -mx-2"
+                >
+                  <div className="min-w-[95px]">
+                    <div className="text-xs text-muted-foreground mb-0.5">
+                      {prediction.distance}
+                    </div>
+                    <div className="text-xl font-bold">{prediction.time}</div>
                   </div>
-                  <div className="text-xl font-bold">{prediction.time}</div>
+                  <div className={cn("flex items-center gap-1 min-w-[70px]", colorClass)}>
+                    <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="text-xs font-semibold tabular-nums">
+                      {prediction.difference}
+                    </span>
+                  </div>
                 </div>
-                <div className={cn("flex items-center gap-1 min-w-[70px]", colorClass)}>
-                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span className="text-xs font-semibold tabular-nums">
-                    {prediction.difference}
-                  </span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
