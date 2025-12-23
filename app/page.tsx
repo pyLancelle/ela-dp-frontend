@@ -34,6 +34,7 @@ import { SleepScoreChart } from "@/components/sleep-score-chart";
 import { HrvCard } from "@/components/hrv-card";
 import { RestingHrCard } from "@/components/resting-hr-card";
 import { WeeklyVolumeChart } from "@/components/weekly-volume-chart";
+import { ListeningTimeChart } from "@/components/listening-time-chart";
 
 
 export default function Home() {
@@ -459,53 +460,10 @@ export default function Home() {
 
 
         {/* Spotify Listening Time Chart - 2x1 - Right column row 1 */}
-        <Card className="md:col-span-2 md:col-start-5 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-1 pt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Music className="h-5 w-5" />
-                <CardTitle>Temps d'écoute</CardTitle>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">4h 12m</div>
-                <p className="text-xs text-muted-foreground">Moyenne/jour</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-2 pb-8">
-            <div className="relative h-24 mb-6">
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-                <div className="h-px bg-border opacity-20"></div>
-              </div>
-
-              {/* Bar Chart */}
-              <div className="flex items-end justify-between h-full gap-2 px-1">
-                {loadingMusic ? (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">Chargement...</div>
-                ) : musicData?.listeningTime?.days.map((day, index) => (
-                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-end">
-                    <span className={`text-xs font-medium mb-1 ${day.heightPercentage < 50 ? 'opacity-60' : ''}`}>{day.formatted}</span>
-                    <div
-                      className={`w-full bg-foreground rounded-t ${day.heightPercentage < 50 ? 'opacity-60' : ''}`}
-                      style={{ height: `${day.heightPercentage}%` }}
-                    ></div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Day labels */}
-              <div className="absolute -bottom-6 left-0 right-0 flex justify-between text-xs text-muted-foreground px-1">
-                {loadingMusic ? null : musicData?.listeningTime?.days.map((day, index) => (
-                  <span key={index} className="flex-1 text-center">{day.day}</span>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ListeningTimeChart
+          data={musicData?.listeningTime}
+          loading={loadingMusic}
+        />
 
         {/* Top Artists/Tracks - 2x3 - Right column under Temps d'écoute */}
         <Card className="md:col-span-2 md:row-span-3 md:col-start-5 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
