@@ -159,19 +159,15 @@ export default function ClassementsPage() {
         const queryString = params.toString();
         const urlSuffix = queryString ? `?${queryString}` : '';
 
-        const [tracksResponse, artistsResponse, albumsResponse] = await Promise.all([
-          fetch(`/api/musique/classements/top-tracks${urlSuffix}`),
-          fetch(`/api/musique/classements/top-artists${urlSuffix}`),
-          fetch(`/api/musique/classements/top-albums${urlSuffix}`),
-        ]);
+        // Single grouped API call instead of 3 separate calls
+        const response = await fetch(`/api/music/music-classement${urlSuffix}`);
 
-        if (!tracksResponse.ok || !artistsResponse.ok || !albumsResponse.ok) {
+        if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
 
-        const tracksData = await tracksResponse.json();
-        const artistsData = await artistsResponse.json();
-        const albumsData = await albumsResponse.json();
+        const data = await response.json();
+        const { top_tracks: tracksData, top_artists: artistsData, top_albums: albumsData } = data;
 
         setTopTracks(tracksData);
         setTopArtists(artistsData);
