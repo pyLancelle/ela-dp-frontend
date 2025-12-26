@@ -25,24 +25,24 @@ import { DateRange } from "react-day-picker";
 // Interface pour les données BigQuery
 interface TopTrack {
   rank: number;
-  trackname: string;
-  all_artist_names: string;
+  name: string;
+  artist_name: string;
   total_duration: string;
   play_count: number;
   trackExternalUrl: string;
-  albumimageurl: string;
+  image_url: string;
 }
 
 interface TopArtist {
   rank: number;
-  artistname: string;
+  name: string;
   total_duration: string;
   play_count: number;
   track_count: number;
-  albumimageurl: string;
+  image_url: string;
   artistexternalurl: string;
   tracks?: {
-    trackname: string;
+    name: string;
     duration: string;
     play_count: number;
     percentage: number;
@@ -51,17 +51,17 @@ interface TopArtist {
 
 interface TopAlbum {
   rank: number;
-  albumname: string;
-  all_artist_names: string;
+  name: string;
+  artist_name: string;
   total_duration: string;
   play_count: number;
   track_count: number;
-  albumimageurl: string;
+  image_url: string;
   albumexternalurl: string;
 }
 
 interface ArtistTrackBreakdown {
-  trackName: string;
+  name: string;
   duration: string;
   playCount: number;
   percentage: number;
@@ -131,7 +131,7 @@ export default function ClassementsPage() {
     if (artist.tracks && artist.tracks.length > 0) {
       console.log('Using real data from BigQuery');
       const formattedTracks = artist.tracks.map(track => ({
-        trackName: track.trackname,
+        name: track.name,
         duration: track.duration,
         playCount: track.play_count,
         percentage: track.percentage,
@@ -140,7 +140,7 @@ export default function ClassementsPage() {
     } else {
       // Sinon on utilise les données mockées
       console.log('Using mocked data');
-      setArtistTracks(getMockedArtistTracks(artist.artistname));
+      setArtistTracks(getMockedArtistTracks(artist.name));
     }
 
     setIsDialogOpen(true);
@@ -265,18 +265,18 @@ export default function ClassementsPage() {
                             className="flex-shrink-0 hover:opacity-80 transition-opacity block w-8 h-8 relative overflow-hidden rounded"
                           >
                             <Image
-                              src={getImageUrl(track.albumimageurl)}
-                              alt={track.trackname}
+                              src={getImageUrl(track.image_url)}
+                              alt={track.name}
                               fill
                               className="object-cover"
                             />
                           </a>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate" title={track.trackname}>
-                              {truncateText(track.trackname, 40)}
+                            <div className="text-sm font-medium truncate" title={track.name}>
+                              {truncateText(track.name, 40)}
                             </div>
-                            <div className="text-xs text-muted-foreground truncate" title={track.all_artist_names}>
-                              {truncateText(track.all_artist_names, 40)}
+                            <div className="text-xs text-muted-foreground truncate" title={track.artist_name}>
+                              {truncateText(track.artist_name, 40)}
                             </div>
                           </div>
                         </div>
@@ -334,15 +334,15 @@ export default function ClassementsPage() {
                             className="flex-shrink-0 hover:opacity-80 transition-opacity block w-8 h-8 relative overflow-hidden rounded"
                           >
                             <Image
-                              src={getImageUrl(artist.albumimageurl)}
-                              alt={artist.artistname}
+                              src={getImageUrl(artist.image_url)}
+                              alt={artist.name}
                               fill
                               className="object-cover"
                             />
                           </a>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate" title={artist.artistname}>
-                              {truncateText(artist.artistname, 40)}
+                            <div className="text-sm font-medium truncate" title={artist.name}>
+                              {truncateText(artist.name, 40)}
                             </div>
                           </div>
                         </div>
@@ -396,18 +396,18 @@ export default function ClassementsPage() {
                             className="flex-shrink-0 hover:opacity-80 transition-opacity block w-8 h-8 relative overflow-hidden rounded"
                           >
                             <Image
-                              src={getImageUrl(album.albumimageurl)}
-                              alt={album.albumname}
+                              src={getImageUrl(album.image_url)}
+                              alt={album.name}
                               fill
                               className="object-cover"
                             />
                           </a>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate" title={album.albumname}>
-                              {truncateText(album.albumname, 40)}
+                            <div className="text-sm font-medium truncate" title={album.name}>
+                              {truncateText(album.name, 40)}
                             </div>
-                            <div className="text-xs text-muted-foreground truncate" title={album.all_artist_names}>
-                              {truncateText(album.all_artist_names, 40)}
+                            <div className="text-xs text-muted-foreground truncate" title={album.artist_name}>
+                              {truncateText(album.artist_name, 40)}
                             </div>
                           </div>
                         </div>
@@ -432,7 +432,7 @@ export default function ClassementsPage() {
           <DialogHeader>
             <DialogTitle className="text-lg flex items-center gap-2">
               <User className="h-4 w-4" />
-              {selectedArtist?.artistname}
+              {selectedArtist?.name}
             </DialogTitle>
             <DialogDescription className="text-xs">
               Répartition du temps d&apos;écoute par chanson • Total: {selectedArtist?.total_duration}
@@ -451,7 +451,7 @@ export default function ClassementsPage() {
                       #{index + 1}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium truncate">{track.trackName}</h3>
+                      <h3 className="text-sm font-medium truncate">{track.name}</h3>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{track.duration}</span>
                         <span>•</span>
