@@ -263,7 +263,6 @@ export default function Home() {
           // Transform running weekly data
           if (data.running_weekly) {
             const weeklyRows = data.running_weekly;
-            const sortedRows = [...weeklyRows].reverse();
 
             const totalDistance = weeklyRows.reduce((sum: number, row: any) => sum + (row.total_distance_km || 0), 0);
             const sessionCount = weeklyRows.filter((row: any) => row.total_distance_km > 0).length;
@@ -272,27 +271,42 @@ export default function Home() {
             const maxAerobic = Math.max(...weeklyRows.map((row: any) => row.aerobic_score || 0), 5);
             const maxAnaerobic = Math.max(...weeklyRows.map((row: any) => row.anaerobic_score || 0), 5);
 
-            const daily = sortedRows.map((row: any) => {
-              const aerobicHeightPercentage = maxAerobic > 0 ? (row.aerobic_score / maxAerobic) * 100 : 0;
-              const anaerobicHeightPercentage = maxAnaerobic > 0 ? (row.anaerobic_score / maxAnaerobic) * 100 : 0;
+            // Generate the last 10 days
+            const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Sunday to Saturday
+            const last10Days = [];
+            const today = new Date();
 
-              return {
-                day: row.day_of_week,
-                date: row.date,
-                distance: row.total_distance_km || 0,
-                aerobicScore: row.aerobic_score || 0,
-                anaerobicScore: row.anaerobic_score || 0,
+            for (let i = 9; i >= 0; i--) {
+              const date = new Date(today);
+              date.setDate(today.getDate() - i);
+              const dateStr = date.toISOString().split('T')[0];
+              const dayOfWeek = dayNames[date.getDay()];
+
+              // Find matching data from API
+              const matchingRow = weeklyRows.find((row: any) => row.date === dateStr);
+
+              const aerobicScore = matchingRow?.aerobic_score || 0;
+              const anaerobicScore = matchingRow?.anaerobic_score || 0;
+              const aerobicHeightPercentage = maxAerobic > 0 ? (aerobicScore / maxAerobic) * 100 : 0;
+              const anaerobicHeightPercentage = maxAnaerobic > 0 ? (anaerobicScore / maxAnaerobic) * 100 : 0;
+
+              last10Days.push({
+                day: dayOfWeek,
+                date: dateStr,
+                distance: matchingRow?.total_distance_km || 0,
+                aerobicScore,
+                anaerobicScore,
                 aerobicHeightPercentage,
                 anaerobicHeightPercentage
-              };
-            });
+              });
+            }
 
             setRunningData({
               generatedAt: new Date().toISOString(),
               totalDistance: Math.round(totalDistance * 10) / 10,
               sessionCount,
               averagePerSession: Math.round(averagePerSession * 10) / 10,
-              daily
+              daily: last10Days
             });
           }
 
