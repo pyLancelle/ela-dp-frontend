@@ -37,6 +37,11 @@ const navSections: NavSection[] = [
         href: "/musique/classements",
         icon: Trophy,
       },
+      {
+        title: "Joués récemment",
+        href: "/musique/recently-played",
+        icon: Music,
+      },
     ],
   },
 ];
