@@ -38,6 +38,47 @@ import { ListeningTimeChart } from "@/components/listening-time-chart";
 import { RacePredictionsCard } from "@/components/race-predictions-card";
 
 
+// Helper functions
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
+function formatTime(seconds: number | string): string {
+  const totalSeconds = typeof seconds === 'string' ? parseInt(seconds, 10) : seconds;
+
+  if (isNaN(totalSeconds)) {
+    return '0:00';
+  }
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = Math.floor(totalSeconds % 60);
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+function formatDifference(diffSeconds: number | string): string {
+  const diff = typeof diffSeconds === 'string' ? parseInt(diffSeconds, 10) : diffSeconds;
+
+  if (isNaN(diff)) {
+    return '0:00';
+  }
+
+  const absDiff = Math.abs(diff);
+  const minutes = Math.floor(absDiff / 60);
+  const secs = Math.floor(absDiff % 60);
+
+  const sign = diff >= 0 ? '+' : '-';
+  return `${sign}${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
 export default function Home() {
   const [showArtists, setShowArtists] = useState(true);
   const [tooltipData, setTooltipData] = useState<{ x: number; y: number; month: string; km2025: number; km2024: number } | null>(null);
@@ -74,121 +115,261 @@ export default function Home() {
   };
 
   useEffect(() => {
-    async function fetchMusicData() {
+    async function fetchHomepageData() {
       try {
-        const res = await fetch('/api/homepage/music?period=last_7_days');
+        const res = await fetch('/api/homepage');
         if (res.ok) {
           const data = await res.json();
-          setMusicData(data);
+          console.log('Homepage data received:', data);
+
+          // Transform music data
+          if (data.music_time_daily && data.top_artists && data.top_tracks) {
+            const musicTimeDailyRows = data.music_time_daily;
+            const sortedRows = [...musicTimeDailyRows].reverse();
+
+            // Calculate average
+            const totalMs = musicTimeDailyRows.reduce((sum: number, row: any) => sum + (row.total_duration_ms || 0), 0);
+            const averageMs = totalMs / musicTimeDailyRows.length;
+            const avgHours = Math.floor(averageMs / (1000 * 60 * 60));
+            const avgMinutes = Math.floor((averageMs % (1000 * 60 * 60)) / (1000 * 60));
+            const averagePerDay = `${avgHours}h ${avgMinutes}m`;
+
+            // Find max duration for percentage calculation
+            const maxDuration = Math.max(...musicTimeDailyRows.map((row: any) => row.total_duration_ms || 0));
+
+            // Format days
+            const days = sortedRows.map((row: any) => {
+              const dateObj = new Date(row.date);
+              const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+              const day = dayNames[dateObj.getDay()];
+
+              const durationMs = row.total_duration_ms || 0;
+              const hours = Math.floor(durationMs / (1000 * 60 * 60));
+              const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+              const formatted = hours > 0 ? `${hours}h${minutes}m` : `${minutes}m`;
+              const heightPercentage = maxDuration > 0 ? (durationMs / maxDuration) * 100 : 0;
+
+              return {
+                date: row.date,
+                day,
+                duration: durationMs,
+                formatted,
+                heightPercentage
+              };
+            });
+
+            setMusicData({
+              generatedAt: new Date().toISOString(),
+              period: 'last_7_days',
+              listeningTime: { averagePerDay, days },
+              topArtists: data.top_artists.map((artist: any) => ({
+                rank: artist.rank,
+                name: artist.artistname || 'Artiste inconnu',
+                trackCount: artist.play_count || 0,
+                totalDuration: artist.total_duration || "0h 0m",
+                playCount: artist.play_count || 0,
+                imageUrl: artist.albumimageurl || null,
+                externalUrl: artist.artistexternalurl || null
+              })),
+              topTracks: data.top_tracks.map((track: any) => ({
+                rank: track.rank,
+                name: track.trackname || 'Titre inconnu',
+                artistName: track.all_artist_names || 'Artiste inconnu',
+                totalDuration: track.total_duration || "0m 0s",
+                playCount: track.play_count || 0,
+                imageUrl: track.albumimageurl || null,
+                externalUrl: track.trackExternalUrl || null
+              }))
+            });
+          }
+
+          // Transform sleep stages data
+          if (data.sleep_stages) {
+            const mappedData = data.sleep_stages.map((row: any) => {
+              let stage = row.level_name;
+              if (stage === 'light') stage = 'core';
+              else if (stage === 'awake_restless') stage = 'awake';
+
+              return {
+                startTime: row.start_time,
+                endTime: row.end_time,
+                stage: stage
+              };
+            });
+            setSleepData(mappedData);
+          }
+
+          // Transform sleep body battery data
+          if (data.sleep_body_battery) {
+            const sleepRows = data.sleep_body_battery;
+
+            const validSleepScores = sleepRows.filter((row: any) => row.sleep_score !== null);
+            const averageSleepScore = validSleepScores.length > 0
+              ? Math.round(validSleepScores.reduce((sum: number, row: any) => sum + row.sleep_score, 0) / validSleepScores.length)
+              : 0;
+
+            const validDeltas = sleepRows.filter((row: any) => row.battery_gain !== null);
+            const averageDelta = validDeltas.length > 0
+              ? Math.round(validDeltas.reduce((sum: number, row: any) => sum + row.battery_gain, 0) / validSleepScores.length)
+              : 0;
+
+            const validHrv = sleepRows.filter((row: any) => row.avg_hrv !== null);
+            const averageHrv = validHrv.length > 0
+              ? Math.round(validHrv.reduce((sum: number, row: any) => sum + row.avg_hrv, 0) / validHrv.length)
+              : 0;
+
+            const validRestingHr = sleepRows.filter((row: any) => row.resting_hr !== null);
+            const averageRestingHr = validRestingHr.length > 0
+              ? Math.round(validRestingHr.reduce((sum: number, row: any) => sum + row.resting_hr, 0) / validRestingHr.length)
+              : 0;
+
+            setSleepBodyBatteryData({
+              sleepScores: {
+                average: averageSleepScore,
+                daily: sleepRows.map((row: any) => ({
+                  day: row.day_abbr_french || '',
+                  score: row.sleep_score || 0,
+                  date: row.date
+                }))
+              },
+              bodyBattery: {
+                average: averageDelta,
+                daily: sleepRows.map((row: any) => ({
+                  day: row.day_abbr_french || '',
+                  range: [row.battery_at_bedtime || 0, row.battery_at_waketime || 0] as [number, number],
+                  delta: row.battery_gain || 0,
+                  date: row.date
+                }))
+              },
+              hrv: {
+                average: averageHrv,
+                daily: sleepRows.map((row: any) => ({
+                  day: row.day_abbr_french || '',
+                  hrv: row.avg_hrv || 0,
+                  date: row.date
+                }))
+              },
+              restingHr: {
+                average: averageRestingHr,
+                daily: sleepRows.map((row: any) => ({
+                  day: row.day_abbr_french || '',
+                  hr: row.resting_hr || 0,
+                  date: row.date
+                }))
+              }
+            });
+          }
+
+          // Transform running weekly data
+          if (data.running_weekly) {
+            const weeklyRows = data.running_weekly;
+            const sortedRows = [...weeklyRows].reverse();
+
+            const totalDistance = weeklyRows.reduce((sum: number, row: any) => sum + (row.total_distance_km || 0), 0);
+            const sessionCount = weeklyRows.filter((row: any) => row.total_distance_km > 0).length;
+            const averagePerSession = sessionCount > 0 ? totalDistance / sessionCount : 0;
+
+            const maxAerobic = Math.max(...weeklyRows.map((row: any) => row.aerobic_score || 0), 5);
+            const maxAnaerobic = Math.max(...weeklyRows.map((row: any) => row.anaerobic_score || 0), 5);
+
+            const daily = sortedRows.map((row: any) => {
+              const aerobicHeightPercentage = maxAerobic > 0 ? (row.aerobic_score / maxAerobic) * 100 : 0;
+              const anaerobicHeightPercentage = maxAnaerobic > 0 ? (row.anaerobic_score / maxAnaerobic) * 100 : 0;
+
+              return {
+                day: row.day_of_week,
+                date: row.date,
+                distance: row.total_distance_km || 0,
+                aerobicScore: row.aerobic_score || 0,
+                anaerobicScore: row.anaerobic_score || 0,
+                aerobicHeightPercentage,
+                anaerobicHeightPercentage
+              };
+            });
+
+            setRunningData({
+              generatedAt: new Date().toISOString(),
+              totalDistance: Math.round(totalDistance * 10) / 10,
+              sessionCount,
+              averagePerSession: Math.round(averagePerSession * 10) / 10,
+              daily
+            });
+          }
+
+          // Transform weekly volume data
+          if (data.running_weekly_volume) {
+            const volumeRows = data.running_weekly_volume;
+            const sortedRows = [...volumeRows].reverse();
+
+            const totalVolume = volumeRows.reduce((sum: number, row: any) => sum + (row.total_distance_km || 0), 0);
+            const average = totalVolume / volumeRows.length;
+            const max = Math.max(...volumeRows.map((row: any) => row.total_distance_km || 0));
+
+            const mostRecentWeek = volumeRows[0].week_start;
+
+            const weeks = sortedRows.map((row: any, index: number) => {
+              const weeksFromNow = sortedRows.length - 1 - index;
+              const isCurrent = row.week_start === mostRecentWeek;
+              const weekLabel = isCurrent ? 'S0' : `S-${weeksFromNow}`;
+
+              const weekStartDate = new Date(row.week_start);
+              const weekNumber = getWeekNumber(weekStartDate);
+              const year = weekStartDate.getFullYear();
+
+              return {
+                week: weekLabel,
+                volume: Math.round(row.total_distance_km * 10) / 10,
+                isCurrent,
+                weekNumber,
+                year,
+                startDate: row.week_start
+              };
+            });
+
+            setWeeklyVolumeData({
+              generatedAt: new Date().toISOString(),
+              average: Math.round(average * 10) / 10,
+              max: Math.round(max * 10) / 10,
+              weeks
+            });
+          }
+
+          // Transform race predictions data
+          if (data.race_predictions) {
+            const predictions = data.race_predictions.map((row: any) => {
+              const currentTime = row.current_time;
+              const diffSeconds = row.diff_seconds;
+
+              return {
+                distance: row.distance,
+                time: formatTime(currentTime),
+                difference: formatDifference(diffSeconds),
+                isImprovement: diffSeconds < 0,
+                diffSeconds: diffSeconds
+              };
+            });
+
+            setRacePredictionsData({
+              generatedAt: new Date().toISOString(),
+              predictions
+            });
+          }
+
+        } else {
+          console.error('API error:', res.status, await res.text());
         }
       } catch (error) {
-        console.error("Failed to fetch music data", error);
+        console.error("Failed to fetch homepage data", error);
       } finally {
         setLoadingMusic(false);
-      }
-    }
-    fetchMusicData();
-  }, []);
-
-  useEffect(() => {
-    async function fetchSleepData() {
-      try {
-        const res = await fetch('/api/homepage/sleep/stages');
-        if (res.ok) {
-          const data = await res.json();
-          console.log('Sleep data received:', data);
-          console.log('Number of records:', data?.length);
-          setSleepData(data);
-        } else {
-          console.error('API error:', res.status, await res.text());
-        }
-      } catch (error) {
-        console.error("Failed to fetch sleep data", error);
-      } finally {
         setLoadingSleep(false);
-      }
-    }
-    fetchSleepData();
-  }, []);
-
-  useEffect(() => {
-    async function fetchSleepBodyBatteryData() {
-      try {
-        const res = await fetch('/api/homepage/sleep-body-battery');
-        if (res.ok) {
-          const data = await res.json();
-          console.log('Sleep & Body Battery data received:', data);
-          setSleepBodyBatteryData(data);
-        } else {
-          console.error('API error:', res.status, await res.text());
-        }
-      } catch (error) {
-        console.error("Failed to fetch sleep & body battery data", error);
-      } finally {
         setLoadingSleepBodyBattery(false);
-      }
-    }
-    fetchSleepBodyBatteryData();
-  }, []);
-
-  useEffect(() => {
-    async function fetchRunningData() {
-      try {
-        const res = await fetch('/api/homepage/running');
-        if (res.ok) {
-          const data = await res.json();
-          console.log('Running data received:', data);
-          setRunningData(data);
-        } else {
-          console.error('API error:', res.status, await res.text());
-        }
-      } catch (error) {
-        console.error("Failed to fetch running data", error);
-      } finally {
         setLoadingRunning(false);
-      }
-    }
-    fetchRunningData();
-  }, []);
-
-  useEffect(() => {
-    async function fetchWeeklyVolumeData() {
-      try {
-        const res = await fetch('/api/homepage/running/weekly-volume');
-        if (res.ok) {
-          const data = await res.json();
-          console.log('Weekly volume data received:', data);
-          setWeeklyVolumeData(data);
-        } else {
-          console.error('API error:', res.status, await res.text());
-        }
-      } catch (error) {
-        console.error("Failed to fetch weekly volume data", error);
-      } finally {
         setLoadingWeeklyVolume(false);
-      }
-    }
-    fetchWeeklyVolumeData();
-  }, []);
-
-  useEffect(() => {
-    async function fetchRacePredictionsData() {
-      try {
-        const res = await fetch('/api/homepage/race-predictions');
-        if (res.ok) {
-          const data = await res.json();
-          console.log('Race predictions data received:', data);
-          setRacePredictionsData(data);
-        } else {
-          console.error('API error:', res.status, await res.text());
-        }
-      } catch (error) {
-        console.error("Failed to fetch race predictions data", error);
-      } finally {
         setLoadingRacePredictions(false);
       }
     }
-    fetchRacePredictionsData();
+    fetchHomepageData();
   }, []);
 
   // Données pour le graphique de progression (valeurs cumulées par mois)
