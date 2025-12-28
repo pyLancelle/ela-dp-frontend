@@ -64,9 +64,17 @@ interface HomepageRawData {
   }[];
 }
 
+type SleepStage = "awake" | "rem" | "core" | "deep";
+
+export interface SleepData {
+  startTime: string;
+  endTime: string;
+  stage: SleepStage;
+}
+
 export interface HomepageData {
   music: MusicDashboardData | null;
-  sleepStages: { startTime: string; endTime: string; stage: string }[];
+  sleepStages: SleepData[];
   sleepBodyBattery: SleepBodyBatteryData | null;
   running: RunningWeeklyData | null;
   weeklyVolume: RunningWeeklyVolumeData | null;
@@ -113,7 +121,7 @@ function formatDifference(diffSeconds: number | string): string {
 
 function transformHomepageData(data: HomepageRawData): HomepageData {
   let music: MusicDashboardData | null = null;
-  let sleepStages: { startTime: string; endTime: string; stage: string }[] = [];
+  let sleepStages: SleepData[] = [];
   let sleepBodyBattery: SleepBodyBatteryData | null = null;
   let running: RunningWeeklyData | null = null;
   let weeklyVolume: RunningWeeklyVolumeData | null = null;
@@ -187,9 +195,9 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
   // Transform sleep stages
   if (data.sleep_stages) {
     sleepStages = data.sleep_stages.map((row) => {
-      let stage = row.level_name;
-      if (stage === "light") stage = "core";
-      else if (stage === "awake_restless") stage = "awake";
+      let stage: SleepStage = row.level_name as SleepStage;
+      if (row.level_name === "light") stage = "core";
+      else if (row.level_name === "awake_restless") stage = "awake";
 
       return {
         startTime: row.start_time,

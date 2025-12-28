@@ -1,4 +1,4 @@
-export { useHomepage, type HomepageData } from "./use-homepage";
+export { useHomepage, type HomepageData, type SleepData } from "./use-homepage";
 export {
   useActivitiesList,
   useActivityDetail,
