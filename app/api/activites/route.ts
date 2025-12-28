@@ -1,46 +1,24 @@
-import { BigQuery } from '@google-cloud/bigquery';
 import { NextResponse } from 'next/server';
 
-let credentials;
-try {
-  credentials = process.env.GCS_KEY ? JSON.parse(process.env.GCS_KEY) : undefined;
-} catch (error) {
-  console.error('Error parsing GCS_KEY:', error);
-  console.error('GCS_KEY value:', process.env.GCS_KEY?.substring(0, 100));
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const bigquery = new BigQuery({
-  projectId: 'polar-scene-465223-f7',
-  credentials,
-});
-
-// BigQuery view schema from pct_activites__last_run
-// Note: We do basic transformations in SQL for consistency and performance
-interface BigQueryActivity {
+interface RecentActivity {
   activityId: number;
   activityName: string;
-  startTimeGMT: string; // ISO timestamp string
-  distance_km: number | null; // Already converted from meters to km in SQL
-  duration_minutes: number | null; // Already converted from seconds to minutes in SQL
-  averageSpeed: number | null; // in m/s
-  typeKey: string | null; // Activity type from source
+  startTimeGMT: string;
+  distance_km: number;
+  duration_minutes: number;
+  averageSpeed: number | null;
+  typeKey: string | null;
 }
 
-// Frontend Activity interface
 export interface Activity {
   id: string;
   title: string;
   distance: number;
-  duration: number; // in minutes
+  duration: number;
   date: string;
   type: string;
-}
-
-// Note: Duration conversion is now handled in SQL
-// Keeping this function for backward compatibility and potential future use
-function parseDuration(durationSeconds: number): number {
-  if (durationSeconds == null) return 0;
-  return Math.round(durationSeconds / 60);
 }
 
 function formatDate(timestamp: string): string {
@@ -65,36 +43,22 @@ function formatDate(timestamp: string): string {
 
 export async function GET() {
   try {
-    const query = `
-      SELECT
-        activityId,
-        activityName,
-        startTimeGMT,
-        -- Convert meters to kilometers (better precision handling in SQL)
-        ROUND(distance / 1000, 2) AS distance_km,
-        -- Convert seconds to minutes (avoid client-side calculation)
-        ROUND(duration / 60, 0) AS duration_minutes,
-        averageSpeed,
-        -- Include activity type for better categorization
-        typeKey
-      FROM \`polar-scene-465223-f7.dp_product_dev.pct_activites__last_run\`
-      ORDER BY startTimeGMT DESC
-    `;
+    const response = await fetch(`${API_BASE_URL}/api/activities/recent`);
 
-    const [rows] = await bigquery.query(query);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
 
-    // Map BigQuery data to frontend format
-    // Note: Basic transformations (distance, duration) are now handled in SQL
-    const activities: Activity[] = rows.map((row: BigQueryActivity) => {
-      return {
-        id: row.activityId.toString(), // Use the real activityId from BigQuery
-        title: row.activityName || 'Activité',
-        distance: row.distance_km || 0, // Already in kilometers from SQL
-        duration: row.duration_minutes || 0, // Already in minutes from SQL
-        date: formatDate(row.startTimeGMT),
-        type: row.typeKey || 'running', // Use actual type if available, fallback to running
-      };
-    });
+    const recentActivities: RecentActivity[] = await response.json();
+
+    const activities: Activity[] = recentActivities.map((activity) => ({
+      id: activity.activityId.toString(),
+      title: activity.activityName || 'Activité',
+      distance: activity.distance_km || 0,
+      duration: activity.duration_minutes || 0,
+      date: formatDate(activity.startTimeGMT),
+      type: activity.typeKey || 'running',
+    }));
 
     return NextResponse.json(activities);
   } catch (error) {
