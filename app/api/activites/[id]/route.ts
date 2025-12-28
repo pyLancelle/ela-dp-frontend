@@ -1,6 +1,6 @@
 import { BigQuery } from '@google-cloud/bigquery';
-import { NextResponse } from 'next/server';
 import path from 'path';
+import { cachedResponse, errorResponse } from '@/lib/api/response';
 
 // Use credentials from file in development, env var in production
 let bigquery: BigQuery;
@@ -124,8 +124,9 @@ export async function GET(
     // If id is "last" or any non-numeric value, get the most recent activity
     let query: string;
     const numericId = parseInt(activityId, 10);
+    const isLast = activityId === 'last' || isNaN(numericId);
 
-    if (activityId === 'last' || isNaN(numericId)) {
+    if (isLast) {
       query = `
         SELECT *
         FROM \`polar-scene-465223-f7.dp_product_dev.pct_activites__last_run\`
@@ -144,20 +145,17 @@ export async function GET(
     const [rows] = await bigquery.query(query);
 
     if (rows.length === 0) {
-      return NextResponse.json(
-        { error: 'Activity not found' },
-        { status: 404 }
-      );
+      return errorResponse('Activity not found', 404);
     }
 
     const activity: Activity = rows[0];
 
-    return NextResponse.json(activity);
+    // Use different cache duration for "last" vs specific activity
+    return cachedResponse(activity, isLast ? 'activityLast' : 'activityDetail');
   } catch (error) {
     console.error('Error fetching activity:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch activity', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+    return errorResponse(
+      `Failed to fetch activity: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
 }
