@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -21,44 +21,7 @@ import { Trophy, Music, User, Loader2, Disc } from "lucide-react";
 import Image from "next/image";
 import { DateRangeFilter, DateFilterPreset } from "@/components/date-range-filter";
 import { DateRange } from "react-day-picker";
-
-// Interface pour les données BigQuery
-interface TopTrack {
-  rank: number;
-  name: string;
-  artist_name: string;
-  total_duration: string;
-  play_count: number;
-  trackExternalUrl: string;
-  image_url: string;
-}
-
-interface TopArtist {
-  rank: number;
-  name: string;
-  total_duration: string;
-  play_count: number;
-  track_count: number;
-  image_url: string;
-  artistexternalurl: string;
-  tracks?: {
-    name: string;
-    duration: string;
-    play_count: number;
-    percentage: number;
-  }[];
-}
-
-interface TopAlbum {
-  rank: number;
-  name: string;
-  artist_name: string;
-  total_duration: string;
-  play_count: number;
-  track_count: number;
-  image_url: string;
-  albumexternalurl: string;
-}
+import { useMusicClassement, type TopArtist } from "@/hooks/queries";
 
 interface ArtistTrackBreakdown {
   name: string;
@@ -74,11 +37,6 @@ function truncateText(text: string | undefined | null, maxLength: number): strin
   return text.substring(0, maxLength) + '...';
 }
 
-// Fonction pour obtenir des données mockées de tracks d'artiste
-function getMockedArtistTracks(artistName: string): ArtistTrackBreakdown[] {
-  return [];
-}
-
 // Fonction pour obtenir l'URL de l'image ou un placeholder
 function getImageUrl(imageUrl: string | undefined | null): string {
   if (!imageUrl || imageUrl.trim() === '') {
@@ -88,33 +46,14 @@ function getImageUrl(imageUrl: string | undefined | null): string {
 }
 
 export default function ClassementsPage() {
-  const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
-  const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
-  const [topAlbums, setTopAlbums] = useState<TopAlbum[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<DateFilterPreset>("allTime");
 
-  // Map frontend presets to BigQuery period values
-  const mapPresetToPeriod = (preset: DateFilterPreset): string => {
-    switch (preset) {
-      case "yesterday":
-        return "yesterday";
-      case "7days":
-        return "last_7_days";
-      case "30days":
-        return "last_30_days";
-      case "thisYear":
-        return "last_365_days";
-      case "allTime":
-        return "all_time";
-      case "custom":
-        return "all_time"; // Fallback to all_time for custom (not supported yet)
-      default:
-        return "all_time";
-    }
-  };
+  // Utiliser le hook React Query
+  const { data, isLoading, isFetching, isError, error } = useMusicClassement(selectedPreset);
+
+  const topTracks = data?.top_tracks ?? [];
+  const topArtists = data?.top_artists ?? [];
+  const topAlbums = data?.top_albums ?? [];
 
   // State pour le dialog de détails de l'artiste
   const [selectedArtist, setSelectedArtist] = useState<TopArtist | null>(null);
@@ -124,12 +63,8 @@ export default function ClassementsPage() {
   const handleArtistClick = (artist: TopArtist) => {
     setSelectedArtist(artist);
 
-    console.log('Artist clicked:', artist);
-    console.log('Artist tracks:', artist.tracks);
-
     // Si l'artiste a des tracks dans les données, on les utilise
     if (artist.tracks && artist.tracks.length > 0) {
-      console.log('Using real data from BigQuery');
       const formattedTracks = artist.tracks.map(track => ({
         name: track.name,
         duration: track.duration,
@@ -138,57 +73,18 @@ export default function ClassementsPage() {
       }));
       setArtistTracks(formattedTracks);
     } else {
-      // Sinon on utilise les données mockées
-      console.log('Using mocked data');
-      setArtistTracks(getMockedArtistTracks(artist.name));
+      setArtistTracks([]);
     }
 
     setIsDialogOpen(true);
   };
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-
-        // Build query parameters
-        const period = mapPresetToPeriod(selectedPreset);
-        const params = new URLSearchParams();
-        params.append('period', period);
-
-        const queryString = params.toString();
-        const urlSuffix = queryString ? `?${queryString}` : '';
-
-        // Single grouped API call instead of 3 separate calls
-        const response = await fetch(`/api/music/music-classement${urlSuffix}`);
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        const data = await response.json();
-        const { top_tracks: tracksData, top_artists: artistsData, top_albums: albumsData } = data;
-
-        setTopTracks(tracksData);
-        setTopArtists(artistsData);
-        setTopAlbums(albumsData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
-        setIsInitialLoad(false);
-      }
-    }
-
-    fetchData();
-  }, [selectedPreset]);
-
   const handleFilterChange = (preset: DateFilterPreset, range?: DateRange) => {
     setSelectedPreset(preset);
   };
 
-  // Only show full-page loading on initial load
-  if (isInitialLoad && isLoading) {
+  // Only show full-page loading on initial load (no cached data)
+  if (isLoading && !data) {
     return (
       <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
@@ -198,6 +94,7 @@ export default function ClassementsPage() {
       </div>
     );
   }
+
   return (
     <div className="w-full space-y-6">
       {/* Header */}
@@ -215,10 +112,10 @@ export default function ClassementsPage() {
       <DateRangeFilter selectedPreset={selectedPreset} onFilterChange={handleFilterChange} />
 
       {/* Error display */}
-      {error && (
+      {isError && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
           <p className="font-semibold">Erreur</p>
-          <p>{error}</p>
+          <p>{error instanceof Error ? error.message : 'An error occurred'}</p>
         </div>
       )}
 
@@ -230,7 +127,7 @@ export default function ClassementsPage() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Music className="h-4 w-4" />
               Top Titres
-              {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
+              {isFetching && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden">
@@ -295,7 +192,7 @@ export default function ClassementsPage() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <User className="h-4 w-4" />
               Top Artistes
-              {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
+              {isFetching && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden">
@@ -361,7 +258,7 @@ export default function ClassementsPage() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Disc className="h-4 w-4" />
               Top Albums
-              {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
+              {isFetching && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden">

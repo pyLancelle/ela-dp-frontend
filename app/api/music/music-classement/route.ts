@@ -1,5 +1,6 @@
 // app/api/music/music-classement/route.ts
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
+import { cachedResponse, errorResponse } from '@/lib/api/response';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -9,11 +10,17 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get('period') || 'all_time';
     const limit = searchParams.get('limit') || '20';
 
-    // Grouped API calls to FastAPI backend
+    // Grouped API calls to FastAPI backend with ISR
     const [tracksResponse, artistsResponse, albumsResponse] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/music/top-tracks?period=${period}&limit=${limit}`),
-      fetch(`${API_BASE_URL}/api/music/top-artists?period=${period}&limit=${limit}`),
-      fetch(`${API_BASE_URL}/api/music/top-albums?period=${period}&limit=${limit}`),
+      fetch(`${API_BASE_URL}/api/music/top-tracks?period=${period}&limit=${limit}`, {
+        next: { revalidate: 3600 }, // ISR: revalidate every hour
+      }),
+      fetch(`${API_BASE_URL}/api/music/top-artists?period=${period}&limit=${limit}`, {
+        next: { revalidate: 3600 },
+      }),
+      fetch(`${API_BASE_URL}/api/music/top-albums?period=${period}&limit=${limit}`, {
+        next: { revalidate: 3600 },
+      }),
     ]);
 
     if (!tracksResponse.ok || !artistsResponse.ok || !albumsResponse.ok) {
@@ -26,18 +33,15 @@ export async function GET(request: NextRequest) {
       albumsResponse.json(),
     ]);
 
-    // Return grouped response
-    return NextResponse.json({
+    // Return grouped response with cache headers
+    return cachedResponse({
       top_tracks,
       top_artists,
       top_albums,
-    });
+    }, 'musicClassement');
 
   } catch (error) {
     console.error('Error fetching music classement:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch music classement' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to fetch music classement');
   }
 }

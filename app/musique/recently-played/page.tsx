@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -19,7 +19,8 @@ import { TimeRangePicker } from "@/components/music/time-range-picker";
 import { ArtistSearch } from "@/components/music/artist-search";
 import { Pagination } from "@/components/music/pagination";
 import { DateRange } from "react-day-picker";
-import type { RecentlyPlayedTrack, RecentlyPlayedResponse, PaginationInfo } from "@/types/music";
+import { useRecentlyPlayed } from "@/hooks/queries";
+import { useDebounce } from "@/hooks/use-debounce";
 
 // Fonctions utilitaires
 function formatDate(isoString: string): string {
@@ -59,93 +60,60 @@ function getImageUrl(url: string | null): string {
 }
 
 export default function RecentlyPlayedPage() {
-  // State
-  const [tracks, setTracks] = useState<RecentlyPlayedTrack[]>([]);
-  const [artists, setArtists] = useState<string[]>([]);
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    page: 1,
-    pageSize: 50,
-    totalItems: 0,
-    totalPages: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   // Filtres
   const [selectedPreset, setSelectedPreset] = useState<DateFilterPreset>("allTime");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [timeFrom, setTimeFrom] = useState<string | undefined>();
   const [timeTo, setTimeTo] = useState<string | undefined>();
   const [artistSearch, setArtistSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch data
-  const fetchData = useCallback(async (page: number = 1) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  // Debounce la recherche artiste pour éviter les requêtes à chaque frappe
+  const debouncedArtist = useDebounce(artistSearch, 400);
 
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('pageSize', '50');
+  // Construire les filtres pour le hook
+  const filters = useMemo(() => ({
+    page: currentPage,
+    pageSize: 50,
+    dateFrom: dateRange?.from?.toISOString().split('T')[0],
+    dateTo: dateRange?.to?.toISOString().split('T')[0],
+    timeFrom,
+    timeTo,
+    artist: debouncedArtist || undefined,
+  }), [currentPage, dateRange, timeFrom, timeTo, debouncedArtist]);
 
-      // Filtres de date
-      if (dateRange?.from) {
-        params.append('dateFrom', dateRange.from.toISOString().split('T')[0]);
-      }
-      if (dateRange?.to) {
-        params.append('dateTo', dateRange.to.toISOString().split('T')[0]);
-      }
+  // Utiliser le hook React Query
+  const { data, isLoading, isFetching, isError, error } = useRecentlyPlayed(filters);
 
-      // Filtres d'heure
-      if (timeFrom) params.append('timeFrom', timeFrom);
-      if (timeTo) params.append('timeTo', timeTo);
-
-      // Filtre artiste
-      if (artistSearch) params.append('artist', artistSearch);
-
-      const response = await fetch(`/api/music/recently-played?${params.toString()}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
-      const data: RecentlyPlayedResponse = await response.json();
-
-      setTracks(data.tracks);
-      setPagination(data.pagination);
-      setArtists(data.artists);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
-    } finally {
-      setIsLoading(false);
-      setIsInitialLoad(false);
-    }
-  }, [dateRange, timeFrom, timeTo, artistSearch]);
-
-  // Initial fetch et refetch quand les filtres changent
-  useEffect(() => {
-    fetchData(1);
-  }, [fetchData]);
+  const tracks = data?.tracks ?? [];
+  const artists = data?.artists ?? [];
+  const pagination = data?.pagination ?? {
+    page: 1,
+    pageSize: 50,
+    totalItems: 0,
+    totalPages: 0,
+  };
 
   // Handlers
   const handleFilterChange = (preset: DateFilterPreset, range?: DateRange) => {
     setSelectedPreset(preset);
     setDateRange(range);
+    setCurrentPage(1); // Reset à la page 1 quand les filtres changent
   };
 
   const handleTimeChange = (from: string | undefined, to: string | undefined) => {
     setTimeFrom(from);
     setTimeTo(to);
+    setCurrentPage(1);
   };
 
   const handleArtistChange = (value: string) => {
     setArtistSearch(value);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
-    fetchData(page);
+    setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -155,13 +123,14 @@ export default function RecentlyPlayedPage() {
     setTimeFrom(undefined);
     setTimeTo(undefined);
     setArtistSearch("");
+    setCurrentPage(1);
   };
 
   // Vérifier si des filtres sont actifs
   const hasActiveFilters = selectedPreset !== "allTime" || timeFrom || timeTo || artistSearch;
 
-  // Loading state initial
-  if (isInitialLoad && isLoading) {
+  // Loading state initial (pas de données en cache)
+  if (isLoading && !data) {
     return (
       <div className="w-full space-y-6">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -224,10 +193,10 @@ export default function RecentlyPlayedPage() {
       </Card>
 
       {/* Erreur */}
-      {error && (
+      {isError && (
         <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
           <p className="font-semibold">Erreur</p>
-          <p>{error}</p>
+          <p>{error instanceof Error ? error.message : 'Une erreur est survenue'}</p>
         </div>
       )}
 
@@ -237,7 +206,7 @@ export default function RecentlyPlayedPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg">
               Historique
-              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isFetching && <Loader2 className="h-4 w-4 animate-spin" />}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Badge variant="secondary">

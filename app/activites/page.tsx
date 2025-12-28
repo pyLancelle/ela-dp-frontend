@@ -1,36 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Activity, TrendingUp, Calendar, Clock, Loader2 } from "lucide-react";
-import { ActivityCard, ActivityData } from "@/components/activity-card";
+import { ActivityCard } from "@/components/activity-card";
+import { useActivitiesList } from "@/hooks/queries";
 
 export default function ActivitesPage() {
-  const [activities, setActivities] = useState<ActivityData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: activities = [], isLoading, isError, error } = useActivitiesList();
 
-  useEffect(() => {
-    async function fetchActivities() {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/activites');
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch activities');
-        }
-
-        const data = await response.json();
-        setActivities(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        console.error('Error fetching activities:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchActivities();
-  }, []);
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -96,9 +72,9 @@ export default function ActivitesPage() {
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : error ? (
+        ) : isError ? (
           <div className="text-center py-12 text-red-500">
-            Erreur: {error}
+            Erreur: {error instanceof Error ? error.message : 'An error occurred'}
           </div>
         ) : activities.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">

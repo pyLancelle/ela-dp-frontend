@@ -1,4 +1,5 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
+import { cachedResponse, errorResponse } from '@/lib/api/response';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -26,7 +27,10 @@ export async function GET(request: NextRequest) {
     if (artist) params.append('artist', artist);
 
     const response = await fetch(
-      `${API_BASE_URL}/api/music/recently-played?${params.toString()}`
+      `${API_BASE_URL}/api/music/recently-played?${params.toString()}`,
+      {
+        next: { revalidate: 300 }, // ISR: revalidate every 5 minutes
+      }
     );
 
     if (!response.ok) {
@@ -35,13 +39,10 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    return NextResponse.json(data);
+    return cachedResponse(data, 'recentlyPlayed');
 
   } catch (error) {
     console.error('Error fetching recently played:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch recently played tracks' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to fetch recently played tracks');
   }
 }

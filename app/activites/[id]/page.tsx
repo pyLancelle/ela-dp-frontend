@@ -1,33 +1,15 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { Activity } from "@/types/activity";
-import { ActivityDetail } from "@/types/activity-detail";
-import { activityToDetail } from "@/lib/adapters/activity-adapter";
+import { use } from "react";
 import { ActivityHeader } from "@/components/activity/activity-header";
 import { IntervalsRecharts } from "@/components/activity/intervals-recharts";
 import { ActivityKpisCard } from "@/components/activity/activity-kpis-card";
 import { HeartRateZonesChart } from "@/components/activity/heart-rate-zones-chart";
 import { ElevationProfileChart } from "@/components/activity/elevation-profile-chart";
-import { MapCard } from "@/components/activity/map-card";
-import { ActivityNotesCard } from "@/components/activity/activity-notes-card";
 import { HeartRateEvolutionCard } from "@/components/activity/heart-rate-evolution-card";
 import { IntervalsListCard } from "@/components/activity/intervals-list-card";
 import { ActivityTracksCard } from "@/components/activity/activity-tracks-card";
-
-// Exemple de tracé GPS (lon, lat converti en lat, lon pour Leaflet)
-const exampleRoute: [number, number][] = [
-  [48.82562189362943, 2.239961698651314],
-  [48.825620636343956, 2.239933703094721],
-  [48.825620636343956, 2.239933703094721],
-  [48.82559046149254, 2.239898666739464],
-  [48.825569339096546, 2.239871509373188],
-  [48.82554469630122, 2.239846782758832],
-  [48.82552457973361, 2.2398136742413044],
-  [48.82550588808954, 2.2397809009999037],
-  [48.82550010457635, 2.2397497203201056],
-  [48.82549524307251, 2.2397158574312925],
-];
+import { useActivityDetail } from "@/hooks/queries";
 
 export default function ActivityAnalysisPage({
   params,
@@ -35,44 +17,9 @@ export default function ActivityAnalysisPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [activity, setActivity] = useState<ActivityDetail | null>(null);
-  const [bigQueryActivity, setBigQueryActivity] = useState<Activity | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, isError, error } = useActivityDetail(id);
 
-  useEffect(() => {
-    async function fetchActivity() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch activity from BigQuery API
-        const response = await fetch(`/api/activites/${id}`);
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const bigQueryData: Activity = await response.json();
-
-        // Store BigQuery data
-        setBigQueryActivity(bigQueryData);
-
-        // Convert BigQuery data to ActivityDetail format
-        const activityDetail = activityToDetail(bigQueryData);
-        setActivity(activityDetail);
-      } catch (err) {
-        console.error('Error fetching activity:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch activity');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchActivity();
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
@@ -82,18 +29,20 @@ export default function ActivityAnalysisPage({
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="container mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <h2 className="text-red-800 font-semibold mb-2">Erreur</h2>
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">
+            {error instanceof Error ? error.message : 'Failed to fetch activity'}
+          </p>
         </div>
       </div>
     );
   }
 
-  if (!activity) {
+  if (!data) {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
@@ -105,6 +54,8 @@ export default function ActivityAnalysisPage({
       </div>
     );
   }
+
+  const { raw: bigQueryActivity, detail: activity } = data;
 
   return (
     <div className="container mx-auto p-6 min-h-[calc(100vh-8rem)]">
@@ -143,14 +94,6 @@ export default function ActivityAnalysisPage({
             elevationLoss={activity.summary.elevationLoss}
           />
         </div>
-
-        {/* Carte Map - 3x2 - Right side (cols 4-6, rows 1-2) */}
-        {/* <MapCard title="Tracé de l'activité" route={exampleRoute} /> */}
-
-        {/* Carte Notes - 6x1 - (cols 1-6, row 3) */}
-        {/* <div className="md:col-span-6 md:col-start-1 md:row-start-3">
-          <ActivityNotesCard notes={activity.notes} />
-        </div> */}
 
         {/* Carte Évolution Fréquence Cardiaque - 3x2 - (cols 1-3, rows 4-5) */}
         <div className="md:col-span-3 md:row-span-3 md:col-start-1 md:row-start-3">

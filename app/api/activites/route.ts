@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { cachedResponse, errorResponse } from '@/lib/api/response';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -43,7 +43,9 @@ function formatDate(timestamp: string): string {
 
 export async function GET() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/activities/recent`);
+    const response = await fetch(`${API_BASE_URL}/api/activities/recent`, {
+      next: { revalidate: 600 }, // ISR: revalidate every 10 minutes
+    });
 
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -60,12 +62,9 @@ export async function GET() {
       type: activity.typeKey || 'running',
     }));
 
-    return NextResponse.json(activities);
+    return cachedResponse(activities, 'activitiesList');
   } catch (error) {
     console.error('Error fetching activities:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch activities' },
-      { status: 500 }
-    );
+    return errorResponse('Failed to fetch activities');
   }
 }
