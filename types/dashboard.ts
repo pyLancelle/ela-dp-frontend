@@ -212,3 +212,11 @@ export interface RacePredictionsData {
         diffSeconds: number;
     }[];
 }
+
+// Type pour les données de tendance VO2max
+export interface Vo2maxTrendData {
+    current_date: string;
+    current_vo2max: number;
+    weekly_vo2max_array: number[];
+    vo2max_delta_6_months: number;
+}

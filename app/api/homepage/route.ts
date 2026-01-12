@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error('API call to homepage endpoint failed');
+      const errorText = await response.text();
+      console.error(`Homepage API failed with status ${response.status}:`, errorText);
+      throw new Error(`API call to homepage endpoint failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();

@@ -20,6 +20,7 @@ import { RestingHrCard } from "@/components/resting-hr-card";
 import { WeeklyVolumeChart } from "@/components/weekly-volume-chart";
 import { ListeningTimeChart } from "@/components/listening-time-chart";
 import { RacePredictionsCard } from "@/components/race-predictions-card";
+import { Vo2maxTrendCard } from "@/components/vo2max-trend-card";
 
 // Generate a consistent color gradient based on a string
 const getGradientColors = (name: string) => {
@@ -441,34 +442,7 @@ export default function Home() {
         </Card>
 
         {/* VO2 Max Trend - 1x1 */}
-        <Card className="md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">VO2 Max</CardTitle>
-            <CardDescription className="text-xs">Tendance 6 mois</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="flex items-end justify-between mb-2">
-              <div>
-                <div className="text-3xl font-bold">54</div>
-                <p className="text-xs text-muted-foreground">ml/kg/min</p>
-              </div>
-              <div className="flex items-center gap-1 text-green-500">
-                <ArrowUpRight className="h-4 w-4" />
-                <span className="text-sm font-semibold">+2</span>
-              </div>
-            </div>
-            <div className="relative h-20 mt-3">
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-              </div>
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <polyline points="0,60 17,58 33,55 50,52 67,48 83,45 100,40" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-500" vectorEffect="non-scaling-stroke" />
-              </svg>
-            </div>
-          </CardContent>
-        </Card>
+        <Vo2maxTrendCard className="md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow" />
 
         {/* Race Predictions - 1x2 */}
         <RacePredictionsCard predictions={data?.racePredictions?.predictions} loading={isLoading} />
