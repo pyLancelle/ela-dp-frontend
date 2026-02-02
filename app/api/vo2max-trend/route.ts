@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     // Call the FastAPI backend endpoint for VO2max trend
     const response = await fetch(`${API_BASE_URL}/api/homepage/vo2max-trend`, {
-      next: { revalidate: 3600 }, // ISR: revalidate every 1 hour (VO2max changes slowly)
+      cache: 'no-store',
     });
 
     if (!response.ok) {

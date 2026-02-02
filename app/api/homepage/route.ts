@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     // Call the consolidated FastAPI backend endpoint
     const response = await fetch(`${API_BASE_URL}/api/homepage`, {
-      next: { revalidate: 900 }, // ISR: revalidate every 15 minutes
+      cache: 'no-store',
     });
 
     if (!response.ok) {

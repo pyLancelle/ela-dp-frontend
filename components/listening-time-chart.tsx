@@ -55,6 +55,13 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
 
     const displayData = data || defaultData;
 
+    // Calculate heights based on actual duration values
+    const maxDuration = Math.max(...displayData.days.map(day => day.duration), 1); // Avoid division by 0
+    const daysWithCalculatedHeight = displayData.days.map(day => ({
+        ...day,
+        calculatedHeight: (day.duration / maxDuration) * 100
+    }));
+
     // Convert French day names to English single letters
     const dayMap: { [key: string]: string } = {
         'Lun': 'M', 'Mar': 'T', 'Mer': 'W', 'Jeu': 'T',
@@ -83,7 +90,7 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                                 Chargement...
                             </div>
-                        ) : displayData.days.map((day, index) => {
+                        ) : daysWithCalculatedHeight.map((day, index) => {
                             const englishDay = dayMap[day.day] || day.day.charAt(0);
 
                             return (
@@ -93,7 +100,7 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                                     </span>
                                     <div
                                         className="w-5 bg-black dark:bg-white rounded"
-                                        style={{ height: `${day.heightPercentage}%` }}
+                                        style={{ height: `${day.calculatedHeight}%` }}
                                     ></div>
                                     <span className="text-xs text-muted-foreground mt-2">{englishDay}</span>
                                 </div>

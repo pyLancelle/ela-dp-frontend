@@ -18,23 +18,11 @@ export type CachePresetKey = keyof typeof CACHE_PRESETS;
 
 export function cachedResponse<T>(
   data: T,
-  preset: CachePresetKey
+  _preset?: CachePresetKey
 ): NextResponse {
-  const { maxAge, staleWhileRevalidate } = CACHE_PRESETS[preset];
-
-  const cacheControl = [
-    "public",
-    `max-age=${maxAge}`,
-    staleWhileRevalidate ? `stale-while-revalidate=${staleWhileRevalidate}` : null,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
   return NextResponse.json(data, {
     headers: {
-      "Cache-Control": cacheControl,
-      "CDN-Cache-Control": cacheControl,
-      "Vercel-CDN-Cache-Control": cacheControl,
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 }

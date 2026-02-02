@@ -72,11 +72,6 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-6 min-h-[calc(100vh-8rem)]">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-        <p className="text-muted-foreground">Vue d'ensemble de vos activités</p>
-      </div>
-
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[200px]">
 

@@ -44,7 +44,7 @@ function formatDate(timestamp: string): string {
 export async function GET() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/activities/recent`, {
-      next: { revalidate: 600 }, // ISR: revalidate every 10 minutes
+      cache: 'no-store',
     });
 
     if (!response.ok) {

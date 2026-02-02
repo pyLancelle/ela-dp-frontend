@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       `${API_BASE_URL}/api/music/recently-played?${params.toString()}`,
       {
-        next: { revalidate: 300 }, // ISR: revalidate every 5 minutes
+        cache: 'no-store',
       }
     );
 

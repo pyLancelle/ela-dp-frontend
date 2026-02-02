@@ -10,16 +10,16 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get('period') || 'all_time';
     const limit = searchParams.get('limit') || '20';
 
-    // Grouped API calls to FastAPI backend with ISR
+    // Grouped API calls to FastAPI backend
     const [tracksResponse, artistsResponse, albumsResponse] = await Promise.all([
       fetch(`${API_BASE_URL}/api/music/top-tracks?period=${period}&limit=${limit}`, {
-        next: { revalidate: 3600 }, // ISR: revalidate every hour
+        cache: 'no-store',
       }),
       fetch(`${API_BASE_URL}/api/music/top-artists?period=${period}&limit=${limit}`, {
-        next: { revalidate: 3600 },
+        cache: 'no-store',
       }),
       fetch(`${API_BASE_URL}/api/music/top-albums?period=${period}&limit=${limit}`, {
-        next: { revalidate: 3600 },
+        cache: 'no-store',
       }),
     ]);
 
