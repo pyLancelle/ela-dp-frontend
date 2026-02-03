@@ -12,9 +12,15 @@ import type {
 // Types pour les données brutes de l'API
 interface HomepageRawData {
   music_time_daily: {
-    date: string;
-    total_duration_ms: number;
-  }[];
+    data: {
+      date: string;
+      total_duration_ms: number;
+      bar_height_percent: number;
+      day_letter: string;
+      duration_formatted: string;
+    }[];
+    avg_duration_formatted: string;
+  };
   top_artists: {
     rank: number;
     artistname: string;
@@ -37,16 +43,44 @@ interface HomepageRawData {
     start_time: string;
     end_time: string;
   }[];
-  sleep_body_battery: {
-    date: string;
-    day_abbr_french: string;
-    sleep_score: number;
-    battery_at_bedtime: number;
-    battery_at_waketime: number;
-    battery_gain: number;
-    avg_hrv: number;
-    resting_hr: number;
-  }[];
+  sleep_scores: {
+    average: number;
+    daily: {
+      date: string;
+      day: string;
+      score: number;
+    }[];
+  };
+  body_battery: {
+    average_gain: number;
+    daily: {
+      date: string;
+      day: string;
+      bedtime: number;
+      waketime: number;
+      gain: number;
+    }[];
+  };
+  hrv: {
+    average: number;
+    baseline: number;
+    daily: {
+      date: string;
+      day: string;
+      value: number;
+      is_above_baseline: boolean;
+      display_height_percent: number;
+    }[];
+  };
+  resting_hr: {
+    average: number;
+    daily: {
+      date: string;
+      day: string;
+      value: number;
+      display_height_percent: number;
+    }[];
+  };
   running_weekly: {
     date: string;
     total_distance_km: number;
@@ -62,6 +96,12 @@ interface HomepageRawData {
     current_time: number;
     diff_seconds: number;
   }[];
+  vo2max_trend?: {
+    current_date: string;
+    current_vo2max: number;
+    weekly_vo2max_array: number[];
+    vo2max_delta_6_months: number;
+  };
 }
 
 type SleepStage = "awake" | "rem" | "core" | "deep";
@@ -79,6 +119,12 @@ export interface HomepageData {
   running: RunningWeeklyData | null;
   weeklyVolume: RunningWeeklyVolumeData | null;
   racePredictions: RacePredictionsData | null;
+  vo2maxTrend: {
+    currentDate: string;
+    currentVo2max: number;
+    weeklyVo2maxArray: number[];
+    vo2maxDelta6Months: number;
+  } | null;
 }
 
 // Helper functions
@@ -126,51 +172,26 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
   let running: RunningWeeklyData | null = null;
   let weeklyVolume: RunningWeeklyVolumeData | null = null;
   let racePredictions: RacePredictionsData | null = null;
+  let vo2maxTrend: HomepageData["vo2maxTrend"] = null;
 
   // Transform music data
   if (data.music_time_daily && data.top_artists && data.top_tracks) {
-    const musicTimeDailyRows = data.music_time_daily;
-    const sortedRows = [...musicTimeDailyRows].reverse();
-
-    const totalMs = musicTimeDailyRows.reduce(
-      (sum, row) => sum + (row.total_duration_ms || 0),
-      0
-    );
-    const averageMs = totalMs / musicTimeDailyRows.length;
-    const avgHours = Math.floor(averageMs / (1000 * 60 * 60));
-    const avgMinutes = Math.floor(
-      (averageMs % (1000 * 60 * 60)) / (1000 * 60)
-    );
-    const averagePerDay = `${avgHours}h ${avgMinutes}m`;
-
-    const maxDuration = Math.max(
-      ...musicTimeDailyRows.map((row) => row.total_duration_ms || 0)
-    );
-
-    const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-    const days = sortedRows.map((row) => {
-      const dateObj = new Date(row.date);
-      const day = dayNames[dateObj.getDay()];
-      const durationMs = row.total_duration_ms || 0;
-      const hours = Math.floor(durationMs / (1000 * 60 * 60));
-      const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-      const formatted = hours > 0 ? `${hours}h${minutes}m` : `${minutes}m`;
-      const heightPercentage =
-        maxDuration > 0 ? (durationMs / maxDuration) * 100 : 0;
-
-      return {
-        date: row.date,
-        day,
-        duration: durationMs,
-        formatted,
-        heightPercentage,
-      };
-    });
+    // Les données sont maintenant pré-formatées par le backend
+    const days = data.music_time_daily.data.map((row) => ({
+      date: row.date,
+      day: row.day_letter, // Utilise directement la lettre du backend
+      duration: row.total_duration_ms,
+      formatted: row.duration_formatted,
+      heightPercentage: row.bar_height_percent,
+    }));
 
     music = {
       generatedAt: new Date().toISOString(),
       period: "last_7_days",
-      listeningTime: { averagePerDay, days },
+      listeningTime: {
+        averagePerDay: data.music_time_daily.avg_duration_formatted,
+        days
+      },
       topArtists: data.top_artists.map((artist) => ({
         rank: artist.rank,
         name: artist.artistname || "Artiste inconnu",
@@ -207,82 +228,40 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
     });
   }
 
-  // Transform sleep body battery data
-  if (data.sleep_body_battery) {
-    const sleepRows = data.sleep_body_battery;
-
-    const validSleepScores = sleepRows.filter(
-      (row) => row.sleep_score !== null
-    );
-    const averageSleepScore =
-      validSleepScores.length > 0
-        ? Math.round(
-            validSleepScores.reduce((sum, row) => sum + row.sleep_score, 0) /
-              validSleepScores.length
-          )
-        : 0;
-
-    const validDeltas = sleepRows.filter((row) => row.battery_gain !== null);
-    const averageDelta =
-      validDeltas.length > 0
-        ? Math.round(
-            validDeltas.reduce((sum, row) => sum + row.battery_gain, 0) /
-              validSleepScores.length
-          )
-        : 0;
-
-    const validHrv = sleepRows.filter((row) => row.avg_hrv !== null);
-    const averageHrv =
-      validHrv.length > 0
-        ? Math.round(
-            validHrv.reduce((sum, row) => sum + row.avg_hrv, 0) / validHrv.length
-          )
-        : 0;
-
-    const validRestingHr = sleepRows.filter((row) => row.resting_hr !== null);
-    const averageRestingHr =
-      validRestingHr.length > 0
-        ? Math.round(
-            validRestingHr.reduce((sum, row) => sum + row.resting_hr, 0) /
-              validRestingHr.length
-          )
-        : 0;
-
+  // Sleep & Body Battery data - now pre-formatted by backend
+  if (data.sleep_scores && data.body_battery && data.hrv && data.resting_hr) {
     sleepBodyBattery = {
       sleepScores: {
-        average: averageSleepScore,
-        daily: sleepRows.map((row) => ({
-          day: row.day_abbr_french || "",
-          score: row.sleep_score || 0,
-          date: row.date,
+        average: data.sleep_scores.average,
+        daily: data.sleep_scores.daily.map((item) => ({
+          day: item.day,
+          score: item.score,
+          date: item.date,
         })),
       },
       bodyBattery: {
-        average: averageDelta,
-        daily: sleepRows.map((row) => ({
-          day: row.day_abbr_french || "",
-          range: [
-            row.battery_at_bedtime || 0,
-            row.battery_at_waketime || 0,
-          ] as [number, number],
-          delta: row.battery_gain || 0,
-          date: row.date,
+        average: data.body_battery.average_gain,
+        daily: data.body_battery.daily.map((item) => ({
+          day: item.day,
+          range: [item.bedtime, item.waketime] as [number, number],
+          delta: item.gain,
+          date: item.date,
         })),
       },
       hrv: {
-        average: averageHrv,
-        daily: sleepRows.map((row) => ({
-          day: row.day_abbr_french || "",
-          hrv: row.avg_hrv || 0,
-          date: row.date,
+        average: data.hrv.average,
+        daily: data.hrv.daily.map((item) => ({
+          day: item.day,
+          hrv: item.value,
+          date: item.date,
         })),
       },
       restingHr: {
-        average: averageRestingHr,
-        daily: sleepRows.map((row) => ({
-          day: row.day_abbr_french || "",
-          hr: row.resting_hr || 0,
-          date: row.date,
+        average: data.resting_hr.average,
+        daily: data.resting_hr.daily.map((item) => ({
+          day: item.day,
+          hr: item.value,
+          date: item.date,
         })),
       },
     };
@@ -407,6 +386,16 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
     };
   }
 
+  // Transform VO2max trend data
+  if (data.vo2max_trend) {
+    vo2maxTrend = {
+      currentDate: data.vo2max_trend.current_date,
+      currentVo2max: data.vo2max_trend.current_vo2max,
+      weeklyVo2maxArray: data.vo2max_trend.weekly_vo2max_array,
+      vo2maxDelta6Months: data.vo2max_trend.vo2max_delta_6_months,
+    };
+  }
+
   return {
     music,
     sleepStages,
@@ -414,6 +403,7 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
     running,
     weeklyVolume,
     racePredictions,
+    vo2maxTrend,
   };
 }
 

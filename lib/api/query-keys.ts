@@ -26,8 +26,4 @@ export const queryKeys = {
     recentlyPlayed: (filters: RecentlyPlayedFilters) =>
       [...queryKeys.music.all, "recentlyPlayed", filters] as const,
   },
-  vo2maxTrend: {
-    all: ["vo2maxTrend"] as const,
-    data: () => [...queryKeys.vo2maxTrend.all, "data"] as const,
-  },
 } as const;

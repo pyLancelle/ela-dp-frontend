@@ -5,7 +5,6 @@ import { useHomepage } from "@/hooks/queries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Music,
-  ArrowDownRight,
   ArrowUpRight,
   User,
   Footprints,
@@ -21,6 +20,7 @@ import { WeeklyVolumeChart } from "@/components/weekly-volume-chart";
 import { ListeningTimeChart } from "@/components/listening-time-chart";
 import { RacePredictionsCard } from "@/components/race-predictions-card";
 import { Vo2maxTrendCard } from "@/components/vo2max-trend-card";
+import { WeightTrendCard } from "@/components/weight-trend-card";
 
 // Generate a consistent color gradient based on a string
 const getGradientColors = (name: string) => {
@@ -71,7 +71,13 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto p-6 min-h-[calc(100vh-8rem)]">
+    <div className="px-6 py-6 min-h-[calc(100vh-8rem)]">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Welcome, Etienne !</h1>
+        <p className="text-muted-foreground">Overview</p>
+      </div>
+
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[200px]">
 
@@ -164,46 +170,7 @@ export default function Home() {
         <RestingHrCard data={data?.sleepBodyBattery?.restingHr} />
 
         {/* Weight Trend - 1x1 */}
-        <Card className="md:col-span-1 md:col-start-1 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-sm">Poids</CardTitle>
-            <CardDescription className="text-xs">Tendance 30 jours</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <div className="text-3xl font-bold">72.5</div>
-                <p className="text-xs text-muted-foreground">kg</p>
-              </div>
-              <div className="flex items-center gap-1 text-green-500">
-                <ArrowDownRight className="h-4 w-4" />
-                <span className="text-sm font-semibold">-1.2 kg</span>
-              </div>
-            </div>
-            <div className="relative h-24">
-              <div className="absolute inset-x-0 top-[40%] h-[20%] bg-green-500/10 rounded"></div>
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-                <div className="h-px bg-border opacity-10"></div>
-              </div>
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <polyline points="0,35 10,36 20,37 30,38 40,40 50,42 60,45 70,47 80,48 90,49 100,50" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-500" vectorEffect="non-scaling-stroke" />
-              </svg>
-            </div>
-            <div className="mt-3 pt-2 border-t flex justify-between text-xs">
-              <div>
-                <div className="text-muted-foreground">Objectif</div>
-                <div className="font-semibold">71.0 kg</div>
-              </div>
-              <div className="text-right">
-                <div className="text-muted-foreground">Reste</div>
-                <div className="font-semibold">-1.5 kg</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <WeightTrendCard className="md:col-span-1 md:col-start-1 md:row-start-5 hover:shadow-lg transition-shadow" />
 
         {/* Daily Stress - 1x1 */}
         <Card className="md:col-span-1 md:col-start-2 md:row-start-5 hover:shadow-lg transition-shadow overflow-hidden">
@@ -437,7 +404,11 @@ export default function Home() {
         </Card>
 
         {/* VO2 Max Trend - 1x1 */}
-        <Vo2maxTrendCard className="md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow" />
+        <Vo2maxTrendCard
+          className="md:col-span-1 md:col-start-4 md:row-start-5 hover:shadow-lg transition-shadow"
+          data={data?.vo2maxTrend}
+          loading={isLoading}
+        />
 
         {/* Race Predictions - 1x2 */}
         <RacePredictionsCard predictions={data?.racePredictions?.predictions} loading={isLoading} />
