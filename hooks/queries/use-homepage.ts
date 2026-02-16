@@ -102,6 +102,24 @@ interface HomepageRawData {
     weekly_vo2max_array: number[];
     vo2max_delta_6_months: number;
   };
+  stress_daily?: {
+    average_stress: number;
+    daily: {
+      date: string;
+      day: string;
+      avg_stress: number;
+      max_stress: number;
+    }[];
+  };
+  steps?: {
+    average: number;
+    goal: number;
+    daily: {
+      date: string;
+      day: string;
+      steps: number;
+    }[];
+  };
 }
 
 type SleepStage = "awake" | "rem" | "core" | "deep";
@@ -124,6 +142,15 @@ export interface HomepageData {
     currentVo2max: number;
     weeklyVo2maxArray: number[];
     vo2maxDelta6Months: number;
+  } | null;
+  stress: {
+    average: number;
+    daily: { day: string; stress: number; date: string }[];
+  } | null;
+  steps: {
+    average: number;
+    goal: number;
+    daily: { day: string; steps: number; date: string }[];
   } | null;
 }
 
@@ -173,6 +200,8 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
   let weeklyVolume: RunningWeeklyVolumeData | null = null;
   let racePredictions: RacePredictionsData | null = null;
   let vo2maxTrend: HomepageData["vo2maxTrend"] = null;
+  let stress: HomepageData["stress"] = null;
+  let steps: HomepageData["steps"] = null;
 
   // Transform music data
   if (data.music_time_daily && data.top_artists && data.top_tracks) {
@@ -396,6 +425,31 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
     };
   }
 
+  // Transform stress data
+  if (data.stress_daily) {
+    stress = {
+      average: data.stress_daily.average_stress,
+      daily: data.stress_daily.daily.map((item) => ({
+        day: item.day,
+        stress: item.avg_stress,
+        date: item.date,
+      })),
+    };
+  }
+
+  // Transform steps data
+  if (data.steps) {
+    steps = {
+      average: data.steps.average,
+      goal: data.steps.goal,
+      daily: data.steps.daily.map((item) => ({
+        day: item.day,
+        steps: item.steps,
+        date: item.date,
+      })),
+    };
+  }
+
   return {
     music,
     sleepStages,
@@ -404,6 +458,8 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
     weeklyVolume,
     racePredictions,
     vo2maxTrend,
+    stress,
+    steps,
   };
 }
 
