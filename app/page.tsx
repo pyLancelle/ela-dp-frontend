@@ -78,10 +78,10 @@ export default function Home() {
         <RestingHrCard data={data?.sleepBodyBattery?.restingHr} />
 
         {/* Stress - 1x1 */}
-        <StressCard data={data?.stress} className="md:col-span-1 md:col-start-1 md:row-start-3" />
+        <StressCard data={data?.stress ?? undefined} className="md:col-span-1 md:col-start-1 md:row-start-3" />
 
         {/* Steps - 1x1 */}
-        <StepsCard data={data?.steps} className="md:col-span-1 md:col-start-2 md:row-start-3" />
+        <StepsCard data={data?.steps ?? undefined} className="md:col-span-1 md:col-start-2 md:row-start-3" />
 
         {/* Spotify Listening Time Chart - 2x1 */}
         <ListeningTimeChart data={data?.music?.listeningTime} loading={isLoading} />
