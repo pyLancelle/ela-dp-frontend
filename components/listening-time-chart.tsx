@@ -83,15 +83,19 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                 </div>
             </CardHeader>
             <CardContent className="pt-2 pb-3">
-                <div className="flex flex-col h-28">
+                <div className="relative h-28">
                     {loading ? (
-                        <div className="w-full flex-1 flex items-center justify-center text-muted-foreground text-xs">
+                        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">
                             Chargement...
                         </div>
                     ) : (
                         <>
-                            {/* Zone des barres : flex-1 garantit une hauteur définie sans les labels */}
-                            <div className="flex-1 flex items-end justify-between gap-2 px-1 min-h-0">
+                            {/*
+                              Zone des barres : absolute avec top+bottom explicites
+                              → hauteur définie = 112px - 32px = 80px
+                              → height: X% sur les barres résout correctement
+                            */}
+                            <div className="absolute inset-x-0 top-0 bottom-8 flex items-end justify-between gap-2 px-1">
                                 {daysWithCalculatedHeight.map((day, index) => (
                                     <div key={index} className="flex-1 h-full flex items-end justify-center">
                                         <div
@@ -101,12 +105,12 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                                     </div>
                                 ))}
                             </div>
-                            {/* Zone des labels : séparée pour ne pas fausser le calcul des hauteurs */}
-                            <div className="flex justify-between gap-2 px-1 pt-1">
+                            {/* Zone des labels : 32px fixes en bas */}
+                            <div className="absolute inset-x-0 bottom-0 h-8 flex justify-between gap-2 px-1">
                                 {daysWithCalculatedHeight.map((day, index) => {
                                     const englishDay = dayMap[day.day] || day.day.charAt(0);
                                     return (
-                                        <div key={index} className="flex-1 flex flex-col items-center gap-0.5">
+                                        <div key={index} className="flex-1 flex flex-col items-center justify-center gap-0.5">
                                             <span className="text-[10px] font-medium leading-none">{day.formatted}</span>
                                             <span className="text-xs text-muted-foreground leading-none">{englishDay}</span>
                                         </div>
