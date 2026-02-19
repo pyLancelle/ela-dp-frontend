@@ -55,13 +55,6 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
 
     const displayData = data || defaultData;
 
-    // Calculate heights based on actual duration values
-    const maxDuration = Math.max(...displayData.days.map(day => day.duration), 1); // Avoid division by 0
-    const daysWithCalculatedHeight = displayData.days.map(day => ({
-        ...day,
-        calculatedHeight: (day.duration / maxDuration) * 100
-    }));
-
     // Convert French day names to English single letters
     const dayMap: { [key: string]: string } = {
         'Lun': 'M', 'Mar': 'T', 'Mer': 'W', 'Jeu': 'T',
@@ -89,25 +82,18 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                     </div>
                 ) : (
                     <div className="flex flex-col gap-1">
-                        {/*
-                          h-20 = hauteur CSS explicite (height: 5rem = 80px)
-                          → les colonnes enfant peuvent utiliser h-full (= 80px défini)
-                          → les barres peuvent utiliser height: X% de 80px fiablement
-                          Contrairement à flex-1 (flex-grow), h-20 est une hauteur résoluble
-                          par les enfants pour le calcul des pourcentages CSS.
-                        */}
                         <div className="flex items-end justify-between gap-1 px-1 h-20">
-                            {daysWithCalculatedHeight.map((day, index) => (
+                            {displayData.days.map((day, index) => (
                                 <div key={index} className="flex-1 h-full flex justify-center items-end">
                                     <div
                                         className="w-5 bg-black dark:bg-white rounded"
-                                        style={{ height: `${day.calculatedHeight}%` }}
+                                        style={{ height: `${day.heightPercentage}%` }}
                                     />
                                 </div>
                             ))}
                         </div>
                         <div className="flex justify-between gap-1 px-1">
-                            {daysWithCalculatedHeight.map((day, index) => {
+                            {displayData.days.map((day, index) => {
                                 const englishDay = dayMap[day.day] || day.day.charAt(0);
                                 return (
                                     <div key={index} className="flex-1 flex flex-col items-center gap-0.5">
