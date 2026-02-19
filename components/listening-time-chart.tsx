@@ -85,22 +85,19 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                     </div>
                 ) : (
                     <div className="flex flex-col gap-1">
-                        <div className="flex justify-between gap-1 px-1">
-                            {displayData.days.map((day, index) => (
-                                <div key={index} className="flex-1 flex justify-center">
-                                    <span className="text-[9px] text-muted-foreground leading-none">{day.formatted}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex items-end justify-between gap-1 px-1 h-20">
-                            {displayData.days.map((day, index) => (
-                                <div key={index} className="flex-1 h-full flex justify-center items-end">
-                                    <div
-                                        className="w-4 bg-black dark:bg-white rounded"
-                                        style={{ height: `${day.heightPercentage}%` }}
-                                    />
-                                </div>
-                            ))}
+                        <div className="flex items-end justify-between gap-1 px-1 h-24">
+                            {displayData.days.map((day, index) => {
+                                const englishDay = dayMap[day.day] || day.day.charAt(0);
+                                return (
+                                    <div key={index} className="flex-1 h-full flex flex-col justify-end items-center gap-0.5">
+                                        <span className="text-[9px] text-muted-foreground leading-none">{day.formatted}</span>
+                                        <div
+                                            className="w-4 bg-black dark:bg-white rounded"
+                                            style={{ height: `${day.heightPercentage * 0.75}%` }}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                         <div className="flex justify-between gap-1 px-1">
                             {displayData.days.map((day, index) => {
