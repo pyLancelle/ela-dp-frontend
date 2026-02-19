@@ -43,24 +43,20 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
     const defaultData = {
         averagePerDay: 252, // 4h 12m in minutes
         days: [
-            { date: "", day: "Lun", duration: 0, formatted: "3h 45m", heightPercentage: 75 },
-            { date: "", day: "Mar", duration: 0, formatted: "4h 30m", heightPercentage: 90 },
-            { date: "", day: "Mer", duration: 0, formatted: "2h 15m", heightPercentage: 45 },
-            { date: "", day: "Jeu", duration: 0, formatted: "5h 00m", heightPercentage: 100 },
-            { date: "", day: "Ven", duration: 0, formatted: "3h 20m", heightPercentage: 67 },
-            { date: "", day: "Sam", duration: 0, formatted: "4h 50m", heightPercentage: 97 },
-            { date: "", day: "Dim", duration: 0, formatted: "3h 10m", heightPercentage: 63 },
+            { date: "", day: "Lun", duration: 0, formatted: "2h 50m", heightPercentage: 57 },
+            { date: "", day: "Mar", duration: 0, formatted: "3h 45m", heightPercentage: 75 },
+            { date: "", day: "Mer", duration: 0, formatted: "4h 30m", heightPercentage: 90 },
+            { date: "", day: "Jeu", duration: 0, formatted: "2h 15m", heightPercentage: 45 },
+            { date: "", day: "Ven", duration: 0, formatted: "5h 00m", heightPercentage: 100 },
+            { date: "", day: "Sam", duration: 0, formatted: "3h 20m", heightPercentage: 67 },
+            { date: "", day: "Dim", duration: 0, formatted: "4h 50m", heightPercentage: 97 },
+            { date: "", day: "Lun", duration: 0, formatted: "3h 10m", heightPercentage: 63 },
+            { date: "", day: "Mar", duration: 0, formatted: "1h 45m", heightPercentage: 35 },
+            { date: "", day: "Mer", duration: 0, formatted: "4h 05m", heightPercentage: 82 },
         ]
     };
 
     const displayData = data || defaultData;
-
-    // Calculate heights based on actual duration values
-    const maxDuration = Math.max(...displayData.days.map(day => day.duration), 1); // Avoid division by 0
-    const daysWithCalculatedHeight = displayData.days.map(day => ({
-        ...day,
-        calculatedHeight: (day.duration / maxDuration) * 100
-    }));
 
     // Convert French day names to English single letters
     const dayMap: { [key: string]: string } = {
@@ -83,31 +79,38 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                 </div>
             </CardHeader>
             <CardContent className="pt-2 pb-3">
-                <div className="relative h-28">
-                    {/* Bar Chart */}
-                    <div className="flex items-end justify-between h-full gap-2 px-1">
-                        {loading ? (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                                Chargement...
-                            </div>
-                        ) : daysWithCalculatedHeight.map((day, index) => {
-                            const englishDay = dayMap[day.day] || day.day.charAt(0);
-
-                            return (
-                                <div key={index} className="flex flex-col items-center flex-1 h-full justify-end">
-                                    <span className="text-[10px] font-medium mb-1">
-                                        {day.formatted}
-                                    </span>
-                                    <div
-                                        className="w-5 bg-black dark:bg-white rounded"
-                                        style={{ height: `${day.calculatedHeight}%` }}
-                                    ></div>
-                                    <span className="text-xs text-muted-foreground mt-2">{englishDay}</span>
-                                </div>
-                            );
-                        })}
+                {loading ? (
+                    <div className="h-28 flex items-center justify-center text-muted-foreground text-xs">
+                        Chargement...
                     </div>
-                </div>
+                ) : (
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-end justify-between gap-1 px-1 h-24">
+                            {displayData.days.map((day, index) => {
+                                const englishDay = dayMap[day.day] || day.day.charAt(0);
+                                return (
+                                    <div key={index} className="flex-1 h-full flex flex-col justify-end items-center gap-0.5">
+                                        <span className="text-[9px] text-muted-foreground leading-none">{day.formatted}</span>
+                                        <div
+                                            className="w-4 bg-black dark:bg-white rounded"
+                                            style={{ height: `${day.heightPercentage * 0.75}%` }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="flex justify-between gap-1 px-1">
+                            {displayData.days.map((day, index) => {
+                                const englishDay = dayMap[day.day] || day.day.charAt(0);
+                                return (
+                                    <div key={index} className="flex-1 flex justify-center">
+                                        <span className="text-xs text-muted-foreground leading-none">{englishDay}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
