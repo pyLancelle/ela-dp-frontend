@@ -43,13 +43,16 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
     const defaultData = {
         averagePerDay: 252, // 4h 12m in minutes
         days: [
-            { date: "", day: "Lun", duration: 0, formatted: "3h 45m", heightPercentage: 75 },
-            { date: "", day: "Mar", duration: 0, formatted: "4h 30m", heightPercentage: 90 },
-            { date: "", day: "Mer", duration: 0, formatted: "2h 15m", heightPercentage: 45 },
-            { date: "", day: "Jeu", duration: 0, formatted: "5h 00m", heightPercentage: 100 },
-            { date: "", day: "Ven", duration: 0, formatted: "3h 20m", heightPercentage: 67 },
-            { date: "", day: "Sam", duration: 0, formatted: "4h 50m", heightPercentage: 97 },
-            { date: "", day: "Dim", duration: 0, formatted: "3h 10m", heightPercentage: 63 },
+            { date: "", day: "Lun", duration: 0, formatted: "2h 50m", heightPercentage: 57 },
+            { date: "", day: "Mar", duration: 0, formatted: "3h 45m", heightPercentage: 75 },
+            { date: "", day: "Mer", duration: 0, formatted: "4h 30m", heightPercentage: 90 },
+            { date: "", day: "Jeu", duration: 0, formatted: "2h 15m", heightPercentage: 45 },
+            { date: "", day: "Ven", duration: 0, formatted: "5h 00m", heightPercentage: 100 },
+            { date: "", day: "Sam", duration: 0, formatted: "3h 20m", heightPercentage: 67 },
+            { date: "", day: "Dim", duration: 0, formatted: "4h 50m", heightPercentage: 97 },
+            { date: "", day: "Lun", duration: 0, formatted: "3h 10m", heightPercentage: 63 },
+            { date: "", day: "Mar", duration: 0, formatted: "1h 45m", heightPercentage: 35 },
+            { date: "", day: "Mer", duration: 0, formatted: "4h 05m", heightPercentage: 82 },
         ]
     };
 
@@ -86,7 +89,7 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                             {displayData.days.map((day, index) => (
                                 <div key={index} className="flex-1 h-full flex justify-center items-end">
                                     <div
-                                        className="w-5 bg-black dark:bg-white rounded"
+                                        className="w-4 bg-black dark:bg-white rounded"
                                         style={{ height: `${day.heightPercentage}%` }}
                                     />
                                 </div>
