@@ -83,30 +83,38 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
                 </div>
             </CardHeader>
             <CardContent className="pt-2 pb-3">
-                <div className="relative h-28">
-                    {/* Bar Chart */}
-                    <div className="flex items-end justify-between h-full gap-2 px-1">
-                        {loading ? (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                                Chargement...
+                <div className="flex flex-col h-28">
+                    {loading ? (
+                        <div className="w-full flex-1 flex items-center justify-center text-muted-foreground text-xs">
+                            Chargement...
+                        </div>
+                    ) : (
+                        <>
+                            {/* Zone des barres : flex-1 garantit une hauteur définie sans les labels */}
+                            <div className="flex-1 flex items-end justify-between gap-2 px-1 min-h-0">
+                                {daysWithCalculatedHeight.map((day, index) => (
+                                    <div key={index} className="flex-1 h-full flex items-end justify-center">
+                                        <div
+                                            className="w-5 bg-black dark:bg-white rounded"
+                                            style={{ height: `${day.calculatedHeight}%` }}
+                                        ></div>
+                                    </div>
+                                ))}
                             </div>
-                        ) : daysWithCalculatedHeight.map((day, index) => {
-                            const englishDay = dayMap[day.day] || day.day.charAt(0);
-
-                            return (
-                                <div key={index} className="flex flex-col items-center flex-1 h-full justify-end">
-                                    <span className="text-[10px] font-medium mb-1">
-                                        {day.formatted}
-                                    </span>
-                                    <div
-                                        className="w-5 bg-black dark:bg-white rounded"
-                                        style={{ height: `${day.calculatedHeight}%` }}
-                                    ></div>
-                                    <span className="text-xs text-muted-foreground mt-2">{englishDay}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
+                            {/* Zone des labels : séparée pour ne pas fausser le calcul des hauteurs */}
+                            <div className="flex justify-between gap-2 px-1 pt-1">
+                                {daysWithCalculatedHeight.map((day, index) => {
+                                    const englishDay = dayMap[day.day] || day.day.charAt(0);
+                                    return (
+                                        <div key={index} className="flex-1 flex flex-col items-center gap-0.5">
+                                            <span className="text-[10px] font-medium leading-none">{day.formatted}</span>
+                                            <span className="text-xs text-muted-foreground leading-none">{englishDay}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
                 </div>
             </CardContent>
         </Card>
