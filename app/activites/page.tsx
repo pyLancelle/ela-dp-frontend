@@ -1,93 +1,81 @@
 "use client";
 
-import { Activity, TrendingUp, Calendar, Clock, Loader2 } from "lucide-react";
-import { ActivityCard } from "@/components/activity-card";
+import { Loader2, Inbox } from "lucide-react";
 import { useActivitiesList } from "@/hooks/queries";
+import { ActivityRichCard, type ActivityListItem } from "@/components/activity/activity-rich-card";
+import { BlurFade } from "@/components/magicui/blur-fade";
+
+function monthKey(rawDate: string): string {
+  const d = new Date(rawDate);
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+
+function monthLabel(rawDate: string): string {
+  return new Date(rawDate).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+}
+
+type GridItem =
+  | { kind: "separator"; label: string; key: string }
+  | { kind: "card"; activity: ActivityListItem; index: number };
+
+function buildGridItems(activities: ActivityListItem[]): GridItem[] {
+  const items: GridItem[] = [];
+  let currentMonth = "";
+  let cardIndex = 0;
+
+  for (const activity of activities) {
+    const mk = monthKey(activity.rawDate);
+    if (mk !== currentMonth) {
+      currentMonth = mk;
+      items.push({ kind: "separator", label: monthLabel(activity.rawDate), key: `sep-${mk}` });
+    }
+    items.push({ kind: "card", activity, index: cardIndex++ });
+  }
+
+  return items;
+}
 
 export default function ActivitesPage() {
   const { data: activities = [], isLoading, isError, error } = useActivitiesList();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Activités</h1>
-        <p className="text-muted-foreground mt-2">
-          Gérez et suivez vos activités sportives
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Total Activités
-              </p>
-              <p className="text-2xl font-bold">24</p>
-            </div>
-            <Activity className="h-8 w-8 text-muted-foreground" />
-          </div>
+    <div className="flex flex-col gap-6 p-6">
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
+          <Loader2 className="h-7 w-7 animate-spin" />
+          <span className="text-sm">Chargement des activités…</span>
         </div>
-
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Cette semaine
-              </p>
-              <p className="text-2xl font-bold">5</p>
-            </div>
-            <Calendar className="h-8 w-8 text-muted-foreground" />
+      ) : isError ? (
+        <BlurFade delay={0.1}>
+          <div className="liquid-glass-card rounded-xl p-8 text-center text-red-400 text-sm">
+            {error instanceof Error ? error.message : "Une erreur est survenue"}
           </div>
+        </BlurFade>
+      ) : activities.length === 0 ? (
+        <BlurFade delay={0.1}>
+          <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
+            <Inbox className="h-8 w-8 opacity-40" />
+            <span className="text-sm">Aucune activité trouvée</span>
+          </div>
+        </BlurFade>
+      ) : (
+        <div className="grid grid-cols-6 gap-3">
+          {buildGridItems(activities).map((item) =>
+            item.kind === "separator" ? (
+              <div key={item.key} className="col-span-6 flex items-center gap-4 pt-2">
+                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50 capitalize">
+                  {item.label}
+                </span>
+                <div className="flex-1 h-px bg-white/[0.06]" />
+              </div>
+            ) : (
+              <div key={item.activity.id} className="col-span-2">
+                <ActivityRichCard activity={item.activity} index={item.index} />
+              </div>
+            )
+          )}
         </div>
-
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Temps total
-              </p>
-              <p className="text-2xl font-bold">12h</p>
-            </div>
-            <Clock className="h-8 w-8 text-muted-foreground" />
-          </div>
-        </div>
-
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Progression
-              </p>
-              <p className="text-2xl font-bold">+15%</p>
-            </div>
-            <TrendingUp className="h-8 w-8 text-muted-foreground" />
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Mes activités</h2>
-        {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : isError ? (
-          <div className="text-center py-12 text-red-500">
-            Erreur: {error instanceof Error ? error.message : 'An error occurred'}
-          </div>
-        ) : activities.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            Aucune activité trouvée
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {activities.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} />
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
