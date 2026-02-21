@@ -14,6 +14,7 @@ interface ListeningTimeChartProps {
         }[];
     };
     loading?: boolean;
+    className?: string;
 }
 
 // Format minutes to "Xh Ym" or "Xm"
@@ -39,7 +40,7 @@ function getFormattedAverage(averagePerDay: number | string): string {
     return averagePerDay;
 }
 
-export function ListeningTimeChart({ data, loading = false }: ListeningTimeChartProps) {
+export function ListeningTimeChart({ data, loading = false, className }: ListeningTimeChartProps) {
     const defaultData = {
         averagePerDay: 252, // 4h 12m in minutes
         days: [
@@ -65,7 +66,7 @@ export function ListeningTimeChart({ data, loading = false }: ListeningTimeChart
     };
 
     return (
-        <Card className="md:col-span-2 md:col-start-5 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
+        <Card className={className || "overflow-hidden"}>
             <CardHeader className="pb-2 pt-3">
                 <div className="flex items-center justify-between">
                     <div>

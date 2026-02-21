@@ -267,7 +267,7 @@ export default function ClassementsPage() {
                                 {truncateText(artist.name, 36)}
                               </div>
                               <div className="text-[11px] text-muted-foreground">
-                                {artist.track_count} titres
+                                {artist.track_count}
                               </div>
                             </div>
                           </div>

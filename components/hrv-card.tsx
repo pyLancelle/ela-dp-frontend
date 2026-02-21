@@ -16,13 +16,14 @@ const chartConfig = {
 } satisfies ChartConfig
 
 interface HrvCardProps {
+    className?: string;
     data?: {
         average: number;
         daily: { day: string; hrv: number; date: string }[];
     };
 }
 
-export function HrvCard({ data }: HrvCardProps) {
+export function HrvCard({ data, className }: HrvCardProps) {
     const defaultData = {
         average: 58,
         daily: [
@@ -45,7 +46,7 @@ export function HrvCard({ data }: HrvCardProps) {
             icon={Heart}
             kpi={displayData.average.toString()}
             kpiLabel="ms"
-            className="h-full"
+            className={className || "h-full"}
             hasChart={true}
         >
             <ChartContainer config={chartConfig} className="h-full w-full aspect-auto">

@@ -14,6 +14,7 @@ interface SleepData {
 
 interface SleepStagesChartProps {
   data?: SleepData[]
+  className?: string
 }
 
 // Données de simulation pour une nuit de sommeil
@@ -65,7 +66,7 @@ const getStagePosition = (stage: SleepStage): number => {
   }
 }
 
-export function SleepStagesChart({ data }: SleepStagesChartProps = { data: undefined }) {
+export function SleepStagesChart({ data, className }: SleepStagesChartProps = { data: undefined }) {
   // Utiliser les données fournies ou les données mockées
   const sleepData = data || mockSleepData
 
@@ -121,6 +122,7 @@ export function SleepStagesChart({ data }: SleepStagesChartProps = { data: undef
       icon={Moon}
       kpi={totalFormatted}
       contentClassName="flex flex-col pt-1"
+      className={className}
     >
       {/* Graphique des phases de sommeil */}
       <div className="relative flex-1 bg-background rounded-lg p-2 min-h-[120px]">

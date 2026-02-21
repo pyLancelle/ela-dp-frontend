@@ -20,9 +20,10 @@ interface SleepScoreChartProps {
         average: number;
         daily: { day: string; score: number; date: string }[];
     };
+    className?: string;
 }
 
-export function SleepScoreChart({ data }: SleepScoreChartProps) {
+export function SleepScoreChart({ data, className }: SleepScoreChartProps) {
     const defaultData = {
         average: 72,
         daily: [
@@ -45,7 +46,7 @@ export function SleepScoreChart({ data }: SleepScoreChartProps) {
             icon={Moon}
             kpi={displayData.average.toString()}
             kpiLabel=""
-            className="h-full"
+            className={className || "h-full"}
             hasChart={true}
         >
             <ChartContainer config={chartConfig} className="h-full w-full aspect-auto">

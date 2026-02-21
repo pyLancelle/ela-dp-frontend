@@ -1,267 +1,304 @@
 "use client";
 
-import { useState } from "react";
 import { useHomepage } from "@/hooks/queries";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Music,
-  User,
-  Footprints,
-  CheckCircle2
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SleepStagesChart } from "@/components/sleep-stages-chart";
-import { BodyBatteryChart } from "@/components/body-battery-chart";
-import { SleepScoreChart } from "@/components/sleep-score-chart";
-import { HrvCard } from "@/components/hrv-card";
-import { RestingHrCard } from "@/components/resting-hr-card";
-import { WeeklyVolumeChart } from "@/components/weekly-volume-chart";
-import { ListeningTimeChart } from "@/components/listening-time-chart";
-import { RacePredictionsCard } from "@/components/race-predictions-card";
-import { Vo2maxTrendCard } from "@/components/vo2max-trend-card";
-import { StressCard } from "@/components/stress-card";
-import { StepsCard } from "@/components/steps-card";
-
-// Generate a consistent color gradient based on a string
-const getGradientColors = (name: string) => {
-  const gradients = [
-    'from-blue-500 to-purple-600',
-    'from-green-500 to-teal-600',
-    'from-orange-500 to-red-600',
-    'from-pink-500 to-rose-600',
-    'from-indigo-500 to-blue-600',
-    'from-yellow-500 to-orange-600',
-    'from-purple-500 to-pink-600',
-    'from-teal-500 to-cyan-600',
-    'from-red-500 to-pink-600',
-    'from-cyan-500 to-blue-600',
-  ];
-  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return gradients[hash % gradients.length];
-};
+import { SleepStagesCard } from "@/components/magicui/sleep-stages-card";
+import { TopMusicCard } from "@/components/magicui/top-music-card";
+import { RunningCard } from "@/components/magicui/running-card";
+import { RacePredictionsCard } from "@/components/magicui/race-predictions-card";
+import { Vo2maxCard } from "@/components/magicui/vo2max-card";
+import { BentoGrid } from "@/components/magicui/bento-grid";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { AuroraText } from "@/components/magicui/aurora-text";
+import { BarChartCard } from "@/components/magicui/bar-chart-card";
 
 export default function Home() {
   const { data, isLoading } = useHomepage();
-  const [showArtists, setShowArtists] = useState(true);
 
   return (
     <div className="px-6 py-6 min-h-[calc(100vh-8rem)]">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome, Etienne !</h1>
-        <p className="text-muted-foreground">Overview</p>
-      </div>
-
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[200px]">
-
-        {/* Sleep Stages Chart - 2x1 */}
-        <div className="md:col-span-2 md:col-start-1 md:row-start-1">
-          <SleepStagesChart data={data?.sleepStages} />
+      <BlurFade delay={0.0} duration={0.5}>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">
+            <AuroraText colors={["#1DB954", "#9c40ff", "#3b82f6", "#06b6d4"]} speed={0.8}>
+              Welcome, Etienne !
+            </AuroraText>
+          </h1>
+          <p className="text-muted-foreground">Overview</p>
         </div>
+      </BlurFade>
 
-
-        {/* Sleep Score Chart - 1x1 */}
-        <div className="md:col-span-1 md:col-start-1 md:row-start-2">
-          <SleepScoreChart data={data?.sleepBodyBattery?.sleepScores} />
-        </div>
-
-        {/* Body Battery Chart - 1x1 */}
-        <div className="md:col-span-1 md:col-start-2 md:row-start-2">
-          <BodyBatteryChart data={data?.sleepBodyBattery?.bodyBattery} />
-        </div>
-
-        {/* HRV Recent Days - 1x1 */}
-        <HrvCard data={data?.sleepBodyBattery?.hrv} />
-
-        {/* Resting Heart Rate - 1x1 */}
-        <RestingHrCard data={data?.sleepBodyBattery?.restingHr} />
-
-        {/* Stress - 1x1 */}
-        <StressCard data={data?.stress ?? undefined} className="md:col-span-1 md:col-start-1 md:row-start-3" />
-
-        {/* Steps - 1x1 */}
-        <StepsCard data={data?.steps ?? undefined} className="md:col-span-1 md:col-start-2 md:row-start-3" />
-
-        {/* Spotify Listening Time Chart - 2x1 */}
-        <ListeningTimeChart data={data?.music?.listeningTime} loading={isLoading} />
-
-        {/* Top Artists/Tracks - 2x3 */}
-        <Card className="md:col-span-2 md:row-span-3 md:col-start-5 md:row-start-2 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {showArtists ? <User className="h-5 w-5" /> : <Music className="h-5 w-5" />}
-                <CardTitle>{showArtists ? "Top Artistes" : "Top Titres"}</CardTitle>
-              </div>
-              <div className="flex gap-1">
-                <Button variant={showArtists ? "default" : "ghost"} size="sm" onClick={() => setShowArtists(true)} className="h-7 px-2">
-                  <User className="h-3.5 w-3.5" />
-                </Button>
-                <Button variant={!showArtists ? "default" : "ghost"} size="sm" onClick={() => setShowArtists(false)} className="h-7 px-2">
-                  <Music className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
-            <CardDescription>7 derniers jours</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              {isLoading ? (
-                <div className="text-center py-10 text-muted-foreground">Chargement...</div>
-              ) : showArtists ? (
-                <>
-                  {data?.music?.topArtists.map((artist, index) => (
-                    <div key={index} className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <span className={`text-sm font-semibold w-5 flex-shrink-0 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : artist.rank}
-                        </span>
-                        {artist.imageUrl ? (
-                          <img src={artist.imageUrl} alt={artist.name} className="w-10 h-10 rounded object-cover flex-shrink-0" />
-                        ) : (
-                          <div className={`w-10 h-10 rounded bg-gradient-to-br ${getGradientColors(artist.name)} flex items-center justify-center flex-shrink-0`}>
-                            <span className="text-white text-xs font-semibold">{artist.name.slice(0, 2).toUpperCase()}</span>
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{artist.name}</div>
-                          <div className="text-xs text-muted-foreground">{artist.trackCount} plays</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{artist.totalDuration}</div>
-                        <div className="text-xs text-muted-foreground">{artist.playCount} plays</div>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {data?.music?.topTracks.map((track, index) => (
-                    <div key={index} className="flex items-center justify-between hover:bg-muted/50 -mx-2 px-2 py-1 rounded-md transition-colors">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <span className={`text-sm font-semibold w-5 flex-shrink-0 ${index < 3 ? '' : 'text-xs text-muted-foreground'}`}>
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : track.rank}
-                        </span>
-                        {track.imageUrl && <img src={track.imageUrl} alt={track.name} className="w-10 h-10 rounded object-cover flex-shrink-0" />}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{track.name}</div>
-                          <div className="text-xs text-muted-foreground">{track.artistName}</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{track.totalDuration}</div>
-                        <div className="text-xs text-muted-foreground">{track.playCount} plays</div>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      <BentoGrid>
 
         {/* Running Card - 2x2 */}
-        <Card className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1 hover:shadow-lg transition-shadow overflow-hidden">
-          <CardHeader className="pb-2 pt-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Footprints className="h-5 w-5" />
-                <CardTitle className="text-sm">Course à pied</CardTitle>
-              </div>
-              <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-medium flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" />
-                Objectif atteint
-              </span>
-            </div>
-            <CardDescription className="text-xs">Scores Aérobie / Anaérobie</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-2 pb-3">
-            <div className="grid grid-cols-3 gap-3 mb-3">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{data?.running?.totalDistance.toFixed(1) || '0'}</div>
-                <div className="text-xs text-muted-foreground">km total</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{data?.running?.sessionCount || 0}</div>
-                <div className="text-xs text-muted-foreground">sessions</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">{data?.running?.averagePerSession.toFixed(1) || '0'}</div>
-                <div className="text-xs text-muted-foreground">km/session</div>
-              </div>
-            </div>
+        <BlurFade delay={0.05} className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1">
+          <RunningCard data={data?.running ?? null} />
+        </BlurFade>
 
-            <div className="relative h-12 mb-3">
-              <div className="flex items-end justify-between h-full gap-1">
-                {(data?.running?.daily || []).map((d, index) => {
-                  const maxDistance = Math.max(...(data?.running?.daily || []).map(d => d.distance), 1);
-                  return (
-                    <div key={index} className="flex flex-col items-center flex-1 h-full justify-end relative">
-                      {d.distance > 0 && (
-                        <>
-                          <span className="text-[8px] font-medium mb-0.5">{d.distance.toFixed(1)}</span>
-                          <div className="w-full bg-blue-500 rounded-t" style={{ height: `${(d.distance / maxDistance) * 100}%` }}></div>
-                        </>
-                      )}
-                      {d.distance === 0 && <div className="w-full h-1 bg-muted rounded"></div>}
-                      <span className="absolute -bottom-4 text-[9px] text-muted-foreground">{d.day}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+        {/* Top Artists/Tracks - 2x3, colonne droite */}
+        <BlurFade delay={0.10} className="md:col-span-2 md:row-span-3 md:col-start-5 md:row-start-2">
+          <TopMusicCard
+            topArtists={data?.music?.topArtists}
+            topTracks={data?.music?.topTracks}
+            loading={isLoading}
+          />
+        </BlurFade>
 
-            <div className="relative h-32 mb-2 mt-6">
-              <div className="absolute inset-x-0 top-1/2 h-px bg-border"></div>
-              <div className="flex items-center justify-between h-full gap-1.5">
-                {(data?.running?.daily || []).map((d, index) => (
-                  <div key={index} className="flex flex-col items-center flex-1 h-full justify-center">
-                    <div className="w-full flex items-end justify-center" style={{ height: '50%' }}>
-                      {d.aerobicScore > 0 && <div className="w-full bg-blue-500 rounded-t" style={{ height: `${d.aerobicHeightPercentage}%` }} title={`Aérobie: ${d.aerobicScore.toFixed(1)}`}></div>}
-                    </div>
-                    <div className="w-full flex items-start justify-center" style={{ height: '50%' }}>
-                      {d.anaerobicScore > 0 && <div className="w-full bg-orange-500 rounded-b" style={{ height: `${d.anaerobicHeightPercentage}%` }} title={`Anaérobie: ${d.anaerobicScore.toFixed(1)}`}></div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-4 pt-2 border-t text-xs">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                <span className="text-muted-foreground">Aérobie</span>
-                <span className="text-green-500 font-medium text-[10px]">(+5 max)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                <span className="text-muted-foreground">Anaérobie</span>
-                <span className="text-orange-500 font-medium text-[10px]">(-5 max)</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Listening Time Chart - 2x1 */}
+        <BlurFade delay={0.15} className="md:col-span-2 md:col-start-5 md:row-start-1">
+          <BarChartCard
+            title="Temps d'écoute"
+            kpi={
+              data?.music?.listeningTime?.averagePerDay
+                ? typeof data.music.listeningTime.averagePerDay === "number"
+                  ? (() => {
+                      const h = Math.floor(data.music.listeningTime.averagePerDay as number / 60);
+                      const m = Math.floor((data.music.listeningTime.averagePerDay as number) % 60);
+                      return h > 0 ? `${h}h${m > 0 ? `${m}` : ""}` : `${m}m`;
+                    })()
+                  : String(data.music.listeningTime.averagePerDay)
+                : "4h12"
+            }
+            kpiLabel="moy/jour"
+            subtitle="10 derniers jours"
+            color="#1DB954"
+            data={
+              data?.music?.listeningTime?.days?.map((d) => ({
+                label: { Lun: "L", Mar: "M", Mer: "M", Jeu: "J", Ven: "V", Sam: "S", Dim: "D" }[d.day] ?? d.day.charAt(0),
+                value: d.heightPercentage,
+                formatted: d.formatted,
+              })) ?? [
+                { label: "L", value: 57, formatted: "2h50" },
+                { label: "M", value: 75, formatted: "3h45" },
+                { label: "M", value: 90, formatted: "4h30" },
+                { label: "J", value: 45, formatted: "2h15" },
+                { label: "V", value: 100, formatted: "5h00" },
+                { label: "S", value: 67, formatted: "3h20" },
+                { label: "D", value: 97, formatted: "4h50" },
+                { label: "L", value: 63, formatted: "3h10" },
+                { label: "M", value: 35, formatted: "1h45" },
+                { label: "M", value: 82, formatted: "4h05" },
+              ]
+            }
+          />
+        </BlurFade>
 
         {/* Weekly Running Volume - 1x1 */}
-        <div className="md:col-span-1 md:col-start-3 md:row-start-3">
-          <WeeklyVolumeChart data={data?.weeklyVolume || undefined} />
-        </div>
+        <BlurFade delay={0.20} className="md:col-span-1 md:col-start-3 md:row-start-3">
+          <BarChartCard
+            title="Volume hebdo"
+            kpi={`${data?.weeklyVolume?.average?.toFixed(1) ?? "25"}`}
+            kpiLabel="km moy"
+            subtitle="10 dernières semaines"
+            color="#3b82f6"
+            data={
+              data?.weeklyVolume?.weeks?.map((w) => ({
+                label: w.week,
+                value: w.volume,
+                formatted: `${w.volume}`,
+              })) ?? [
+                { label: "S-9", value: 20, formatted: "20" },
+                { label: "S-8", value: 25, formatted: "25" },
+                { label: "S-7", value: 30, formatted: "30" },
+                { label: "S-6", value: 22, formatted: "22" },
+                { label: "S-5", value: 28, formatted: "28" },
+                { label: "S-4", value: 35, formatted: "35" },
+                { label: "S-3", value: 32, formatted: "32" },
+                { label: "S-2", value: 38, formatted: "38" },
+                { label: "S-1", value: 40, formatted: "40" },
+                { label: "S0",  value: 42, formatted: "42" },
+              ]
+            }
+          />
+        </BlurFade>
+
+        {/* Sleep Stages Chart - 2x1 */}
+        <BlurFade delay={0.25} className="md:col-span-2 md:col-start-1 md:row-start-1">
+          <SleepStagesCard data={data?.sleepStages} />
+        </BlurFade>
+
+        {/* Sleep Score - 1x1 */}
+        <BlurFade delay={0.30} className="md:col-span-1 md:col-start-1 md:row-start-2">
+          <BarChartCard
+            title="Sommeil"
+            kpi={data?.sleepBodyBattery?.sleepScores?.average?.toString() ?? "72"}
+            kpiLabel="/100"
+            subtitle="7 derniers jours"
+            color="#6366f1"
+            data={
+              data?.sleepBodyBattery?.sleepScores?.daily?.map((d) => ({
+                label: d.day,
+                value: d.score,
+                formatted: d.score.toString(),
+              })) ?? [
+                { label: "L", value: 55, formatted: "55" },
+                { label: "M", value: 75, formatted: "75" },
+                { label: "M", value: 38, formatted: "38" },
+                { label: "J", value: 78, formatted: "78" },
+                { label: "V", value: 69, formatted: "69" },
+                { label: "S", value: 85, formatted: "85" },
+                { label: "D", value: 88, formatted: "88" },
+              ]
+            }
+          />
+        </BlurFade>
+
+        {/* Body Battery - 1x1 */}
+        <BlurFade delay={0.35} className="md:col-span-1 md:col-start-2 md:row-start-2">
+          <BarChartCard
+            title="Body Battery"
+            kpi={`+${data?.sleepBodyBattery?.bodyBattery?.average ?? 81}`}
+            kpiLabel="delta moy"
+            subtitle="7 derniers jours"
+            color="#10b981"
+            data={
+              data?.sleepBodyBattery?.bodyBattery?.daily?.map((d) => ({
+                label: d.day,
+                value: d.range[1],
+                range: d.range,
+              })) ?? [
+                { label: "L", value: 85, range: [15, 85] as [number, number] },
+                { label: "M", value: 92, range: [20, 92] as [number, number] },
+                { label: "M", value: 65, range: [10, 65] as [number, number] },
+                { label: "J", value: 88, range: [25, 88] as [number, number] },
+                { label: "V", value: 95, range: [18, 95] as [number, number] },
+                { label: "S", value: 98, range: [30, 98] as [number, number] },
+                { label: "D", value: 91, range: [10, 91] as [number, number] },
+              ]
+            }
+          />
+        </BlurFade>
+
+        {/* HRV - 1x1 */}
+        <BlurFade delay={0.40} className="md:col-span-1 md:col-start-1 md:row-start-3">
+          <BarChartCard
+            title="HRV"
+            kpi={data?.sleepBodyBattery?.hrv?.average?.toString() ?? "58"}
+            kpiLabel="ms"
+            subtitle="7 derniers jours"
+            color="#8b5cf6"
+            data={
+              data?.sleepBodyBattery?.hrv?.daily?.map((d) => ({
+                label: d.day,
+                value: d.hrv,
+                formatted: `${d.hrv}`,
+              })) ?? [
+                { label: "L", value: 52, formatted: "52ms" },
+                { label: "M", value: 48, formatted: "48ms" },
+                { label: "M", value: 55, formatted: "55ms" },
+                { label: "J", value: 61, formatted: "61ms" },
+                { label: "V", value: 54, formatted: "54ms" },
+                { label: "S", value: 50, formatted: "50ms" },
+                { label: "D", value: 58, formatted: "58ms" },
+              ]
+            }
+          />
+        </BlurFade>
+
+        {/* Resting HR - 1x1 */}
+        <BlurFade delay={0.45} className="md:col-span-1 md:col-start-2 md:row-start-3">
+          <BarChartCard
+            title="FC Repos"
+            kpi={data?.sleepBodyBattery?.restingHr?.average?.toString() ?? "52"}
+            kpiLabel="bpm"
+            subtitle="7 derniers jours"
+            color="#ef4444"
+            data={
+              data?.sleepBodyBattery?.restingHr?.daily?.map((d) => ({
+                label: d.day,
+                value: d.hr,
+                formatted: `${d.hr}`,
+              })) ?? [
+                { label: "L", value: 54, formatted: "54 bpm" },
+                { label: "M", value: 51, formatted: "51 bpm" },
+                { label: "M", value: 53, formatted: "53 bpm" },
+                { label: "J", value: 50, formatted: "50 bpm" },
+                { label: "V", value: 52, formatted: "52 bpm" },
+                { label: "S", value: 55, formatted: "55 bpm" },
+                { label: "D", value: 52, formatted: "52 bpm" },
+              ]
+            }
+          />
+        </BlurFade>
+
+        {/* Stress - 1x1 */}
+        <BlurFade delay={0.50} className="md:col-span-1 md:col-start-1 md:row-start-4">
+          <BarChartCard
+            title="Stress"
+            kpi={data?.stress?.average?.toString() ?? "32"}
+            kpiLabel="/100"
+            subtitle="7 derniers jours"
+            color="#f59e0b"
+            data={
+              data?.stress?.daily?.map((d) => ({
+                label: d.day,
+                value: d.stress,
+                formatted: d.stress.toString(),
+              })) ?? [
+                { label: "L", value: 28, formatted: "28" },
+                { label: "M", value: 45, formatted: "45" },
+                { label: "M", value: 22, formatted: "22" },
+                { label: "J", value: 38, formatted: "38" },
+                { label: "V", value: 52, formatted: "52" },
+                { label: "S", value: 18, formatted: "18" },
+                { label: "D", value: 24, formatted: "24" },
+              ]
+            }
+          />
+        </BlurFade>
+
+        {/* Steps BarChartCard - 1x1 */}
+        <BlurFade delay={0.55} className="md:col-span-1 md:col-start-2 md:row-start-4">
+          <BarChartCard
+            title="Pas"
+            kpi={
+              data?.steps?.average
+                ? data.steps.average >= 1000
+                  ? `${(data.steps.average / 1000).toFixed(1)}K`
+                  : data.steps.average.toString()
+                : "9.2K"
+            }
+            kpiLabel="moy/jour"
+            subtitle="7 derniers jours"
+            color="#6366f1"
+            data={
+              data?.steps?.daily?.map((d) => ({
+                label: d.day,
+                value: d.steps,
+                formatted: d.steps >= 1000
+                  ? `${(d.steps / 1000).toFixed(1)}K`
+                  : d.steps.toString(),
+              })) ?? [
+                { label: "L", value: 12543, formatted: "12.5K" },
+                { label: "M", value: 8234, formatted: "8.2K" },
+                { label: "M", value: 10456, formatted: "10.5K" }, 
+                { label: "J", value: 7892, formatted: "7.9K" },
+                { label: "V", value: 9123, formatted: "9.1K" },
+                { label: "S", value: 11234, formatted: "11.2K" },
+                { label: "D", value: 5156, formatted: "5.2K" },
+              ]
+            }
+          />
+        </BlurFade>
 
         {/* VO2 Max Trend - 1x1 */}
-        <Vo2maxTrendCard
-          className="md:col-span-1 md:col-start-3 md:row-start-4 hover:shadow-lg transition-shadow"
-          data={data?.vo2maxTrend}
-          loading={isLoading}
-        />
+        <BlurFade delay={0.60} className="md:col-span-1 md:col-start-3 md:row-start-4">
+          <Vo2maxCard
+            data={data?.vo2maxTrend}
+            loading={isLoading}
+          />
+        </BlurFade>
 
         {/* Race Predictions - 1x2 */}
-        <RacePredictionsCard predictions={data?.racePredictions?.predictions} loading={isLoading} />
+        <BlurFade delay={0.65} className="md:col-span-1 md:col-start-4 md:row-span-2 md:row-start-3">
+          <RacePredictionsCard
+            predictions={data?.racePredictions?.predictions}
+            loading={isLoading}
+          />
+        </BlurFade>
 
 
-
-      </div>
+      </BentoGrid>
     </div>
   );
 }

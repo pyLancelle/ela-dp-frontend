@@ -20,9 +20,10 @@ interface RestingHrCardProps {
         average: number;
         daily: { day: string; hr: number; date: string }[];
     };
+    className?: string;
 }
 
-export function RestingHrCard({ data }: RestingHrCardProps) {
+export function RestingHrCard({ data, className }: RestingHrCardProps) {
     const defaultData = {
         average: 52,
         daily: [
@@ -45,7 +46,7 @@ export function RestingHrCard({ data }: RestingHrCardProps) {
             icon={Heart}
             kpi={displayData.average.toString()}
             kpiLabel="bpm"
-            className="h-full"
+            className={className || "h-full"}
             hasChart={true}
         >
             <ChartContainer config={chartConfig} className="h-full w-full aspect-auto">
