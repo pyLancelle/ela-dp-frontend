@@ -20,9 +20,10 @@ interface BodyBatteryChartProps {
         average: number;
         daily: { day: string; range: [number, number]; delta: number; date: string }[];
     };
+    className?: string;
 }
 
-export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
+export function BodyBatteryChart({ data, className }: BodyBatteryChartProps) {
     const defaultData = {
         average: 81,
         daily: [
@@ -45,7 +46,7 @@ export function BodyBatteryChart({ data }: BodyBatteryChartProps) {
             icon={Battery}
             kpi={`+${displayData.average}`}
             kpiLabel=""
-            className="h-full"
+            className={className || "h-full"}
             hasChart={true}
         >
             <ChartContainer config={chartConfig} className="h-full w-full aspect-auto">

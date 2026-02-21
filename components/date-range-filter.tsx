@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { motion } from "motion/react"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { format, subDays, startOfYear, endOfDay, startOfDay } from "date-fns"
 import { fr } from "date-fns/locale"
@@ -14,7 +15,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
 
 export type DateFilterPreset = "yesterday" | "7days" | "30days" | "thisYear" | "custom" | "allTime"
 
@@ -88,76 +88,57 @@ export function DateRangeFilter({ selectedPreset, onFilterChange }: DateRangeFil
     return `${format(customDateRange.from, "dd MMM", { locale: fr })} - ${format(customDateRange.to, "dd MMM yyyy", { locale: fr })}`
   }
 
+  const presets: { key: DateFilterPreset; label: string }[] = [
+    { key: "allTime", label: "Tout" },
+    { key: "yesterday", label: "Hier" },
+    { key: "7days", label: "7 jours" },
+    { key: "30days", label: "30 jours" },
+    { key: "thisYear", label: "Cette année" },
+  ]
+
   return (
-    <div className="flex flex-wrap items-center gap-2 p-4 bg-card rounded-lg border">
-      <span className="text-sm font-medium text-muted-foreground mr-2">
-        Période :
-      </span>
-
-      <Button
-        type="button"
-        variant={selectedPreset === "allTime" ? "default" : "outline"}
-        size="sm"
-        onClick={() => handlePresetClick("allTime")}
-        className="transition-all"
-      >
-        Tout
-      </Button>
-
-      <Button
-        type="button"
-        variant={selectedPreset === "yesterday" ? "default" : "outline"}
-        size="sm"
-        onClick={() => handlePresetClick("yesterday")}
-        className="transition-all"
-      >
-        Hier
-      </Button>
-
-      <Button
-        type="button"
-        variant={selectedPreset === "7days" ? "default" : "outline"}
-        size="sm"
-        onClick={() => handlePresetClick("7days")}
-        className="transition-all"
-      >
-        7 derniers jours
-      </Button>
-
-      <Button
-        type="button"
-        variant={selectedPreset === "30days" ? "default" : "outline"}
-        size="sm"
-        onClick={() => handlePresetClick("30days")}
-        className="transition-all"
-      >
-        30 derniers jours
-      </Button>
-
-      <Button
-        type="button"
-        variant={selectedPreset === "thisYear" ? "default" : "outline"}
-        size="sm"
-        onClick={() => handlePresetClick("thisYear")}
-        className="transition-all"
-      >
-        Cette année
-      </Button>
-
-      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button
+    <div className="flex flex-wrap items-center gap-3">
+      {/* Liquid glass pill group */}
+      <div className="liquid-glass-filter flex items-center gap-0.5 rounded-full p-1">
+        {presets.map(({ key, label }) => (
+          <button
+            key={key}
             type="button"
-            variant={selectedPreset === "custom" ? "default" : "outline"}
-            size="sm"
+            onClick={() => handlePresetClick(key)}
             className={cn(
-              "transition-all",
-              selectedPreset === "custom" && "gap-2"
+              "relative px-3.5 py-1.5 rounded-full text-sm font-medium select-none transition-colors duration-150",
+              selectedPreset === key
+                ? "text-foreground"
+                : "text-foreground/50 hover:text-foreground/80"
             )}
           >
-            <CalendarIcon className="h-4 w-4" />
+            {selectedPreset === key && (
+              <motion.span
+                layoutId="liquid-glass-indicator"
+                className="liquid-glass-pill-active absolute inset-0 rounded-full"
+                transition={{ type: "spring", stiffness: 400, damping: 35 }}
+              />
+            )}
+            <span className="relative z-10">{label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Custom date picker — même style liquid glass */}
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              "liquid-glass-filter flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-250",
+              selectedPreset === "custom"
+                ? "text-foreground"
+                : "text-foreground/50 hover:text-foreground/80"
+            )}
+          >
+            <CalendarIcon className="h-3.5 w-3.5" />
             {selectedPreset === "custom" ? getCustomDateLabel() : "Personnalisé"}
-          </Button>
+          </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
@@ -185,12 +166,6 @@ export function DateRangeFilter({ selectedPreset, onFilterChange }: DateRangeFil
           </div>
         </PopoverContent>
       </Popover>
-
-      {selectedPreset !== "allTime" && (
-        <Badge variant="secondary" className="ml-2">
-          Filtre actif
-        </Badge>
-      )}
     </div>
   )
 }

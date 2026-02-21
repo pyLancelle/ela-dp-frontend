@@ -29,6 +29,7 @@
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.552.0",
+    "motion": "^12.34.3",
     "next": "^16.0.7",
     "react": "^19.2.1",
     "react-day-picker": "^9.11.1",

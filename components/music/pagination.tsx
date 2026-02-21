@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PaginationProps {
   currentPage: number;
@@ -10,41 +10,20 @@ interface PaginationProps {
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  // Générer les numéros de pages à afficher
-  const getPageNumbers = () => {
-    const pages: (number | 'ellipsis')[] = [];
+  const getPageNumbers = (): (number | "ellipsis")[] => {
+    const pages: (number | "ellipsis")[] = [];
     const showPages = 5;
 
     if (totalPages <= showPages + 2) {
-      // Afficher toutes les pages
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      // Toujours afficher la première page
       pages.push(1);
-
-      // Calculer la plage autour de la page courante
       let start = Math.max(2, currentPage - Math.floor(showPages / 2));
       let end = Math.min(totalPages - 1, start + showPages - 1);
-
-      // Ajuster si on est proche du début ou de la fin
-      if (end - start < showPages - 1) {
-        start = Math.max(2, end - showPages + 1);
-      }
-
-      // Ajouter ellipsis si nécessaire
-      if (start > 2) pages.push('ellipsis');
-
-      // Ajouter les pages de la plage
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      // Ajouter ellipsis si nécessaire
-      if (end < totalPages - 1) pages.push('ellipsis');
-
-      // Toujours afficher la dernière page
+      if (end - start < showPages - 1) start = Math.max(2, end - showPages + 1);
+      if (start > 2) pages.push("ellipsis");
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages - 1) pages.push("ellipsis");
       pages.push(totalPages);
     }
 
@@ -55,70 +34,66 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
 
   const pageNumbers = getPageNumbers();
 
+  const NavBtn = ({
+    onClick,
+    disabled,
+    children,
+  }: {
+    onClick: () => void;
+    disabled: boolean;
+    children: React.ReactNode;
+  }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "h-7 w-7 flex items-center justify-center rounded-lg text-xs transition-colors",
+        "border border-white/10",
+        disabled
+          ? "opacity-30 cursor-not-allowed"
+          : "hover:bg-white/10 text-muted-foreground hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="flex items-center justify-center gap-1">
-      {/* Première page */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => onPageChange(1)}
-        disabled={currentPage === 1}
-      >
-        <ChevronsLeft className="h-4 w-4" />
-      </Button>
+    <div className="flex items-center gap-1">
+      <NavBtn onClick={() => onPageChange(1)} disabled={currentPage === 1}>
+        <ChevronsLeft className="h-3.5 w-3.5" />
+      </NavBtn>
+      <NavBtn onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>
+        <ChevronLeft className="h-3.5 w-3.5" />
+      </NavBtn>
 
-      {/* Page précédente */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-
-      {/* Numéros de pages */}
-      {pageNumbers.map((page, index) => (
-        page === 'ellipsis' ? (
-          <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">
-            ...
+      {pageNumbers.map((page, index) =>
+        page === "ellipsis" ? (
+          <span key={`e-${index}`} className="px-1 text-xs text-muted-foreground/50">
+            …
           </span>
         ) : (
-          <Button
+          <button
             key={page}
-            variant={currentPage === page ? "default" : "outline"}
-            size="icon"
-            className="h-8 w-8"
             onClick={() => onPageChange(page)}
+            className={cn(
+              "h-7 w-7 flex items-center justify-center rounded-lg text-xs font-medium transition-colors",
+              currentPage === page
+                ? "bg-white/15 text-foreground border border-white/20"
+                : "text-muted-foreground hover:bg-white/10 hover:text-foreground border border-transparent"
+            )}
           >
             {page}
-          </Button>
+          </button>
         )
-      ))}
+      )}
 
-      {/* Page suivante */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-
-      {/* Dernière page */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => onPageChange(totalPages)}
-        disabled={currentPage === totalPages}
-      >
-        <ChevronsRight className="h-4 w-4" />
-      </Button>
+      <NavBtn onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+        <ChevronRight className="h-3.5 w-3.5" />
+      </NavBtn>
+      <NavBtn onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages}>
+        <ChevronsRight className="h-3.5 w-3.5" />
+      </NavBtn>
     </div>
   );
 }

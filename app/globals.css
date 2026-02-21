@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -95,6 +100,240 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Liquid Glass ─────────────────────────────────────────────────────────── */
+.liquid-glass-filter {
+  /* Fond verre translucide */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  /* Bordure iridescente */
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  /* Reflet supérieur */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.dark .liquid-glass-filter {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0.07) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+    0 4px 16px rgba(0, 0, 0, 0.30),
+    0 1px 3px rgba(0, 0, 0, 0.20);
+}
+
+/* Card liquid glass */
+.liquid-glass-card {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.05) 60%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dark .liquid-glass-card {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 60%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.20);
+}
+
+/* Pill active : bulle de verre plus dense */
+.liquid-glass-pill-active {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.25) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.70),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.10);
+}
+
+.dark .liquid-glass-pill-active {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.30),
+    0 2px 8px rgba(0, 0, 0, 0.40);
+}
+
+/* Hover subtle */
+.liquid-glass-pill-hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dark .liquid-glass-pill-hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Sidebar liquid glass */
+.liquid-glass-sidebar {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.16) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-right: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.30),
+    4px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+.dark .liquid-glass-sidebar {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0.07) 100%
+  );
+  border-right: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    4px 0 24px rgba(0, 0, 0, 0.30);
+}
+
+.liquid-glass-nav-active {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.50) 0%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06),
+    0 2px 10px rgba(0, 0, 0, 0.10);
+}
+
+.dark .liquid-glass-nav-active {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.07) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 2px 10px rgba(0, 0, 0, 0.40);
+}
+
+/* Fade bottom des cards classement */
+.liquid-glass-fade-bottom {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+}
+
+.dark .liquid-glass-fade-bottom {
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 20, 40, 0) 0%,
+    rgba(15, 20, 40, 0.20) 100%
+  );
+}
+/* Right panel (sidebar droite) liquid glass */
+.liquid-glass-right-panel {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.16) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-left: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.30),
+    -4px 0 24px rgba(0, 0, 0, 0.08);
+}
+
+.dark .liquid-glass-right-panel {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0.07) 100%
+  );
+  border-left: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.08),
+    -4px 0 24px rgba(0, 0, 0, 0.30);
+}
+
+/* Header global liquid glass */
+.liquid-glass-header {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow:
+    inset 0 -1px 0 rgba(0, 0, 0, 0.04),
+    0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dark .liquid-glass-header {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+    0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
 
 /* Leaflet Map Styles */
 .leaflet-container {

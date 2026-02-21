@@ -18,9 +18,10 @@ const chartConfig = {
 
 interface WeeklyVolumeChartProps {
     data?: RunningWeeklyVolumeData;
+    className?: string;
 }
 
-export function WeeklyVolumeChart({ data }: WeeklyVolumeChartProps) {
+export function WeeklyVolumeChart({ data, className }: WeeklyVolumeChartProps) {
     const defaultData: RunningWeeklyVolumeData = {
         generatedAt: new Date().toISOString(),
         average: 25,
@@ -48,7 +49,7 @@ export function WeeklyVolumeChart({ data }: WeeklyVolumeChartProps) {
             icon={Footprints}
             kpi={displayData.average.toFixed(1)}
             kpiLabel="km moy"
-            className="h-full"
+            className={className || "h-full"}
             hasChart={true}
         >
             <ChartContainer config={chartConfig} className="h-full w-full aspect-auto">
