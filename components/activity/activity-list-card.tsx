@@ -78,13 +78,9 @@ export function ActivityListCard({ activity, index }: Props) {
             {/* Icône type */}
             <div
               className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
-              style={{ background: cfg.bg }}
+              style={{ background: cfg.bg, color: cfg.color }}
             >
-              <TypeIcon
-                type={activity.type}
-                className="w-5 h-5"
-                style={{ color: cfg.color } as React.CSSProperties}
-              />
+              <TypeIcon type={activity.type} className="w-5 h-5" />
             </div>
 
             {/* Titre + date + badge */}
