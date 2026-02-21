@@ -18,6 +18,7 @@ export interface Activity {
   distance: number;
   duration: number;
   date: string;
+  rawDate: string; // ISO timestamp for grouping
   type: string;
 }
 
@@ -59,6 +60,7 @@ export async function GET() {
       distance: activity.distance_km || 0,
       duration: activity.duration_minutes || 0,
       date: formatDate(activity.startTimeGMT),
+      rawDate: activity.startTimeGMT,
       type: activity.typeKey || 'running',
     }));
 

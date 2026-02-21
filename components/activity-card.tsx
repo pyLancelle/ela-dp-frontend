@@ -7,6 +7,7 @@ export interface ActivityData {
   distance: number; // en km
   duration: number; // en minutes
   date: string;
+  rawDate: string;
   type: string;
 }
 

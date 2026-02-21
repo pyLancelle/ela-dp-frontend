@@ -126,49 +126,38 @@ export function SleepStagesCard({ data, className }: SleepStagesCardProps) {
         </div>
 
         {/* Chart area */}
-        <div className="flex-1 flex flex-col justify-around gap-[3px] min-w-0 py-0.5 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-around gap-[3px] min-w-0 py-0.5">
           {LANES.map((lane) => (
-            <div key={lane} className="flex-1 relative flex items-center">
+            <div key={lane} className="flex-1 relative">
               {/* Track de fond */}
               <div className="absolute inset-0 rounded-md bg-muted/20" />
-              {/* Segments de cette lane */}
-              <div className="absolute inset-0 flex gap-[1px]">
-                {segments.map((seg, i) => {
-                  const widthPct = (seg.duration / totalMinutes) * 100;
-                  const isThisLane = seg.stage === lane;
-                  const cfg = STAGE_CONFIG[seg.stage];
-
-                  return (
-                    <div
-                      key={i}
-                      className="h-full flex-shrink-0"
-                      style={{ width: `${widthPct}%` }}
-                    >
-                      {isThisLane && (
-                        <motion.div
-                          initial={{ scaleX: 0, opacity: 0 }}
-                          animate={inView
-                            ? { scaleX: 1, opacity: 1 }
-                            : { scaleX: 0, opacity: 0 }
-                          }
-                          transition={{
-                            duration: 0.5,
-                            delay: 0.05 + i * 0.04,
-                            ease: [0.34, 1.56, 0.64, 1],
-                          }}
-                          style={{
-                            background: `linear-gradient(135deg, ${cfg.color}99, ${cfg.color})`,
-                            boxShadow: `0 0 6px ${cfg.color}33`,
-                            height: "100%",
-                            borderRadius: "6px",
-                            transformOrigin: "left",
-                          }}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Segments de cette lane, positionnés par left% + width% */}
+              {segments.reduce((acc, seg, i) => {
+                const leftPct = (segments.slice(0, i).reduce((s, s2) => s + s2.duration, 0) / totalMinutes) * 100;
+                const widthPct = (seg.duration / totalMinutes) * 100;
+                if (seg.stage !== lane) return acc;
+                const cfg = STAGE_CONFIG[seg.stage];
+                acc.push(
+                  <motion.div
+                    key={i}
+                    initial={{ scaleX: 0, opacity: 0 }}
+                    animate={inView ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 }}
+                    transition={{ duration: 0.5, delay: 0.05 + i * 0.04, ease: [0.34, 1.56, 0.64, 1] }}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: `${leftPct}%`,
+                      width: `${widthPct}%`,
+                      background: `linear-gradient(135deg, ${cfg.color}99, ${cfg.color})`,
+                      boxShadow: `0 0 6px ${cfg.color}33`,
+                      borderRadius: "6px",
+                      transformOrigin: "left",
+                    }}
+                  />
+                );
+                return acc;
+              }, [] as React.ReactElement[])}
             </div>
           ))}
         </div>
