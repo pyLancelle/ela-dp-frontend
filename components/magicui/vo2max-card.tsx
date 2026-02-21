@@ -1,9 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView } from "motion/react";
+import { useInView } from "motion/react";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  ResponsiveContainer,
+  Tooltip,
+  YAxis,
+} from "recharts";
 
 interface Vo2maxCardProps {
   data?: {
@@ -31,25 +39,9 @@ export function Vo2maxCard({ data, loading, className }: Vo2maxCardProps) {
   const isDown = delta < 0;
   const deltaColor = isUp ? "#22c55e" : isDown ? "#ef4444" : "#6b7280";
   const lineColor = isUp ? "#22c55e" : isDown ? "#ef4444" : "#6366f1";
+  const gradientId = `vo2-gradient-${isUp ? "up" : isDown ? "down" : "flat"}`;
 
-  const pts = d.weeklyVo2maxArray;
-  const minY = Math.min(...pts);
-  const maxY = Math.max(...pts);
-  const rangeY = maxY - minY || 1;
-
-  // SVG path
-  const W = 200;
-  const H = 48;
-  const padX = 4;
-  const padY = 4;
-  const toX = (i: number) => padX + (i / (pts.length - 1)) * (W - padX * 2);
-  const toY = (v: number) => H - padY - ((v - minY) / rangeY) * (H - padY * 2);
-
-  const pathD = pts
-    .map((v, i) => `${i === 0 ? "M" : "L"} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`)
-    .join(" ");
-
-  const areaD = `${pathD} L ${toX(pts.length - 1).toFixed(1)} ${H} L ${toX(0).toFixed(1)} ${H} Z`;
+  const chartData = d.weeklyVo2maxArray.map((v, i) => ({ i, v }));
 
   return (
     <div
@@ -88,58 +80,58 @@ export function Vo2maxCard({ data, loading, className }: Vo2maxCardProps) {
         </div>
       </div>
 
-      {/* Sparkline */}
-      <div className="flex-1 min-h-0 flex items-end">
-        <svg
-          viewBox={`0 0 ${W} ${H}`}
-          className="w-full h-full overflow-visible"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="vo2-area-grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={lineColor} stopOpacity="0.25" />
-              <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
-            </linearGradient>
-            <clipPath id="vo2-clip">
-              <motion.rect
-                x="0" y="0" height={H}
-                initial={{ width: 0 }}
-                animate={inView ? { width: W } : { width: 0 }}
-                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-              />
-            </clipPath>
-          </defs>
-
-          {/* Area fill */}
-          <path
-            d={areaD}
-            fill="url(#vo2-area-grad)"
-            clipPath="url(#vo2-clip)"
-          />
-
-          {/* Line */}
-          <path
-            d={pathD}
-            fill="none"
-            stroke={lineColor}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            clipPath="url(#vo2-clip)"
-          />
-
-          {/* Dot final */}
-          <motion.circle
-            cx={toX(pts.length - 1)}
-            cy={toY(pts[pts.length - 1])}
-            r="3"
-            fill={lineColor}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-            transition={{ delay: 1.1, duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-          />
-        </svg>
-      </div>
+      {/* Recharts Area */}
+      <motion.div
+        className="flex-1 min-h-0"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={lineColor} stopOpacity={0.35} />
+                <stop offset="75%" stopColor={lineColor} stopOpacity={0.08} />
+                <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <YAxis domain={["dataMin - 1", "dataMax + 1"]} hide />
+            <Tooltip
+              contentStyle={{
+                background: "rgba(255,255,255,0.08)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: "10px",
+                fontSize: "11px",
+                color: "var(--foreground)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+              }}
+              itemStyle={{ color: lineColor }}
+              formatter={(value: number) => [`${value.toFixed(1)} ml/kg/min`, "VO2Max"]}
+              labelFormatter={() => ""}
+              cursor={{ stroke: lineColor, strokeWidth: 1, strokeDasharray: "3 3" }}
+            />
+            <Area
+              type="monotone"
+              dataKey="v"
+              stroke={lineColor}
+              strokeWidth={2}
+              fill={`url(#${gradientId})`}
+              dot={false}
+              activeDot={{
+                r: 4,
+                fill: lineColor,
+                stroke: "rgba(255,255,255,0.6)",
+                strokeWidth: 1.5,
+              }}
+              isAnimationActive={inView}
+              animationDuration={1200}
+              animationEasing="ease-out"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </motion.div>
     </div>
   );
 }

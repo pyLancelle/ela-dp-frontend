@@ -9,28 +9,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Music, User, Loader2, Disc, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { DateRangeFilter, DateFilterPreset } from "@/components/date-range-filter";
 import { DateRange } from "react-day-picker";
-import { useMusicClassement, type TopArtist } from "@/hooks/queries";
+import { useMusicClassement } from "@/hooks/queries";
 import { NumberTicker } from "@/components/magicui/number-ticker";
 import { BlurFade } from "@/components/magicui/blur-fade";
-import { AuroraText } from "@/components/magicui/aurora-text";
-
-interface ArtistTrackBreakdown {
-  name: string;
-  duration: string;
-  playCount: number;
-  percentage: number;
-}
 
 function truncateText(text: string | undefined | null, maxLength: number): string {
   if (!text) return '';
@@ -61,25 +46,6 @@ export default function ClassementsPage() {
   const topArtists = data?.top_artists ?? [];
   const topAlbums = data?.top_albums ?? [];
 
-  const [selectedArtist, setSelectedArtist] = useState<TopArtist | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [artistTracks, setArtistTracks] = useState<ArtistTrackBreakdown[]>([]);
-
-  const handleArtistClick = (artist: TopArtist) => {
-    setSelectedArtist(artist);
-    if (artist.tracks && artist.tracks.length > 0) {
-      setArtistTracks(artist.tracks.map(track => ({
-        name: track.name,
-        duration: track.duration,
-        playCount: track.play_count,
-        percentage: track.percentage,
-      })));
-    } else {
-      setArtistTracks([]);
-    }
-    setIsDialogOpen(true);
-  };
-
   const handleFilterChange = (preset: DateFilterPreset, _range?: DateRange) => {
     setSelectedPreset(preset);
   };
@@ -97,23 +63,6 @@ export default function ClassementsPage() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Header */}
-      <BlurFade delay={0} duration={0.5}>
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            <AuroraText
-              // colors={["#1DB954", "#9c40ff", "#ff6b35", "#1DB954"]}
-              speed={1}
-            >
-              Classements Musicaux
-            </AuroraText>
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Découvrez vos titres, artistes et albums les plus écoutés
-          </p>
-        </div>
-      </BlurFade>
-
       {/* Date Range Filter */}
       <BlurFade delay={0.05} duration={0.4}>
         <DateRangeFilter selectedPreset={selectedPreset} onFilterChange={handleFilterChange} />
@@ -151,10 +100,11 @@ export default function ClassementsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {topTracks.map((track) => (
+                    {topTracks.map((track, i) => (
                       <TableRow
                         key={track.rank}
                         className="transition-all duration-150 cursor-pointer group hover:bg-white/10 dark:hover:bg-white/5 border-white/8"
+                        style={{ animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${0.1 + i * 0.04}s` }}
                       >
                         <TableCell className="px-3 py-1 font-medium">
                           <RankBadge rank={track.rank} />
@@ -191,14 +141,14 @@ export default function ClassementsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right px-3 py-1 whitespace-nowrap">
-                          <div className="text-xs font-semibold text-foreground">
+                          <div className="text-xs font-semibold text-foreground">{track.total_duration}</div>
+                          <div className="text-[11px] text-muted-foreground">
                             <NumberTicker
                               value={track.play_count}
-                              className="text-xs font-semibold"
+                              className="text-[11px]"
                             />
-                            <span className="text-muted-foreground font-normal"> pl.</span>
+                            <span> pl.</span>
                           </div>
-                          <div className="text-[11px] text-muted-foreground">{track.total_duration}</div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -232,11 +182,11 @@ export default function ClassementsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {topArtists.map((artist) => (
+                    {topArtists.map((artist, i) => (
                       <TableRow
                         key={artist.rank}
-                        className="transition-all duration-150 cursor-pointer group hover:bg-white/10 dark:hover:bg-white/5 border-white/8"
-                        onClick={() => handleArtistClick(artist)}
+                        className="transition-all duration-150 group hover:bg-white/10 dark:hover:bg-white/5 border-white/8"
+                        style={{ animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${0.1 + i * 0.04}s` }}
                       >
                         <TableCell className="px-3 py-1 font-medium">
                           <RankBadge rank={artist.rank} />
@@ -273,14 +223,14 @@ export default function ClassementsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right px-3 py-1 whitespace-nowrap">
-                          <div className="text-xs font-semibold text-foreground">
+                          <div className="text-xs font-semibold text-foreground">{artist.total_duration}</div>
+                          <div className="text-[11px] text-muted-foreground">
                             <NumberTicker
                               value={artist.play_count}
-                              className="text-xs font-semibold"
+                              className="text-[11px]"
                             />
-                            <span className="text-muted-foreground font-normal"> pl.</span>
+                            <span> pl.</span>
                           </div>
-                          <div className="text-[11px] text-muted-foreground">{artist.total_duration}</div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -314,10 +264,11 @@ export default function ClassementsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {topAlbums.map((album) => (
+                    {topAlbums.map((album, i) => (
                       <TableRow
                         key={album.rank}
                         className="transition-all duration-150 group hover:bg-white/10 dark:hover:bg-white/5 border-white/8"
+                        style={{ animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${0.1 + i * 0.04}s` }}
                       >
                         <TableCell className="px-3 py-1 font-medium">
                           <RankBadge rank={album.rank} />
@@ -353,14 +304,14 @@ export default function ClassementsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right px-3 py-1 whitespace-nowrap">
-                          <div className="text-xs font-semibold text-foreground">
+                          <div className="text-xs font-semibold text-foreground">{album.total_duration}</div>
+                          <div className="text-[11px] text-muted-foreground">
                             <NumberTicker
                               value={album.play_count}
-                              className="text-xs font-semibold"
+                              className="text-[11px]"
                             />
-                            <span className="text-muted-foreground font-normal"> pl.</span>
+                            <span> pl.</span>
                           </div>
-                          <div className="text-[11px] text-muted-foreground">{album.total_duration}</div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -375,56 +326,6 @@ export default function ClassementsPage() {
 
       </div>
 
-      {/* Dialog pour afficher la répartition des chansons */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg flex items-center gap-2">
-              <User className="h-4 w-4 text-violet-500" />
-              {selectedArtist?.name}
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              Répartition du temps d&apos;écoute par chanson • Total: {selectedArtist?.total_duration}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="mt-3 space-y-2">
-            {artistTracks.map((track, index) => (
-              <div
-                key={index}
-                className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0 flex items-center gap-2">
-                    <span className="font-bold text-muted-foreground text-xs flex-shrink-0 w-5 text-center">
-                      #{index + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium truncate">{track.name}</h3>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{track.duration}</span>
-                        <span>•</span>
-                        <span>{track.playCount} plays</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-lg font-bold text-violet-600 dark:text-violet-400">
-                      {track.percentage}%
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2 w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-violet-500 to-purple-400 h-full rounded-full transition-all duration-700"
-                    style={{ width: `${track.percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

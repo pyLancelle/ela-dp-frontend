@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { cn } from "@/lib/utils";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 
 export interface BarChartDay {
   label: string;
@@ -14,6 +15,8 @@ export interface BarChartDay {
 interface BarChartCardProps {
   title: string;
   kpi: string;
+  kpiValue?: number;
+  kpiDecimals?: number;
   kpiLabel?: string;
   subtitle?: string;
   data: BarChartDay[];
@@ -24,6 +27,8 @@ interface BarChartCardProps {
 export function BarChartCard({
   title,
   kpi,
+  kpiValue,
+  kpiDecimals = 0,
   kpiLabel,
   subtitle = "7 derniers jours",
   data,
@@ -64,7 +69,15 @@ export function BarChartCard({
           <span className="text-[10px] text-muted-foreground">{subtitle}</span>
         </div>
         <div className="text-right">
-          <span className="text-2xl font-bold tabular-nums leading-none">{kpi}</span>
+          {kpiValue !== undefined ? (
+            <NumberTicker
+              value={kpiValue}
+              decimalPlaces={kpiDecimals}
+              className="text-2xl font-bold leading-none"
+            />
+          ) : (
+            <span className="text-2xl font-bold tabular-nums leading-none">{kpi}</span>
+          )}
           {kpiLabel && (
             <p className="text-[10px] text-muted-foreground">{kpiLabel}</p>
           )}

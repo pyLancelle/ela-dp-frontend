@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Dumbbell, Activity, Music, Trophy, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Dumbbell, Activity, Music, Trophy, Users, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BlurFade } from "@/components/magicui/blur-fade";
@@ -42,6 +42,11 @@ const navSections: NavSection[] = [
         title: "Joués récemment",
         href: "/musique/recently-played",
         icon: Music,
+      },
+      {
+        title: "Artistes",
+        href: "/music/artists",
+        icon: Users,
       },
     ],
   },

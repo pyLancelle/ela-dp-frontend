@@ -140,7 +140,7 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: showArtists ? 10 : -10 }}
               transition={{ duration: 0.2 }}
-              className="flex flex-col gap-1"
+              className="flex flex-col justify-between h-full"
             >
               {showArtists
                 ? topArtists?.map((artist, i) => (
