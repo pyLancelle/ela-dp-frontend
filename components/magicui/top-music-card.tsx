@@ -175,7 +175,7 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       <span className="text-xs font-semibold w-4 flex-shrink-0 text-muted-foreground tabular-nums">
                         {track.rank}
                       </span>
-                      <Avatar src={track.imageUrl} alt={track.name} fallback={track.name} />
+                      <Avatar src={track.imageUrl ?? undefined} alt={track.name} fallback={track.name} />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{track.name}</div>
                         <div className="text-[10px] text-muted-foreground truncate">{track.artistName}</div>
