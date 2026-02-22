@@ -2,14 +2,21 @@ import { cachedResponse, errorResponse } from '@/lib/api/response';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-interface RecentActivity {
+interface ActivityFromAPI {
   activityId: number;
   activityName: string;
   startTimeGMT: string;
+  typeKey: string | null;
   distance_km: number;
   duration_minutes: number;
-  averageSpeed: number | null;
-  typeKey: string | null;
+  averageHR: number | null;
+  hrZone1_pct: number | null;
+  hrZone2_pct: number | null;
+  hrZone3_pct: number | null;
+  hrZone4_pct: number | null;
+  hrZone5_pct: number | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  polyline_simplified: any;
 }
 
 export interface Activity {
@@ -18,8 +25,11 @@ export interface Activity {
   distance: number;
   duration: number;
   date: string;
-  rawDate: string; // ISO timestamp for grouping
+  rawDate: string;
   type: string;
+  avgHr: number | null;
+  hrZones: [number, number, number, number, number] | null;
+  polyline: [number, number][] | null;
 }
 
 function formatDate(timestamp: string): string {
@@ -42,9 +52,40 @@ function formatDate(timestamp: string): string {
   }
 }
 
+// Normalise whatever shape the backend sends into [lat, lng][] or null
+// Handles: [[lat,lng]], [{lat,lng}], [{latitude,longitude}], JSON string
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toPolyline(raw: any): [number, number][] | null {
+  if (!raw) return null;
+  try {
+    const arr = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    const first = arr[0];
+    if (Array.isArray(first)) {
+      // [[lat, lng], ...]
+      return arr as [number, number][];
+    }
+    if (typeof first === 'object') {
+      const lat = 'lat' in first ? 'lat' : 'latitude';
+      const lng = 'lng' in first ? 'lng' : 'longitude';
+      // [lng, lat] so the component treats index 0 as X (east) and index 1 as Y (north)
+      return arr.map((p: Record<string, number>) => [p[lng], p[lat]]);
+    }
+  } catch {
+    // malformed — fall through to null
+  }
+  return null;
+}
+
+function toHrZones(a: ActivityFromAPI): [number, number, number, number, number] | null {
+  const z = [a.hrZone1_pct, a.hrZone2_pct, a.hrZone3_pct, a.hrZone4_pct, a.hrZone5_pct];
+  if (z.every((v) => v === null)) return null;
+  return z.map((v) => v ?? 0) as [number, number, number, number, number];
+}
+
 export async function GET() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/activities/recent`, {
+    const response = await fetch(`${API_BASE_URL}/api/activities/list`, {
       cache: 'no-store',
     });
 
@@ -52,16 +93,19 @@ export async function GET() {
       throw new Error(`API error: ${response.status}`);
     }
 
-    const recentActivities: RecentActivity[] = await response.json();
+    const raw: ActivityFromAPI[] = await response.json();
 
-    const activities: Activity[] = recentActivities.map((activity) => ({
-      id: activity.activityId.toString(),
-      title: activity.activityName || 'Activité',
-      distance: activity.distance_km || 0,
-      duration: activity.duration_minutes || 0,
-      date: formatDate(activity.startTimeGMT),
-      rawDate: activity.startTimeGMT,
-      type: activity.typeKey || 'running',
+    const activities: Activity[] = raw.map((a) => ({
+      id: a.activityId.toString(),
+      title: a.activityName || 'Activité',
+      distance: a.distance_km || 0,
+      duration: a.duration_minutes || 0,
+      date: formatDate(a.startTimeGMT),
+      rawDate: a.startTimeGMT,
+      type: a.typeKey || 'running',
+      avgHr: a.averageHR,
+      hrZones: toHrZones(a),
+      polyline: toPolyline(a.polyline_simplified),
     }));
 
     return cachedResponse(activities, 'activitiesList');

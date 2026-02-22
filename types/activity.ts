@@ -44,6 +44,7 @@ export interface KilometerLap {
 }
 
 export interface TrainingInterval {
+  lapIndex: number | null;
   startTimeGMT: string;
   distance: number;           // meters
   duration: number;           // seconds
@@ -53,10 +54,21 @@ export interface TrainingInterval {
   maxHR: number;
   elevationGain: number;      // meters
   elevationLoss: number;      // meters
+  intensityType: string | null;
+  name: string | null;
+}
+
+export interface TimeSeriesPoint {
+  timestamp: number;          // Unix ms
+  distance: number;           // km
+  heartRate: number;
+  pace: number | null;        // min/km
+  altitude: number;
+  speed: number;              // km/h
 }
 
 export interface TrackPlayed {
-  played_at: { value: string } | null;
+  played_at: { value: string } | string | null;
   track_name: string | null;
   artists: string | null;
   album_name: string | null;
@@ -92,6 +104,8 @@ export interface Activity {
   kilometer_laps: KilometerLap[] | null;
   training_intervals: TrainingInterval[] | null;
   tracks_played: TrackPlayed[] | null;
+  time_series: TimeSeriesPoint[] | null;
+  coordinates: { lat: number; lng: number }[] | null;
 }
 
 // ===== UI Helper Types =====

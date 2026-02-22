@@ -22,6 +22,7 @@ interface BarChartCardProps {
   data: BarChartDay[];
   color?: string;
   className?: string;
+  loading?: boolean;
 }
 
 export function BarChartCard({
@@ -34,18 +35,51 @@ export function BarChartCard({
   data,
   color = "#6366f1",
   className,
+  loading = false,
 }: BarChartCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
 
+  if (loading || data.length === 0) {
+    return (
+      <div ref={ref} className={cn("liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col p-4", className)}>
+        <div className="flex items-start justify-between mb-3">
+          <div className="space-y-1.5">
+            <div className="h-3 w-20 rounded bg-muted/40 animate-pulse" />
+            <div className="h-2.5 w-28 rounded bg-muted/30 animate-pulse" />
+          </div>
+          <div className="space-y-1.5 items-end flex flex-col">
+            <div className="h-7 w-12 rounded bg-muted/40 animate-pulse" />
+            <div className="h-2.5 w-8 rounded bg-muted/30 animate-pulse" />
+          </div>
+        </div>
+        <div className="flex-1 flex items-end gap-[5px] min-h-0">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
+              <div
+                className="w-[55%] rounded-t-sm bg-muted/30 animate-pulse"
+                style={{ height: `${30 + Math.sin(i) * 20 + 20}%`, animationDelay: `${i * 80}ms` }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-[5px] mt-1.5">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex-1 flex justify-center">
+              <div className="h-2.5 w-3 rounded bg-muted/30 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const isFloating = data.some((d) => d.range !== undefined);
 
-  // Pour barres flottantes : max global = max de toutes les valeurs hautes
   const globalMax = isFloating
     ? Math.max(...data.map((d) => d.range?.[1] ?? d.value), 1)
     : Math.max(...data.map((d) => d.value), 1);
 
-  // Moyenne pour la ligne de référence
   const avg = isFloating
     ? data.reduce((s, d) => s + (d.range?.[1] ?? d.value), 0) / (data.length || 1)
     : data.reduce((s, d) => s + d.value, 0) / (data.length || 1);
@@ -85,64 +119,39 @@ export function BarChartCard({
       </div>
 
       {/* Chart */}
-      <div className="flex-1 flex flex-col justify-end min-h-0">
-        <div className="relative flex-1">
-          <div className="absolute inset-0 flex items-end gap-[5px]">
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Bars area */}
+        <div className="flex-1 relative min-h-0">
+          {/* Ligne de moyenne */}
+          <div
+            className="absolute inset-x-0 border-t border-dashed border-muted-foreground/30 pointer-events-none z-10"
+            style={{ bottom: `${avgPct}%` }}
+          />
 
-            {/* Ligne de moyenne */}
-            <div
-              className="absolute inset-x-0 border-t border-dashed border-muted-foreground/30 pointer-events-none z-10"
-              style={{ bottom: `${avgPct * 0.9}%` }}
-            />
-
+          {/* Bars row */}
+          <div className="absolute inset-0 flex items-end gap-[5px] overflow-hidden">
             {data.map((day, i) => {
               if (isFloating && day.range) {
-                // Barre flottante : [min, max]
                 const [lo, hi] = day.range;
-                const bottomPct = (lo / globalMax) * 100 * 0.9;
-                const heightPct = ((hi - lo) / globalMax) * 100 * 0.9;
+                const bottomPct = (lo / globalMax) * 100;
+                const heightPct = ((hi - lo) / globalMax) * 100;
 
                 return (
-                  <div
-                    key={i}
-                    className="flex-1 flex flex-col items-center justify-end h-full"
-                  >
-                    {/* Label haut */}
+                  <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
                     <span className="text-[9px] font-medium mb-0.5 text-foreground/70 whitespace-nowrap">
                       {hi}
                     </span>
-
-                    <div className="w-full flex justify-center relative" style={{ height: "90%" }}>
-                      <div className="relative w-[55%] h-full">
-                        {/* Barre flottante animée */}
-                        <motion.div
-                          className="absolute w-full rounded-sm"
-                          style={{
-                            background: `linear-gradient(to top, ${color}99, ${color})`,
-                            bottom: `${bottomPct}%`,
-                          }}
-                          initial={{ height: "0%", opacity: 0 }}
-                          animate={inView
-                            ? { height: `${heightPct}%`, opacity: 1 }
-                            : { height: "0%", opacity: 0 }
-                          }
-                          transition={{
-                            duration: 0.6,
-                            delay: 0.05 + i * 0.06,
-                            ease: [0.34, 1.56, 0.64, 1],
-                          }}
-                        />
-                        {/* Label bas */}
-                        <motion.span
-                          className="absolute text-[8px] text-muted-foreground whitespace-nowrap left-1/2 -translate-x-1/2"
-                          style={{ bottom: `calc(${bottomPct}% - 14px)` }}
-                          initial={{ opacity: 0 }}
-                          animate={inView ? { opacity: 1 } : { opacity: 0 }}
-                          transition={{ delay: 0.3 + i * 0.06 }}
-                        >
-                          {lo}
-                        </motion.span>
-                      </div>
+                    <div className="w-full h-full relative">
+                      <motion.div
+                        className="absolute w-[55%] left-1/2 -translate-x-1/2 rounded-sm"
+                        style={{
+                          background: `linear-gradient(to top, ${color}99, ${color})`,
+                          bottom: `${bottomPct}%`,
+                        }}
+                        initial={{ height: "0%", opacity: 0 }}
+                        animate={inView ? { height: `${heightPct}%`, opacity: 1 } : { height: "0%", opacity: 0 }}
+                        transition={{ duration: 0.6, delay: 0.05 + i * 0.06, ease: [0.34, 1.56, 0.64, 1] }}
+                      />
                     </div>
                   </div>
                 );
@@ -153,48 +162,21 @@ export function BarChartCard({
               const isAboveAvg = day.value >= avg;
 
               return (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center justify-end h-full"
-                >
+                <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
                   <span className="text-[9px] font-medium mb-0.5 text-foreground/70 whitespace-nowrap">
                     {day.formatted ?? day.value.toLocaleString("fr-FR")}
                   </span>
-
-                  <div className="w-full flex justify-center relative" style={{ height: "90%" }}>
-                    <div className="relative overflow-hidden rounded-t-sm w-[55%]" style={{ height: "100%" }}>
-                      <motion.div
-                        className="absolute bottom-0 w-full rounded-t-sm"
-                        style={{
-                          background: isAboveAvg
-                            ? `linear-gradient(to top, ${color}cc, ${color})`
-                            : `linear-gradient(to top, ${color}55, ${color}88)`,
-                        }}
-                        initial={{ height: "0%" }}
-                        animate={inView ? { height: `${heightPct}%` } : { height: "0%" }}
-                        transition={{
-                          duration: 0.6,
-                          delay: 0.05 + i * 0.06,
-                          ease: [0.34, 1.56, 0.64, 1],
-                        }}
-                      />
-                      {isAboveAvg && (
-                        <motion.div
-                          className="absolute bottom-0 w-full rounded-t-sm pointer-events-none"
-                          style={{
-                            background: `linear-gradient(to top, transparent 60%, rgba(255,255,255,0.18) 100%)`,
-                          }}
-                          initial={{ height: "0%" }}
-                          animate={inView ? { height: `${heightPct}%` } : { height: "0%" }}
-                          transition={{
-                            duration: 0.6,
-                            delay: 0.05 + i * 0.06,
-                            ease: [0.34, 1.56, 0.64, 1],
-                          }}
-                        />
-                      )}
-                    </div>
-                  </div>
+                  <motion.div
+                    className="w-[55%] rounded-t-sm"
+                    style={{
+                      background: isAboveAvg
+                        ? `linear-gradient(to top, ${color}cc, ${color})`
+                        : `linear-gradient(to top, ${color}55, ${color}88)`,
+                    }}
+                    initial={{ height: "0%" }}
+                    animate={inView ? { height: `${heightPct}%` } : { height: "0%" }}
+                    transition={{ duration: 0.6, delay: 0.05 + i * 0.06, ease: [0.34, 1.56, 0.64, 1] }}
+                  />
                 </div>
               );
             })}

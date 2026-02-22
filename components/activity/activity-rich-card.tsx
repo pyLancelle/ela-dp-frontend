@@ -16,6 +16,9 @@ export interface ActivityListItem {
   date: string;
   rawDate: string;
   type: string;
+  avgHr: number | null;
+  hrZones: [number, number, number, number, number] | null;
+  polyline: [number, number][] | null;
 }
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -43,21 +46,26 @@ function mkRng(seed: string, salt = 0) {
   return () => { n = (n * 1664525 + 1013904223) & 0xffffffff; return (n >>> 0) / 0xffffffff; };
 }
 
-function mockTrace(seed: string, n = 70): [number, number][] {
-  const rng = mkRng(seed, 0);
-  const pts: [number, number][] = [[0, 0]];
-  for (let i = 1; i < n; i++)
-    pts.push([pts[i-1][0] + (rng()-0.47)*5, pts[i-1][1] + (rng()-0.5)*4]);
-  return pts;
-}
 
-function normalizePts(pts: [number, number][], W: number, H: number, pad = 8): [number, number][] {
+// For real GPS data [lng, lat] with Mercator correction and north-up
+function normalizeGps(pts: [number, number][], W: number, H: number, pad = 8): [number, number][] {
   const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
   const [x0, x1] = [Math.min(...xs), Math.max(...xs)];
   const [y0, y1] = [Math.min(...ys), Math.max(...ys)];
-  const sc = (v: number, lo: number, hi: number, a: number, b: number) =>
-    lo === hi ? (a+b)/2 : a + ((v-lo)/(hi-lo))*(b-a);
-  return pts.map(([x,y]) => [sc(x,x0,x1,pad,W-pad), sc(y,y0,y1,H-pad,pad)]);
+  const cosLat = Math.cos(((y0 + y1) / 2 * Math.PI) / 180);
+  const dxDeg = (x1 - x0) * cosLat;
+  const dyDeg = y1 - y0;
+  const innerW = W - pad * 2;
+  const innerH = H - pad * 2;
+  const scale = Math.min(innerW / (dxDeg || 1), innerH / (dyDeg || 1));
+  const projW = dxDeg * scale;
+  const projH = dyDeg * scale;
+  const offX = pad + (innerW - projW) / 2;
+  const offY = pad + (innerH - projH) / 2;
+  return pts.map(([lng, lat]) => [
+    offX + (lng - x0) * cosLat * scale,
+    offY + projH - (lat - y0) * scale, // flip Y: high lat = top
+  ]);
 }
 
 function mockHrZones(seed: string): number[] {
@@ -100,13 +108,21 @@ function BentoCell({ children, className = "", style }: { children: React.ReactN
 
 // ─── Tracé SVG ───────────────────────────────────────────────────────────────
 
-function TraceCell({ seed, color, inView }: { seed: string; color: string; inView: boolean }) {
+function TraceCell({ seed, color, inView, polyline }: { seed: string; color: string; inView: boolean; polyline: [number, number][] | null }) {
   const W = 200, H = 120;
-  const raw = useMemo(() => mockTrace(seed), [seed]);
-  const pts = useMemo(() => normalizePts(raw, W, H), [raw]);
-  const d = pts.map(([x,y],i) => `${i===0?"M":"L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
-  const len = pts.reduce((acc,p,i) => i===0 ? 0 : acc + Math.hypot(p[0]-pts[i-1][0], p[1]-pts[i-1][1]), 0);
+  const pts = useMemo(() => polyline ? normalizeGps(polyline, W, H) : null, [polyline]);
   const gid = `tg-${seed.slice(-5)}`;
+
+  if (!pts) {
+    return (
+      <BentoCell className="flex items-center justify-center">
+        <span className="text-[9px] text-muted-foreground/20 uppercase tracking-widest">no gps</span>
+      </BentoCell>
+    );
+  }
+
+  const d = pts.map(([x, y]: [number, number], i: number) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const len = pts.reduce((acc: number, p: [number, number], i: number) => i === 0 ? 0 : acc + Math.hypot(p[0] - pts[i-1][0], p[1] - pts[i-1][1]), 0);
 
   return (
     <BentoCell className="relative" style={{ background: `radial-gradient(ellipse at 50% 60%, ${color}08, transparent 70%)` }}>
@@ -140,7 +156,6 @@ function TraceCell({ seed, color, inView }: { seed: string; color: string; inVie
           transition={{ delay: 1.2, duration: 0.25 }}
         />
       </svg>
-      <span className="absolute bottom-2 right-2.5 text-[8px] text-muted-foreground/30">tracé simulé</span>
     </BentoCell>
   );
 }
@@ -210,8 +225,9 @@ export function ActivityRichCard({ activity, index }: Props) {
   const cfg = getTypeConfig(activity.type);
   const [hovered, setHovered] = useState(false);
 
-  const hrZones = useMemo(() => mockHrZones(activity.id), [activity.id]);
-  const avgHr   = useMemo(() => mockAvgHr(activity.id),   [activity.id]);
+  const hrZones = useMemo(() => activity.hrZones ?? mockHrZones(activity.id), [activity.hrZones, activity.id]);
+  const mockAvgHrFallback = useMemo(() => mockAvgHr(activity.id), [activity.id]);
+  const avgHr = activity.avgHr ?? mockAvgHrFallback;
 
   return (
     <motion.div
@@ -257,7 +273,7 @@ export function ActivityRichCard({ activity, index }: Props) {
           <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 p-2.5 flex-1">
             <KpiCell distance={activity.distance} duration={activity.duration} avgHr={avgHr} color={cfg.color} />
             <ZonesCell zones={hrZones} inView={inView} />
-            <TraceCell seed={activity.id} color={cfg.color} inView={inView} />
+            <TraceCell seed={activity.id} color={cfg.color} inView={inView} polyline={activity.polyline} />
           </div>
 
         </div>

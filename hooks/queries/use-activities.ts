@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/api/query-keys";
 import { fetcher } from "@/lib/api/fetcher";
-import type { ActivityData } from "@/components/activity-card";
+import type { ActivityListItem } from "@/components/activity/activity-rich-card";
 import type { Activity } from "@/types/activity";
 import type { ActivityDetail } from "@/types/activity-detail";
 import { activityToDetail } from "@/lib/adapters/activity-adapter";
@@ -9,7 +9,7 @@ import { activityToDetail } from "@/lib/adapters/activity-adapter";
 export function useActivitiesList() {
   return useQuery({
     queryKey: queryKeys.activities.list(),
-    queryFn: () => fetcher<ActivityData[]>("/api/activites"),
+    queryFn: () => fetcher<ActivityListItem[]>("/api/activites"),
     staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });

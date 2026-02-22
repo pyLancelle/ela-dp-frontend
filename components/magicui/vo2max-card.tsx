@@ -23,17 +23,33 @@ interface Vo2maxCardProps {
   className?: string;
 }
 
-const mockData = {
-  currentVo2max: 54.2,
-  weeklyVo2maxArray: [51.0, 51.5, 52.0, 51.8, 52.5, 53.0, 52.8, 53.5, 54.0, 54.2],
-  vo2maxDelta6Months: 3.2,
-};
-
 export function Vo2maxCard({ data, loading, className }: Vo2maxCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
 
-  const d = data ?? mockData;
+  if (loading || !data) {
+    return (
+      <div ref={ref} className={cn("liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col p-4", className)}>
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded bg-muted/40 animate-pulse" />
+            <div className="space-y-1.5">
+              <div className="h-3 w-16 rounded bg-muted/40 animate-pulse" />
+              <div className="h-2.5 w-24 rounded bg-muted/30 animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-1.5 flex flex-col items-end">
+            <div className="h-7 w-12 rounded bg-muted/40 animate-pulse" />
+            <div className="h-2.5 w-16 rounded bg-muted/30 animate-pulse" />
+            <div className="h-3 w-8 rounded bg-muted/25 animate-pulse" />
+          </div>
+        </div>
+        <div className="flex-1 min-h-0 rounded-lg bg-muted/15 animate-pulse" />
+      </div>
+    );
+  }
+
+  const d = data;
   const delta = d.vo2maxDelta6Months;
   const isUp = delta > 0;
   const isDown = delta < 0;

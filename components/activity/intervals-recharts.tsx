@@ -1,177 +1,157 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
 import type { ActivityInterval } from "@/types/activity-detail";
 import { Timer } from "lucide-react";
-import { useState } from "react";
 
 interface IntervalsRechartsProps {
   intervals: ActivityInterval[];
 }
 
-// Fonction pour calculer la couleur en fonction de l'allure
-function getPaceColor(pace: number, minPace: number, maxPace: number): string {
-  const normalized = (pace - minPace) / (maxPace - minPace);
-  const reversed = 1 - normalized;
+const TYPE_CONFIG: Record<string, { color: string; label: string }> = {
+  warmup:   { color: "#3b82f6", label: "Échauff." },
+  work:     { color: "#3b82f6", label: "Effort"   },
+  recovery: { color: "#3b82f6", label: "Récup."   },
+  cooldown: { color: "#3b82f6", label: "Retour"   },
+  rest:     { color: "#3b82f6", label: "Repos"    },
+};
 
-  const lightBlue = { r: 191, g: 219, b: 254 };
-  const darkBlue = { r: 30, g: 64, b: 175 };
+function formatPace(pace: number) {
+  const min = Math.floor(pace);
+  const sec = Math.round((pace - min) * 60);
+  return `${min}'${String(sec).padStart(2, "0")}"`;
+}
 
-  const r = Math.round(lightBlue.r + (darkBlue.r - lightBlue.r) * reversed);
-  const g = Math.round(lightBlue.g + (darkBlue.g - lightBlue.g) * reversed);
-  const b = Math.round(lightBlue.b + (darkBlue.b - lightBlue.b) * reversed);
-
-  return `rgb(${r}, ${g}, ${b})`;
+function formatDur(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return sec > 0 ? `${m}m${String(sec).padStart(2, "0")}s` : `${m}min`;
 }
 
 export function IntervalsRecharts({ intervals }: IntervalsRechartsProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
 
-  // Calculer les données pour le graphique
-  const paces = intervals.map((i) => i.avgPace);
-  const minPace = Math.min(...paces);
-  const maxPace = Math.max(...paces);
+  const totalDuration = useMemo(
+    () => intervals.reduce((s, i) => s + i.duration, 0),
+    [intervals]
+  );
 
-  // Calculer la vitesse (km/h) depuis l'allure (min/km)
-  const speeds = intervals.map((i) => 60 / i.avgPace);
-  const maxSpeed = Math.max(...speeds);
+  const maxSpeed = useMemo(
+    () => Math.max(...intervals.map((i) => (i.avgPace > 0 ? 60 / i.avgPace : 0))),
+    [intervals]
+  );
+  const minSpeed = useMemo(
+    () => Math.min(...intervals.map((i) => (i.avgPace > 0 ? 60 / i.avgPace : 0))),
+    [intervals]
+  );
+  const speedRange = maxSpeed - minSpeed || 1;
 
-  // Calculer la durée totale pour les pourcentages de largeur
-  const totalDuration = intervals.reduce((sum, i) => sum + i.duration, 0);
-
-  // Préparer les données avec les pourcentages
-  const intervalData = intervals.map((interval) => {
-    const speed = 60 / interval.avgPace; // km/h
-    const widthPercent = (interval.duration / totalDuration) * 100;
-    const heightPercent = (speed / maxSpeed) * 100;
-
-    return {
-      interval,
-      widthPercent,
-      heightPercent,
-      speed,
-      color: getPaceColor(interval.avgPace, minPace, maxPace),
-    };
-  });
-
-  const formatPace = (pace: number) => {
-    const min = Math.floor(pace);
-    const sec = Math.round((pace - min) * 60);
-    return `${min}'${sec.toString().padStart(2, "0")}"`;
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    return `${mins}min`;
-  };
-
-  // Générer des graduations toutes les 10 minutes
-  const generateTimeMarks = () => {
-    const marks = [];
-    const totalSeconds = totalDuration;
-    const intervalStep = 10 * 60; // 10 minutes en secondes
-
-    for (let time = 0; time <= totalSeconds; time += intervalStep) {
-      const positionPercent = (time / totalSeconds) * 100;
-      marks.push({
-        time,
-        position: positionPercent,
-      });
-    }
-
-    return marks;
-  };
-
-  const timeMarks = generateTimeMarks();
+  const data = useMemo(() =>
+    intervals.map((interval) => {
+      const cfg = TYPE_CONFIG[interval.type] ?? { color: "#94a3b8", label: interval.type };
+      const speed = interval.avgPace > 0 ? 60 / interval.avgPace : 0;
+      // height : 30% min → 95% max selon vitesse relative
+      const heightPct = 30 + ((speed - minSpeed) / speedRange) * 65;
+      const widthPct = (interval.duration / totalDuration) * 100;
+      return { interval, cfg, speed, heightPct, widthPct };
+    }),
+    [intervals, totalDuration, maxSpeed, minSpeed, speedRange]
+  );
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Timer className="h-5 w-5" />
-          Intervalles
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pb-4">
-        {/* Graphique des intervalles */}
-        <div className="relative bg-background rounded-lg p-2 min-h-[120px]">
-          {/* Barres d'intervalles */}
-          <div className="absolute left-2 right-2 top-2 bottom-6 flex gap-[2px] items-end">
-            {intervalData.map((data, index) => (
-              <div
-                key={index}
-                className="relative cursor-pointer transition-opacity hover:opacity-100"
-                style={{
-                  width: `${data.widthPercent}%`,
-                  height: "100%",
-                  opacity: hoveredIndex === index ? 1 : 0.85,
-                }}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <div
-                  className="absolute bottom-0 left-0 right-0 rounded-t-md"
-                  style={{
-                    backgroundColor: data.color,
-                    height: `${data.heightPercent}%`,
-                  }}
-                  title={`${data.interval.name}: ${formatPace(
-                    data.interval.avgPace
-                  )}/km`}
-                />
-              </div>
-            ))}
-          </div>
+    <div className="liquid-glass-card rounded-2xl h-full overflow-hidden flex flex-col">
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/40 to-transparent flex-shrink-0" />
 
-          {/* Tooltip */}
-          {hoveredIndex !== null && (
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-background border rounded-lg p-3 shadow-lg text-xs space-y-1 pointer-events-none z-20 min-w-[200px]">
-              <div className="font-semibold text-foreground">
-                {intervalData[hoveredIndex].interval.name}
-              </div>
-              <div className="text-muted-foreground space-y-0.5">
-                <div>
-                  Durée :{" "}
-                  {Math.floor(intervalData[hoveredIndex].interval.duration / 60)}
-                  min {intervalData[hoveredIndex].interval.duration % 60}s
-                </div>
-                <div>
-                  Distance :{" "}
-                  {intervalData[hoveredIndex].interval.distance.toFixed(2)} km
-                </div>
-                <div>
-                  Allure :{" "}
-                  {formatPace(intervalData[hoveredIndex].interval.avgPace)}/km
-                </div>
-                <div>
-                  Vitesse : {intervalData[hoveredIndex].speed.toFixed(1)} km/h
-                </div>
-                <div>
-                  FC moy : {Math.round(intervalData[hoveredIndex].interval.avgHeartRate)} bpm
-                </div>
-                <div>
-                  FC max : {Math.round(intervalData[hoveredIndex].interval.maxHeartRate)} bpm
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Labels de temps sur l'axe X - Graduation toutes les 10 minutes */}
-          <div className="absolute left-2 right-2 bottom-0 h-6 flex items-center">
-            {timeMarks.map((mark, index) => (
-              <div
-                key={index}
-                className="absolute"
-                style={{ left: `${mark.position}%`, transform: 'translateX(-50%)' }}
-              >
-                <span className="text-[9px] text-muted-foreground font-medium">
-                  {formatTime(mark.time)}
-                </span>
-              </div>
-            ))}
+      {/* Header */}
+      <div className="px-4 pt-3 pb-2 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-orange-500/20 ring-1 ring-orange-400/30">
+            <Timer className="h-4 w-4 text-orange-400" />
           </div>
+          <span className="text-sm font-semibold tracking-tight">Intervalles</span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Chart */}
+      <div className="flex-1 min-h-0 px-4 pb-4 flex flex-col gap-1">
+        {/* Zone des barres */}
+        <div className="flex-1 relative flex items-end min-h-0 overflow-hidden">
+          {data.map((d, i) => (
+            <div
+              key={i}
+              className="relative flex items-end cursor-pointer"
+              style={{ flexBasis: `${d.widthPct}%`, flexShrink: 0, flexGrow: 0, height: "100%", paddingRight: i < data.length - 1 ? 3 : 0 }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              {/* Barre */}
+              <div
+                className="w-full rounded-t-sm transition-all duration-150"
+                style={{
+                  height: `${d.heightPct}%`,
+                  background: `linear-gradient(to top, ${d.cfg.color}cc, ${d.cfg.color}55)`,
+                  boxShadow: hovered === i
+                    ? `0 0 16px ${d.cfg.color}60, inset 0 1px 0 rgba(255,255,255,0.25)`
+                    : `inset 0 1px 0 rgba(255,255,255,0.12)`,
+                  opacity: hovered === null ? 1 : hovered === i ? 1 : 0.35,
+                  border: `1px solid ${d.cfg.color}40`,
+                  borderBottom: "none",
+                }}
+              />
+
+              {/* Tooltip */}
+              {hovered === i && (
+                <div
+                  className="absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 liquid-glass-filter rounded-xl px-3 py-2 z-30 pointer-events-none whitespace-nowrap"
+                  style={{ minWidth: 160 }}
+                >
+                  {/* Nom + badge type */}
+                  <div className="flex items-center gap-1.5 mb-1.5 pb-1.5 border-b border-white/10">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.cfg.color }} />
+                    <span className="text-[11px] font-semibold">{d.interval.name}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px]">
+                    <span className="text-muted-foreground">Durée</span>
+                    <span className="font-medium text-right">{formatDur(d.interval.duration)}</span>
+                    <span className="text-muted-foreground">Distance</span>
+                    <span className="font-medium text-right">{d.interval.distance.toFixed(2)} km</span>
+                    <span className="text-muted-foreground">Allure</span>
+                    <span className="font-medium text-right">{formatPace(d.interval.avgPace)}/km</span>
+                    <span className="text-muted-foreground">FC moy</span>
+                    <span className="font-medium text-right" style={{ color: "#f43f5e" }}>
+                      {Math.round(d.interval.avgHeartRate)} bpm
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Axe X — numéro des intervalles sous les barres */}
+        {(() => {
+          const n = data.length;
+          const step = n > 20 ? 5 : n > 10 ? 3 : 1;
+          return (
+            <div className="flex flex-shrink-0 overflow-hidden">
+              {data.map((d, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 overflow-hidden"
+                  style={{ width: `${d.widthPct}%` }}
+                >
+                  <span
+                    className="block text-[8px] text-center transition-all duration-150"
+                    style={{ color: hovered === i ? d.cfg.color : i % step === 0 ? "rgba(255,255,255,0.3)" : "transparent" }}
+                  >
+                    {i + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
   );
 }

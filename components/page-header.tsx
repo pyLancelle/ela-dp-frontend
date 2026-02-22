@@ -16,7 +16,7 @@ export function PageHeader() {
   // Routes dynamiques ex: /activites/[id]
   const title =
     ROUTE_TITLES[pathname] ??
-    (pathname.startsWith("/activites/") ? "Détail activité" :
+    (pathname.startsWith("/activites/") ? null :
     pathname.startsWith("/music/artists/") ? "Artiste" : null);
 
   if (!title) return null;

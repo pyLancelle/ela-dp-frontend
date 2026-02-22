@@ -1,8 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, Legend } from "recharts";
+import { useRef } from "react";
+import { motion, useInView } from "motion/react";
 import type { HeartRateZone } from "@/types/activity-detail";
 import { Heart } from "lucide-react";
 
@@ -10,103 +9,81 @@ interface HeartRateZonesChartProps {
   zones: HeartRateZone[];
 }
 
-// Fixed colors for HR zones: gray - blue - green - orange - red
 const ZONE_COLORS: Record<number, string> = {
-  1: 'hsl(var(--muted))',        // Zone 1: Gray
-  2: 'hsl(217, 91%, 60%)',        // Zone 2: Blue
-  3: 'hsl(142, 71%, 45%)',        // Zone 3: Green
-  4: 'hsl(25, 95%, 53%)',         // Zone 4: Orange
-  5: 'hsl(0, 84%, 60%)',          // Zone 5: Red
+  1: "#64748b",   // gris  – récupération
+  2: "#38bdf8",   // bleu  – endurance
+  3: "#4ade80",   // vert  – tempo
+  4: "#fb923c",   // orange – seuil
+  5: "#f43f5e",   // rouge – VO2Max
 };
 
+
 export function HeartRateZonesChart({ zones }: HeartRateZonesChartProps) {
-  // Filter out zones with 0 time
-  const activeZones = zones.filter((zone) => zone.timeInZone > 0);
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-20px" });
 
-  const chartData = activeZones.map((zone) => ({
-    name: `Z${zone.zone} - ${zone.name}`,
-    value: zone.percentage,
-    timeInZone: zone.timeInZone,
-    color: ZONE_COLORS[zone.zone] || ZONE_COLORS[2],
-  }));
-
-  const chartConfig = activeZones.reduce((acc, zone) => {
-    acc[`Z${zone.zone}`] = {
-      label: zone.name,
-      color: ZONE_COLORS[zone.zone] || ZONE_COLORS[2],
+  // Toutes les zones Z1-Z5, même celles à 0
+  const allZones = [1, 2, 3, 4, 5].map((z) => {
+    const found = zones.find((zone) => zone.zone === z);
+    return {
+      zone: z,
+      label: found?.name ?? `Zone ${z}`,
+      percentage: found?.percentage ?? 0,
+      timeInZone: found?.timeInZone ?? 0,
+      color: ZONE_COLORS[z],
     };
-    return acc;
-  }, {} as Record<string, { label: string; color: string }>);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}min ${secs}s`;
-  };
+  });
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-2 pt-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Heart className="h-4 w-4 text-red-500" />
-          Zones FC
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 min-h-0 pt-0 px-2 pb-2">
-        <ChartContainer config={chartConfig} className="h-full w-full">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={40}
-              outerRadius={50}
-              cornerRadius="50%"
-              paddingAngle={5}
-              dataKey="value"
+    <div ref={ref} className="liquid-glass-card rounded-2xl h-full flex flex-col overflow-hidden">
+      {/* Shimmer top */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+
+      {/* Header compact */}
+      <div className="px-3 pt-2.5 pb-1.5 flex items-center gap-1.5 flex-shrink-0">
+        <Heart className="h-3 w-3 text-red-400" />
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Zones cardio</span>
+      </div>
+
+      {/* Barres — chaque ligne prend une part égale de la hauteur restante */}
+      <div className="flex-1 flex flex-col px-3 pb-3 min-h-0">
+        {allZones.map((z, i) => (
+          <div key={z.zone} className="flex-1 flex items-center gap-2">
+            {/* Label zone */}
+            <span
+              className="text-[10px] font-bold tabular-nums flex-shrink-0"
+              style={{ color: z.color, minWidth: "1.5rem" }}
             >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value, name, props) => {
-                    const payload = props.payload;
-                    return (
-                      <div className="space-y-1">
-                        <div className="font-medium text-xs">{payload.name}</div>
-                        <div className="text-xs space-y-0.5">
-                          <div>Temps : {formatTime(payload.timeInZone)}</div>
-                          <div>{payload.value.toFixed(1)}%</div>
-                        </div>
-                      </div>
-                    );
-                  }}
-                />
-              }
-            />
-            <Legend
-              verticalAlign="bottom"
-              height={24}
-              content={({ payload }) => (
-                <div className="flex flex-wrap justify-center gap-x-2 gap-y-0.5 text-[10px]">
-                  {payload?.map((entry, index) => (
-                    <div key={`legend-${index}`} className="flex items-center gap-1">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <span className="text-muted-foreground">Z{index + 1}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            />
-          </PieChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+              Z{z.zone}
+            </span>
+
+            {/* Barre */}
+            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+              <motion.div
+                className="h-full rounded-full"
+                style={{
+                  background: z.color,
+                  boxShadow: z.percentage > 0 ? `0 0 6px ${z.color}70` : "none",
+                }}
+                initial={{ width: 0 }}
+                animate={inView ? { width: `${z.percentage}%` } : {}}
+                transition={{ duration: 0.7, delay: 0.1 + i * 0.07, ease: "easeOut" }}
+              />
+            </div>
+
+            {/* % */}
+            <span
+              className="text-[9px] tabular-nums flex-shrink-0 text-right"
+              style={{
+                color: z.percentage > 0 ? z.color : "rgba(255,255,255,0.2)",
+                minWidth: "2rem",
+              }}
+            >
+              {z.percentage > 0 ? `${z.percentage.toFixed(0)}%` : "—"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
