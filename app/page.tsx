@@ -10,7 +10,6 @@ import { BentoGrid } from "@/components/magicui/bento-grid";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { BarChartCard } from "@/components/magicui/bar-chart-card";
 import { MagicCard } from "@/components/magicui/magic-card";
-import { LastRunCard } from "@/components/sport/LastRunCard";
 
 export default function Home() {
   const { data, isLoading } = useHomepage();
@@ -22,7 +21,7 @@ export default function Home() {
         {/* Running Card - 2x2 */}
         <BlurFade delay={0.05} className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1">
           <MagicCard>
-            <RunningCard data={data?.running ?? null} />
+            <RunningCard data={data?.running ?? null} loading={isLoading} />
           </MagicCard>
         </BlurFade>
 
@@ -44,35 +43,24 @@ export default function Home() {
               title="Temps d'écoute"
               kpi={
                 data?.music?.listeningTime?.averagePerDay
-                  ? typeof data.music.listeningTime.averagePerDay === "number"
-                    ? (() => {
-                        const h = Math.floor(data.music.listeningTime.averagePerDay as number / 60);
-                        const m = Math.floor((data.music.listeningTime.averagePerDay as number) % 60);
-                        return h > 0 ? `${h}h${m > 0 ? `${m}` : ""}` : `${m}m`;
-                      })()
-                    : String(data.music.listeningTime.averagePerDay)
-                  : "4h12"
+                  ? (() => {
+                      const avg = parseFloat(data.music.listeningTime.averagePerDay);
+                      const h = Math.floor(avg / 60);
+                      const m = Math.floor(avg % 60);
+                      return h > 0 ? `${h}h${m > 0 ? `${m}` : ""}` : `${m}m`;
+                    })()
+                  : "—"
               }
               kpiLabel="moy/jour"
               subtitle="10 derniers jours"
               color="#1DB954"
+              loading={isLoading}
               data={
                 data?.music?.listeningTime?.days?.map((d) => ({
                   label: { Lun: "L", Mar: "M", Mer: "M", Jeu: "J", Ven: "V", Sam: "S", Dim: "D" }[d.day] ?? d.day.charAt(0),
                   value: d.heightPercentage,
                   formatted: d.formatted,
-                })) ?? [
-                  { label: "L", value: 57, formatted: "2h50" },
-                  { label: "M", value: 75, formatted: "3h45" },
-                  { label: "M", value: 90, formatted: "4h30" },
-                  { label: "J", value: 45, formatted: "2h15" },
-                  { label: "V", value: 100, formatted: "5h00" },
-                  { label: "S", value: 67, formatted: "3h20" },
-                  { label: "D", value: 97, formatted: "4h50" },
-                  { label: "L", value: 63, formatted: "3h10" },
-                  { label: "M", value: 35, formatted: "1h45" },
-                  { label: "M", value: 82, formatted: "4h05" },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -83,29 +71,19 @@ export default function Home() {
           <MagicCard>
             <BarChartCard
               title="Volume hebdo"
-              kpi={`${data?.weeklyVolume?.average?.toFixed(1) ?? "25"}`}
-              kpiValue={data?.weeklyVolume?.average ?? 25}
+              kpi={data?.weeklyVolume?.average?.toFixed(1) ?? "—"}
+              kpiValue={data?.weeklyVolume?.average}
               kpiDecimals={1}
               kpiLabel="km moy"
               subtitle="10 dernières semaines"
               color="#3b82f6"
+              loading={isLoading}
               data={
                 data?.weeklyVolume?.weeks?.map((w) => ({
                   label: w.week,
                   value: w.volume,
                   formatted: `${w.volume}`,
-                })) ?? [
-                  { label: "S-9", value: 20, formatted: "20" },
-                  { label: "S-8", value: 25, formatted: "25" },
-                  { label: "S-7", value: 30, formatted: "30" },
-                  { label: "S-6", value: 22, formatted: "22" },
-                  { label: "S-5", value: 28, formatted: "28" },
-                  { label: "S-4", value: 35, formatted: "35" },
-                  { label: "S-3", value: 32, formatted: "32" },
-                  { label: "S-2", value: 38, formatted: "38" },
-                  { label: "S-1", value: 40, formatted: "40" },
-                  { label: "S0",  value: 42, formatted: "42" },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -114,7 +92,7 @@ export default function Home() {
         {/* Sleep Stages Chart - 2x1 */}
         <BlurFade delay={0.25} className="md:col-span-2 md:col-start-1 md:row-start-1">
           <MagicCard>
-            <SleepStagesCard data={data?.sleepStages} />
+            <SleepStagesCard data={data?.sleepStages} loading={isLoading} />
           </MagicCard>
         </BlurFade>
 
@@ -123,25 +101,18 @@ export default function Home() {
           <MagicCard>
             <BarChartCard
               title="Sommeil"
-              kpi={data?.sleepBodyBattery?.sleepScores?.average?.toString() ?? "72"}
-              kpiValue={data?.sleepBodyBattery?.sleepScores?.average ?? 72}
+              kpi={data?.sleepBodyBattery?.sleepScores?.average?.toString() ?? "—"}
+              kpiValue={data?.sleepBodyBattery?.sleepScores?.average}
               kpiLabel="/100"
               subtitle="7 derniers jours"
               color="#6366f1"
+              loading={isLoading}
               data={
                 data?.sleepBodyBattery?.sleepScores?.daily?.map((d) => ({
                   label: d.day,
                   value: d.score,
                   formatted: d.score.toString(),
-                })) ?? [
-                  { label: "L", value: 55, formatted: "55" },
-                  { label: "M", value: 75, formatted: "75" },
-                  { label: "M", value: 38, formatted: "38" },
-                  { label: "J", value: 78, formatted: "78" },
-                  { label: "V", value: 69, formatted: "69" },
-                  { label: "S", value: 85, formatted: "85" },
-                  { label: "D", value: 88, formatted: "88" },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -152,25 +123,18 @@ export default function Home() {
           <MagicCard>
             <BarChartCard
               title="Body Battery"
-              kpi={`+${data?.sleepBodyBattery?.bodyBattery?.average ?? 81}`}
-              kpiValue={data?.sleepBodyBattery?.bodyBattery?.average ?? 81}
+              kpi={data?.sleepBodyBattery?.bodyBattery?.average ? `+${data.sleepBodyBattery.bodyBattery.average}` : "—"}
+              kpiValue={data?.sleepBodyBattery?.bodyBattery?.average}
               kpiLabel="delta moy"
               subtitle="7 derniers jours"
               color="#10b981"
+              loading={isLoading}
               data={
                 data?.sleepBodyBattery?.bodyBattery?.daily?.map((d) => ({
                   label: d.day,
                   value: d.range[1],
                   range: d.range,
-                })) ?? [
-                  { label: "L", value: 85, range: [15, 85] as [number, number] },
-                  { label: "M", value: 92, range: [20, 92] as [number, number] },
-                  { label: "M", value: 65, range: [10, 65] as [number, number] },
-                  { label: "J", value: 88, range: [25, 88] as [number, number] },
-                  { label: "V", value: 95, range: [18, 95] as [number, number] },
-                  { label: "S", value: 98, range: [30, 98] as [number, number] },
-                  { label: "D", value: 91, range: [10, 91] as [number, number] },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -181,25 +145,18 @@ export default function Home() {
           <MagicCard>
             <BarChartCard
               title="HRV"
-              kpi={data?.sleepBodyBattery?.hrv?.average?.toString() ?? "58"}
-              kpiValue={data?.sleepBodyBattery?.hrv?.average ?? 58}
+              kpi={data?.sleepBodyBattery?.hrv?.average?.toString() ?? "—"}
+              kpiValue={data?.sleepBodyBattery?.hrv?.average}
               kpiLabel="ms"
               subtitle="7 derniers jours"
               color="#8b5cf6"
+              loading={isLoading}
               data={
                 data?.sleepBodyBattery?.hrv?.daily?.map((d) => ({
                   label: d.day,
                   value: d.hrv,
                   formatted: `${d.hrv}`,
-                })) ?? [
-                  { label: "L", value: 52, formatted: "52ms" },
-                  { label: "M", value: 48, formatted: "48ms" },
-                  { label: "M", value: 55, formatted: "55ms" },
-                  { label: "J", value: 61, formatted: "61ms" },
-                  { label: "V", value: 54, formatted: "54ms" },
-                  { label: "S", value: 50, formatted: "50ms" },
-                  { label: "D", value: 58, formatted: "58ms" },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -210,25 +167,18 @@ export default function Home() {
           <MagicCard>
             <BarChartCard
               title="FC Repos"
-              kpi={data?.sleepBodyBattery?.restingHr?.average?.toString() ?? "52"}
-              kpiValue={data?.sleepBodyBattery?.restingHr?.average ?? 52}
+              kpi={data?.sleepBodyBattery?.restingHr?.average?.toString() ?? "—"}
+              kpiValue={data?.sleepBodyBattery?.restingHr?.average}
               kpiLabel="bpm"
               subtitle="7 derniers jours"
               color="#ef4444"
+              loading={isLoading}
               data={
                 data?.sleepBodyBattery?.restingHr?.daily?.map((d) => ({
                   label: d.day,
                   value: d.hr,
                   formatted: `${d.hr}`,
-                })) ?? [
-                  { label: "L", value: 54, formatted: "54 bpm" },
-                  { label: "M", value: 51, formatted: "51 bpm" },
-                  { label: "M", value: 53, formatted: "53 bpm" },
-                  { label: "J", value: 50, formatted: "50 bpm" },
-                  { label: "V", value: 52, formatted: "52 bpm" },
-                  { label: "S", value: 55, formatted: "55 bpm" },
-                  { label: "D", value: 52, formatted: "52 bpm" },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -239,25 +189,18 @@ export default function Home() {
           <MagicCard>
             <BarChartCard
               title="Stress"
-              kpi={data?.stress?.average?.toString() ?? "32"}
-              kpiValue={data?.stress?.average ?? 32}
+              kpi={data?.stress?.average?.toString() ?? "—"}
+              kpiValue={data?.stress?.average}
               kpiLabel="/100"
               subtitle="7 derniers jours"
               color="#f59e0b"
+              loading={isLoading}
               data={
                 data?.stress?.daily?.map((d) => ({
                   label: d.day,
                   value: d.stress,
                   formatted: d.stress.toString(),
-                })) ?? [
-                  { label: "L", value: 28, formatted: "28" },
-                  { label: "M", value: 45, formatted: "45" },
-                  { label: "M", value: 22, formatted: "22" },
-                  { label: "J", value: 38, formatted: "38" },
-                  { label: "V", value: 52, formatted: "52" },
-                  { label: "S", value: 18, formatted: "18" },
-                  { label: "D", value: 24, formatted: "24" },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -273,13 +216,14 @@ export default function Home() {
                   ? data.steps.average >= 1000
                     ? `${(data.steps.average / 1000).toFixed(1)}K`
                     : data.steps.average.toString()
-                  : "9.2K"
+                  : "—"
               }
-              kpiValue={data?.steps?.average ? data.steps.average / 1000 : 9.2}
+              kpiValue={data?.steps?.average ? data.steps.average / 1000 : undefined}
               kpiDecimals={1}
               kpiLabel="K moy/jour"
               subtitle="7 derniers jours"
               color="#6366f1"
+              loading={isLoading}
               data={
                 data?.steps?.daily?.map((d) => ({
                   label: d.day,
@@ -287,15 +231,7 @@ export default function Home() {
                   formatted: d.steps >= 1000
                     ? `${(d.steps / 1000).toFixed(1)}K`
                     : d.steps.toString(),
-                })) ?? [
-                  { label: "L", value: 12543, formatted: "12.5K" },
-                  { label: "M", value: 8234, formatted: "8.2K" },
-                  { label: "M", value: 10456, formatted: "10.5K" },
-                  { label: "J", value: 7892, formatted: "7.9K" },
-                  { label: "V", value: 9123, formatted: "9.1K" },
-                  { label: "S", value: 11234, formatted: "11.2K" },
-                  { label: "D", value: 5156, formatted: "5.2K" },
-                ]
+                })) ?? []
               }
             />
           </MagicCard>
@@ -316,11 +252,6 @@ export default function Home() {
               loading={isLoading}
             />
           </MagicCard>
-        </BlurFade>
-
-        {/* Last Run Card - 3x1 */}
-        <BlurFade delay={0.70} className="md:col-span-2 md:col-start-3 md:row-span-1 md:row-start-5">
-          <LastRunCard />
         </BlurFade>
 
       </BentoGrid>

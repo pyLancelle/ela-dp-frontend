@@ -9,7 +9,6 @@ import type {
   PerformanceScores,
   HeartRateZone,
   ActivityInterval,
-  TimeSeriesPoint,
 } from '@/types/activity-detail';
 import {
   metersToKm,
@@ -129,42 +128,13 @@ export function lapsToIntervals(laps: KilometerLap[]): ActivityInterval[] {
   return laps.map((lap, index) => lapToInterval(lap, index));
 }
 
-/**
- * Generate mock time series from laps (simplified)
- */
-export function lapsToTimeSeries(laps: KilometerLap[]): TimeSeriesPoint[] {
-  const points: TimeSeriesPoint[] = [];
-  let cumulativeTime = 0;
-  let cumulativeDistance = 0;
-  let cumulativeAltitude = 50; // Start altitude
-
-  laps.forEach((lap) => {
-    const numPoints = 10; // Generate 10 points per lap
-    const timeStep = lap.duration / numPoints;
-    const distanceStep = metersToKm(lap.distance) / numPoints;
-    const altitudeStep = (lap.elevationGain - lap.elevationLoss) / numPoints;
-
-    for (let i = 0; i < numPoints; i++) {
-      cumulativeTime += timeStep;
-      cumulativeDistance += distanceStep;
-      cumulativeAltitude += altitudeStep;
-
-      points.push({
-        timestamp: Math.round(cumulativeTime),
-        distance: Math.round(cumulativeDistance * 100) / 100,
-        heartRate: lap.averageHR + (Math.random() * 10 - 5), // Add variance
-        pace: msToPaceMinPerKm(lap.averageSpeed),
-        altitude: Math.round(cumulativeAltitude),
-        speed: msToKmh(lap.averageSpeed),
-      });
-    }
-  });
-
-  return points;
+function toPolyline(coords: { lat: number; lng: number }[] | null | undefined): [number, number][] | undefined {
+  if (!coords?.length) return undefined;
+  return coords.map((p) => [p.lat, p.lng]);
 }
 
 /**
- * Convert BigQuery Activity to ActivityDetail
+ * Convert API Activity to ActivityDetail
  */
 export function activityToDetail(activity: Activity): ActivityDetail {
   const laps = activity.kilometer_laps || [];
@@ -176,12 +146,13 @@ export function activityToDetail(activity: Activity): ActivityDetail {
     type: activity.typeKey.includes('running') ? 'running' : 'cycling',
     location: extractLocation(activity.activityName),
     notes: undefined,
+    coordinates: toPolyline(activity.coordinates),
     summary: activityToSummary(activity),
     scores: activityToScores(activity),
     heartRateZones: activityToHeartRateZones(activity),
     intervals: lapsToIntervals(laps),
-    timeSeries: lapsToTimeSeries(laps),
-    playlist: [], // Not available in BigQuery data
+    timeSeries: activity.time_series || [],
+    playlist: [],
   };
 }
 
@@ -189,6 +160,6 @@ export function activityToDetail(activity: Activity): ActivityDetail {
  * Extract location from activity name (e.g., "Paris Course à pied" -> "Paris")
  */
 function extractLocation(activityName: string): string | undefined {
-  const match = activityName.match(/^([^-]+?)(?:\s+Course|\s+Vélo|\s+Running)?/i);
+  const match = activityName.match(/^(.+?)(?:\s+Course|\s+Vélo|\s+Running|\s+Trail|\s+Natation|\s+Randonnée)/i);
   return match ? match[1].trim() : undefined;
 }

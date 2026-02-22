@@ -22,18 +22,9 @@ interface RunningCardProps {
     averagePerSession: number;
     daily: DailyRun[];
   } | null;
+  loading?: boolean;
   className?: string;
 }
-
-const mockDaily: DailyRun[] = [
-  { date: "", day: "L", distance: 0,    aerobicScore: 0,   anaerobicScore: 0,   aerobicHeightPercentage: 0,  anaerobicHeightPercentage: 0  },
-  { date: "", day: "M", distance: 8.5,  aerobicScore: 2.8, anaerobicScore: 0,   aerobicHeightPercentage: 56, anaerobicHeightPercentage: 0  },
-  { date: "", day: "M", distance: 0,    aerobicScore: 0,   anaerobicScore: 0,   aerobicHeightPercentage: 0,  anaerobicHeightPercentage: 0  },
-  { date: "", day: "J", distance: 12.2, aerobicScore: 4.1, anaerobicScore: 0.8, aerobicHeightPercentage: 82, anaerobicHeightPercentage: 32 },
-  { date: "", day: "V", distance: 0,    aerobicScore: 0,   anaerobicScore: 0,   aerobicHeightPercentage: 0,  anaerobicHeightPercentage: 0  },
-  { date: "", day: "S", distance: 21.1, aerobicScore: 5.0, anaerobicScore: 1.8, aerobicHeightPercentage: 100,anaerobicHeightPercentage: 72 },
-  { date: "", day: "D", distance: 5.3,  aerobicScore: 1.6, anaerobicScore: 0,   aerobicHeightPercentage: 32, anaerobicHeightPercentage: 0  },
-];
 
 const AEROBIC_COLOR = "#3b82f6";
 const ANAEROBIC_COLOR = "#f97316";
@@ -44,16 +35,61 @@ const GOAL_STATUS = {
   not_achieved: { label: "Non atteint",       color: "#ef4444", bg: "rgba(239,68,68,0.12)"  },
 };
 
-export function RunningCard({ data, className }: RunningCardProps) {
+export function RunningCard({ data, loading = false, className }: RunningCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
 
-  const d = data ?? {
-    totalDistance: 47.1,
-    sessionCount: 4,
-    averagePerSession: 11.8,
-    daily: mockDaily,
-  };
+  if (loading || !data) {
+    return (
+      <div ref={ref} className={cn("liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col p-4", className)}>
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded bg-muted/40 animate-pulse" />
+            <div className="space-y-1.5">
+              <div className="h-3 w-28 rounded bg-muted/40 animate-pulse" />
+              <div className="h-2.5 w-20 rounded bg-muted/30 animate-pulse" />
+            </div>
+          </div>
+          <div className="h-5 w-20 rounded-full bg-muted/30 animate-pulse" />
+        </div>
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-lg bg-muted/20 py-2 flex flex-col items-center gap-1.5">
+              <div className="h-6 w-10 rounded bg-muted/40 animate-pulse" />
+              <div className="h-2 w-12 rounded bg-muted/30 animate-pulse" />
+            </div>
+          ))}
+        </div>
+        <div className="mb-4">
+          <div className="h-2 w-14 rounded bg-muted/30 animate-pulse mb-1.5" />
+          <div className="flex items-end gap-[5px] h-10">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex-1 h-full flex items-end justify-center">
+                <div className="w-[60%] rounded-sm bg-muted/30 animate-pulse" style={{ height: `${40 + i * 8}%`, animationDelay: `${i * 60}ms` }} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 min-h-0 flex flex-col">
+          <div className="h-2 w-32 rounded bg-muted/30 animate-pulse mb-1.5" />
+          <div className="flex-1 flex gap-[5px]">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex-1 h-full flex flex-col gap-px">
+                <div className="flex-1 flex items-end justify-center">
+                  <div className="w-[60%] rounded-t-sm bg-muted/25 animate-pulse" style={{ height: `${30 + i * 5}%` }} />
+                </div>
+                <div className="flex-1 flex items-start justify-center">
+                  <div className="w-[60%] rounded-b-sm bg-muted/15 animate-pulse" style={{ height: `${10 + i * 3}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const d = data;
   const maxDist = Math.max(...d.daily.map((r) => r.distance), 1);
 
   return (

@@ -7,6 +7,42 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes orb1 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(80px, 60px) scale(1.15); }
+}
+
+@keyframes orb2 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(-60px, 80px) scale(0.9); }
+}
+
+@keyframes orb3 {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(50px, -50px) scale(1.1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Custom scrollbar — light mode ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.28); }
+
+/* ── Custom scrollbar — dark mode ────────────────────────────────────────── */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

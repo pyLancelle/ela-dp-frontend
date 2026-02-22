@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, Timer, Route, Heart, TrendingUp, Mountain, ChartBarStacked } from "lucide-react";
+import { Activity, Timer, Route, Heart, TrendingUp, Mountain } from "lucide-react";
 import type { ActivitySummary, PerformanceScores } from "@/types/activity-detail";
 
 interface ActivityKpisCardProps {
@@ -34,6 +33,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: summary.distance.toFixed(2),
       unit: "km",
       color: "text-blue-500",
+      glow: "rgba(59,130,246,0.15)",
     },
     {
       icon: Timer,
@@ -41,6 +41,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: formatDuration(summary.duration),
       unit: "",
       color: "text-purple-500",
+      glow: "rgba(168,85,247,0.15)",
     },
     {
       icon: Activity,
@@ -48,6 +49,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: formatPace(summary.avgPace),
       unit: "/km",
       color: "text-green-500",
+      glow: "rgba(34,197,94,0.15)",
     },
     {
       icon: Mountain,
@@ -55,6 +57,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: summary.elevationGain.toString(),
       unit: "m",
       color: "text-amber-600",
+      glow: "rgba(217,119,6,0.15)",
     },
     {
       icon: Heart,
@@ -62,6 +65,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: Math.round(summary.avgHeartRate).toString(),
       unit: "bpm",
       color: "text-red-500",
+      glow: "rgba(239,68,68,0.15)",
     },
     {
       icon: Heart,
@@ -69,6 +73,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: Math.round(summary.maxHeartRate).toString(),
       unit: "bpm",
       color: "text-orange-500",
+      glow: "rgba(249,115,22,0.15)",
     },
     {
       icon: TrendingUp,
@@ -76,6 +81,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: scores.aerobicScore.toFixed(1),
       unit: "",
       color: "text-cyan-500",
+      glow: "rgba(6,182,212,0.15)",
     },
     {
       icon: TrendingUp,
@@ -83,30 +89,37 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       value: scores.anaerobicScore.toFixed(1),
       unit: "",
       color: "text-pink-500",
+      glow: "rgba(236,72,153,0.15)",
     },
   ];
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-2 pt-3">
-      </CardHeader>
-      <CardContent className="pb-4 flex-1">
-        <div className="grid grid-cols-2 grid-rows-4 gap-x-4 gap-y-5 h-full">
+    <div className="liquid-glass-card rounded-2xl h-full flex flex-col overflow-hidden">
+      {/* Shimmer top bar */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+
+      <div className="flex-1 p-4">
+        <div className="grid grid-cols-2 grid-rows-4 gap-x-3 gap-y-4 h-full">
           {kpis.map((kpi, index) => {
             const Icon = kpi.icon;
             return (
               <div
                 key={index}
-                className="flex flex-col gap-0.5"
+                className="flex flex-col gap-0.5 group"
               >
                 <div className="flex items-center gap-1">
-                  <Icon className={`h-3 w-3 ${kpi.color}`} />
+                  <Icon
+                    className={`h-3 w-3 ${kpi.color} transition-transform group-hover:scale-110`}
+                  />
                   <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
                     {kpi.label}
                   </span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-bold">
+                  <span
+                    className="text-lg font-bold transition-all"
+                    style={{ textShadow: `0 0 12px ${kpi.glow}` }}
+                  >
                     {kpi.value}
                   </span>
                   {kpi.unit && (
@@ -119,7 +132,10 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Shimmer bottom bar */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+    </div>
   );
 }

@@ -15,6 +15,7 @@ interface SleepSegment {
 
 interface SleepStagesCardProps {
   data?: SleepSegment[];
+  loading?: boolean;
   className?: string;
 }
 
@@ -27,22 +28,6 @@ const STAGE_CONFIG: Record<SleepStage, { label: string; color: string; lane: num
 
 const LANES: SleepStage[] = ["awake", "rem", "core", "deep"];
 
-const mockData: SleepSegment[] = [
-  { startTime: "2024-01-01T00:31:00", endTime: "2024-01-01T01:01:00", stage: "awake" },
-  { startTime: "2024-01-01T01:01:00", endTime: "2024-01-01T03:01:00", stage: "deep" },
-  { startTime: "2024-01-01T03:01:00", endTime: "2024-01-01T03:46:00", stage: "core" },
-  { startTime: "2024-01-01T03:46:00", endTime: "2024-01-01T05:01:00", stage: "rem" },
-  { startTime: "2024-01-01T05:01:00", endTime: "2024-01-01T05:39:00", stage: "rem" },
-  { startTime: "2024-01-01T05:39:00", endTime: "2024-01-01T06:09:00", stage: "core" },
-  { startTime: "2024-01-01T06:09:00", endTime: "2024-01-01T06:21:00", stage: "awake" },
-  { startTime: "2024-01-01T06:21:00", endTime: "2024-01-01T07:07:00", stage: "deep" },
-  { startTime: "2024-01-01T07:07:00", endTime: "2024-01-01T07:22:00", stage: "core" },
-  { startTime: "2024-01-01T07:22:00", endTime: "2024-01-01T07:45:00", stage: "rem" },
-  { startTime: "2024-01-01T07:45:00", endTime: "2024-01-01T08:45:00", stage: "core" },
-  { startTime: "2024-01-01T08:45:00", endTime: "2024-01-01T09:30:00", stage: "rem" },
-  { startTime: "2024-01-01T09:30:00", endTime: "2024-01-01T10:15:00", stage: "core" },
-  { startTime: "2024-01-01T10:15:00", endTime: "2024-01-01T10:30:00", stage: "awake" },
-];
 
 function fmt(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -54,11 +39,51 @@ function fmtTime(d: Date) {
   return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function SleepStagesCard({ data, className }: SleepStagesCardProps) {
+export function SleepStagesCard({ data, loading = false, className }: SleepStagesCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
 
-  const raw = data || mockData;
+  if (loading || !data?.length) {
+    return (
+      <div ref={ref} className={cn("liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col p-4", className)}>
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded bg-muted/40 animate-pulse" />
+            <div className="space-y-1.5">
+              <div className="h-3 w-28 rounded bg-muted/40 animate-pulse" />
+              <div className="h-2.5 w-20 rounded bg-muted/30 animate-pulse" />
+            </div>
+          </div>
+          <div className="space-y-1.5 flex flex-col items-end">
+            <div className="h-7 w-14 rounded bg-muted/40 animate-pulse" />
+            <div className="h-2.5 w-8 rounded bg-muted/30 animate-pulse" />
+          </div>
+        </div>
+        <div className="flex-1 flex gap-4 min-h-0">
+          <div className="flex flex-col justify-around py-0.5 gap-2 flex-shrink-0">
+            {LANES.map((_, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-muted/40 animate-pulse" />
+                <div className="space-y-1">
+                  <div className="h-2.5 w-10 rounded bg-muted/40 animate-pulse" />
+                  <div className="h-2 w-6 rounded bg-muted/30 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex-1 flex flex-col justify-around gap-[3px] py-0.5">
+            {LANES.map((_, i) => (
+              <div key={i} className="flex-1 relative rounded-md bg-muted/20 overflow-hidden">
+                <div className="absolute inset-0 bg-muted/20 animate-pulse" style={{ animationDelay: `${i * 120}ms` }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const raw = data;
 
   const segments = raw.map((s) => {
     const start = new Date(s.startTime);

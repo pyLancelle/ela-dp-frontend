@@ -29,7 +29,7 @@ export default function RootLayout({
               <main className="flex-1 overflow-hidden bg-background flex flex-col min-w-0">
                 <header className="flex h-14 items-center justify-between px-6 flex-shrink-0">
                   <PageHeader />
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 ml-auto">
                     <ThemeToggle />
                     <RightPanelTrigger />
                   </div>

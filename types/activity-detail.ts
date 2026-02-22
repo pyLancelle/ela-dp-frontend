@@ -54,10 +54,10 @@ export interface ActivityInterval {
 
 // Point de données temps réel (pour graphiques ligne)
 export interface TimeSeriesPoint {
-  timestamp: number;          // secondes depuis le début
+  timestamp: number;          // Unix ms
   distance: number;           // km cumulés
   heartRate: number;          // bpm
-  pace: number;               // min/km instantané
+  pace: number | null;        // min/km instantané (null lors des pauses)
   altitude: number;           // m
   speed: number;              // km/h
 }
@@ -81,6 +81,7 @@ export interface ActivityDetail {
   type: ActivityType;
   location?: string;
   notes?: string;             // Notes de l'utilisateur sur l'activité
+  coordinates?: [number, number][];  // [lat, lng][]
 
   summary: ActivitySummary;
   scores: PerformanceScores;
