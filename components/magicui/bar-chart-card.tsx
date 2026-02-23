@@ -76,9 +76,9 @@ export function BarChartCard({
 
   const isFloating = data.some((d) => d.range !== undefined);
 
-  const globalMax = isFloating
+  const globalMax = (isFloating
     ? Math.max(...data.map((d) => d.range?.[1] ?? d.value), 1)
-    : Math.max(...data.map((d) => d.value), 1);
+    : Math.max(...data.map((d) => d.value), 1)) * 1.1;
 
   const avg = isFloating
     ? data.reduce((s, d) => s + (d.range?.[1] ?? d.value), 0) / (data.length || 1)
@@ -129,7 +129,7 @@ export function BarChartCard({
           />
 
           {/* Bars row */}
-          <div className="absolute inset-0 flex items-end gap-[5px] overflow-hidden">
+          <div className="absolute inset-0 flex items-end gap-[5px]">
             {data.map((day, i) => {
               if (isFloating && day.range) {
                 const [lo, hi] = day.range;
