@@ -49,7 +49,7 @@ export function RacePredictionsCard({ predictions = defaultPredictions, loading,
       </div>
 
       {/* List */}
-      <div className="flex-1 flex flex-col justify-between gap-2 min-h-0">
+      <div className="flex-1 flex flex-col justify-between gap-1.5 min-h-0 overflow-y-auto">
         {loading ? (
           <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
             Chargement...
@@ -69,7 +69,7 @@ export function RacePredictionsCard({ predictions = defaultPredictions, loading,
                   delay: 0.05 + i * 0.08,
                   ease: [0.34, 1.56, 0.64, 1],
                 }}
-                className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/20"
+                className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/20 flex-shrink-0"
               >
                 {/* Distance + time */}
                 <div>
