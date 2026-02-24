@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { cn } from "@/lib/utils";
-import { Moon } from "lucide-react";
 
 type SleepStage = "awake" | "rem" | "core" | "deep";
 
@@ -112,7 +111,6 @@ export function SleepStagesCard({ data, loading = false, className }: SleepStage
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Moon className="h-4 w-4 text-muted-foreground" />
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Phases de sommeil

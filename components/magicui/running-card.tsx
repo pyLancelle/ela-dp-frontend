@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import { cn } from "@/lib/utils";
-import { Footprints, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 interface DailyRun {
   date: string;
@@ -65,7 +65,7 @@ export function RunningCard({ data, loading = false, className }: RunningCardPro
           <div className="flex items-end gap-[5px] h-10">
             {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="flex-1 h-full flex items-end justify-center">
-                <div className="w-[60%] rounded-sm bg-muted/30 animate-pulse" style={{ height: `${40 + i * 8}%`, animationDelay: `${i * 60}ms` }} />
+                <div className="w-4/5 rounded-sm bg-muted/30 animate-pulse" style={{ height: `${40 + i * 8}%`, animationDelay: `${i * 60}ms` }} />
               </div>
             ))}
           </div>
@@ -76,10 +76,10 @@ export function RunningCard({ data, loading = false, className }: RunningCardPro
             {Array.from({ length: 7 }).map((_, i) => (
               <div key={i} className="flex-1 h-full flex flex-col gap-px">
                 <div className="flex-1 flex items-end justify-center">
-                  <div className="w-[60%] rounded-t-sm bg-muted/25 animate-pulse" style={{ height: `${30 + i * 5}%` }} />
+                  <div className="w-4/5 rounded-t-sm bg-muted/25 animate-pulse" style={{ height: `${30 + i * 5}%` }} />
                 </div>
                 <div className="flex-1 flex items-start justify-center">
-                  <div className="w-[60%] rounded-b-sm bg-muted/15 animate-pulse" style={{ height: `${10 + i * 3}%` }} />
+                  <div className="w-4/5 rounded-b-sm bg-muted/15 animate-pulse" style={{ height: `${10 + i * 3}%` }} />
                 </div>
               </div>
             ))}
@@ -103,7 +103,6 @@ export function RunningCard({ data, loading = false, className }: RunningCardPro
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Footprints className="h-4 w-4 text-muted-foreground" />
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Course à pied
@@ -147,7 +146,7 @@ export function RunningCard({ data, loading = false, className }: RunningCardPro
             return (
               <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-0.5">
                 {run.distance > 0 && (
-                  <span className="text-[8px] text-foreground/60 tabular-nums leading-none">
+                  <span className="text-[9px] text-foreground/60 tabular-nums leading-none">
                     {run.distance.toFixed(0)}
                   </span>
                 )}
@@ -196,7 +195,7 @@ export function RunningCard({ data, loading = false, className }: RunningCardPro
                 <div className="flex-1 flex items-end justify-center pb-px">
                   {run.aerobicScore > 0 && (
                     <motion.div
-                      className="w-[60%] rounded-t-sm"
+                      className="w-4/5 rounded-t-sm"
                       style={{ background: `linear-gradient(to top, ${AEROBIC_COLOR}88, ${AEROBIC_COLOR})` }}
                       initial={{ height: "0%" }}
                       animate={inView ? { height: `${run.aerobicHeightPercentage}%` } : { height: "0%" }}
@@ -208,7 +207,7 @@ export function RunningCard({ data, loading = false, className }: RunningCardPro
                 <div className="flex-1 flex items-start justify-center pt-px">
                   {run.anaerobicScore > 0 && (
                     <motion.div
-                      className="w-[60%] rounded-b-sm"
+                      className="w-4/5 rounded-b-sm"
                       style={{ background: `linear-gradient(to bottom, ${ANAEROBIC_COLOR}88, ${ANAEROBIC_COLOR})` }}
                       initial={{ height: "0%" }}
                       animate={inView ? { height: `${run.anaerobicHeightPercentage}%` } : { height: "0%" }}

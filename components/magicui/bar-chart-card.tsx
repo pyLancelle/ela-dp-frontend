@@ -23,6 +23,7 @@ interface BarChartCardProps {
   color?: string;
   className?: string;
   loading?: boolean;
+  yMax?: number;
 }
 
 export function BarChartCard({
@@ -36,6 +37,7 @@ export function BarChartCard({
   color = "#6366f1",
   className,
   loading = false,
+  yMax,
 }: BarChartCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
@@ -57,7 +59,7 @@ export function BarChartCard({
           {Array.from({ length: 7 }).map((_, i) => (
             <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
               <div
-                className="w-[55%] rounded-t-sm bg-muted/30 animate-pulse"
+                className="w-4/5 rounded-t-sm bg-muted/30 animate-pulse"
                 style={{ height: `${30 + Math.sin(i) * 20 + 20}%`, animationDelay: `${i * 80}ms` }}
               />
             </div>
@@ -76,9 +78,9 @@ export function BarChartCard({
 
   const isFloating = data.some((d) => d.range !== undefined);
 
-  const globalMax = (isFloating
+  const globalMax = yMax ?? (isFloating
     ? Math.max(...data.map((d) => d.range?.[1] ?? d.value), 1)
-    : Math.max(...data.map((d) => d.value), 1)) * 1.1;
+    : Math.max(...data.map((d) => d.value), 1));
 
   const avg = isFloating
     ? data.reduce((s, d) => s + (d.range?.[1] ?? d.value), 0) / (data.length || 1)
@@ -143,7 +145,7 @@ export function BarChartCard({
                     </span>
                     <div className="w-full h-full relative">
                       <motion.div
-                        className="absolute w-[55%] left-1/2 -translate-x-1/2 rounded-sm"
+                        className="absolute w-4/5 left-1/2 -translate-x-1/2 rounded-sm"
                         style={{
                           background: `linear-gradient(to top, ${color}99, ${color})`,
                           bottom: `${bottomPct}%`,
@@ -167,7 +169,7 @@ export function BarChartCard({
                     {day.formatted ?? day.value.toLocaleString("fr-FR")}
                   </span>
                   <motion.div
-                    className="w-[55%] rounded-t-sm"
+                    className="w-4/5 rounded-t-sm"
                     style={{
                       background: isAboveAvg
                         ? `linear-gradient(to top, ${color}cc, ${color})`

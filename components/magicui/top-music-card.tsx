@@ -44,13 +44,12 @@ function gradientFor(name: string) {
   return GRADIENTS[hash % GRADIENTS.length];
 }
 
-function Avatar({ src, alt, fallback, size = "md" }: { src?: string; alt: string; fallback: string; size?: "sm" | "md" }) {
-  const cls = size === "md" ? "w-10 h-10" : "w-8 h-8";
+function Avatar({ src, alt, fallback }: { src?: string; alt: string; fallback: string }) {
   if (src) {
-    return <img src={src} alt={alt} className={`${cls} rounded-lg object-cover flex-shrink-0`} />;
+    return <img src={src} alt={alt} className="w-8 h-8 rounded-md object-cover flex-shrink-0" />;
   }
   return (
-    <div className={`${cls} rounded-lg bg-gradient-to-br ${gradientFor(fallback)} flex items-center justify-center flex-shrink-0`}>
+    <div className={`w-8 h-8 rounded-md bg-gradient-to-br ${gradientFor(fallback)} flex items-center justify-center flex-shrink-0`}>
       <span className="text-white text-[10px] font-bold">{fallback.slice(0, 2).toUpperCase()}</span>
     </div>
   );
@@ -72,22 +71,8 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
       )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className={cn("flex items-start justify-between mb-3", loading && "invisible")}>
         <div className="flex items-center gap-2">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={showArtists ? "user-icon" : "music-icon"}
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.7 }}
-              transition={{ duration: 0.15 }}
-            >
-              {showArtists
-                ? <User className="h-4 w-4 text-muted-foreground" />
-                : <Music className="h-4 w-4 text-muted-foreground" />
-              }
-            </motion.div>
-          </AnimatePresence>
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {showArtists ? "Top Artistes" : "Top Titres"}
@@ -121,17 +106,27 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
       </div>
 
       {/* List */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <AnimatePresence mode="wait">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+        <AnimatePresence mode="wait" initial={false}>
           {loading ? (
             <motion.div
               key="loading"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center justify-center h-full text-muted-foreground text-xs"
+              className="flex-1 flex flex-col"
             >
-              Chargement...
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="flex-1 flex items-center gap-2 px-2">
+                  <div className="h-3 w-4 rounded bg-muted/30 animate-pulse flex-shrink-0" style={{ animationDelay: `${i * 60}ms` }} />
+                  <div className="w-8 h-8 rounded-md bg-muted/40 animate-pulse flex-shrink-0" style={{ animationDelay: `${i * 60}ms` }} />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-2.5 rounded bg-muted/40 animate-pulse" style={{ width: `${60 + (i % 3) * 15}%`, animationDelay: `${i * 60}ms` }} />
+                    <div className="h-2 w-12 rounded bg-muted/30 animate-pulse" style={{ animationDelay: `${i * 60}ms` }} />
+                  </div>
+                  <div className="h-2.5 w-10 rounded bg-muted/30 animate-pulse flex-shrink-0" style={{ animationDelay: `${i * 60}ms` }} />
+                </div>
+              ))}
             </motion.div>
           ) : (
             <motion.div
@@ -140,7 +135,7 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: showArtists ? 10 : -10 }}
               transition={{ duration: 0.2 }}
-              className="flex flex-col justify-between h-full"
+              className="flex-1 flex flex-col"
             >
               {showArtists
                 ? topArtists?.map((artist, i) => (
@@ -149,17 +144,17 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       initial={{ opacity: 0, y: 6 }}
                       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
                       transition={{ duration: 0.3, delay: 0.05 + i * 0.05 }}
-                      className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-muted/30 transition-colors"
+                      className="flex-1 flex items-center gap-2 px-2 rounded-lg hover:bg-muted/30 transition-colors"
                     >
                       <span className="text-xs font-semibold w-4 flex-shrink-0 text-muted-foreground tabular-nums">
                         {artist.rank}
                       </span>
                       <Avatar src={artist.imageUrl ?? undefined} alt={artist.name} fallback={artist.name} />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{artist.name}</div>
+                        <div className="text-xs font-medium truncate">{artist.name}</div>
                         <div className="text-[10px] text-muted-foreground">{artist.trackCount} plays</div>
                       </div>
-                      <div className="text-xs font-medium text-muted-foreground tabular-nums flex-shrink-0">
+                      <div className="text-[10px] font-medium text-muted-foreground tabular-nums flex-shrink-0">
                         {artist.totalDuration}
                       </div>
                     </motion.div>
@@ -170,17 +165,17 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       initial={{ opacity: 0, y: 6 }}
                       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
                       transition={{ duration: 0.3, delay: 0.05 + i * 0.05 }}
-                      className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-muted/30 transition-colors"
+                      className="flex-1 flex items-center gap-2 px-2 rounded-lg hover:bg-muted/30 transition-colors"
                     >
                       <span className="text-xs font-semibold w-4 flex-shrink-0 text-muted-foreground tabular-nums">
                         {track.rank}
                       </span>
                       <Avatar src={track.imageUrl ?? undefined} alt={track.name} fallback={track.name} />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{track.name}</div>
+                        <div className="text-xs font-medium truncate">{track.name}</div>
                         <div className="text-[10px] text-muted-foreground truncate">{track.artistName}</div>
                       </div>
-                      <div className="text-xs font-medium text-muted-foreground tabular-nums flex-shrink-0">
+                      <div className="text-[10px] font-medium text-muted-foreground tabular-nums flex-shrink-0">
                         {track.totalDuration}
                       </div>
                     </motion.div>

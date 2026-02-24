@@ -99,7 +99,7 @@ export function ActivityKpisCard({ summary, scores }: ActivityKpisCardProps) {
       <div className="h-px w-full bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
       <div className="flex-1 p-4">
-        <div className="grid grid-cols-2 grid-rows-4 gap-x-3 gap-y-4 h-full">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-4">
           {kpis.map((kpi, index) => {
             const Icon = kpi.icon;
             return (

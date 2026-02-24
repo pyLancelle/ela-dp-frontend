@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useInView } from "motion/react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -70,7 +70,6 @@ export function Vo2maxCard({ data, loading, className }: Vo2maxCardProps) {
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Activity className="h-4 w-4 text-muted-foreground" />
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               VO2 Max

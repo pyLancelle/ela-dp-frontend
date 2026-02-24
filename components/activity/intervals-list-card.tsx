@@ -6,7 +6,7 @@ import type { KilometerLap } from "@/types/activity";
 import type { ActivityInterval } from "@/types/activity-detail";
 import type { TrackPlayed } from "@/components/activity/activity-tracks-card";
 import { metersToKm, formatDuration, formatPace, msToPaceMinPerKm } from "@/types/activity";
-import { Activity, Ruler, Zap, Music } from "lucide-react";
+import { Ruler, Zap, Music } from "lucide-react";
 
 interface IntervalsListCardProps {
   kmLaps?: KilometerLap[] | null;
@@ -77,10 +77,7 @@ export function IntervalsListCard({ kmLaps, intervals, tracks }: IntervalsListCa
       {/* Header */}
       <div className="px-4 pt-3 pb-2 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-blue-500/20 ring-1 ring-blue-400/30">
-            <Activity className="h-4 w-4 text-blue-400" />
-          </div>
-          <span className="text-sm font-semibold tracking-tight">
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">
             {mode === "km" ? "Splits au kilomètre" : mode === "interval" ? "Intervalles d'entraînement" : "Musique"}
           </span>
         </div>

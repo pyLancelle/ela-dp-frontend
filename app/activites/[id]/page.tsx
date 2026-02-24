@@ -130,14 +130,14 @@ export default function ActivityAnalysisPage({
       </div>
 
       {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[200px]">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:auto-rows-[200px]">
         {/* Intervalles - 2x1 */}
-        <div className="md:col-span-2 md:col-start-2 md:row-start-1">
+        <div className="h-[200px] md:h-auto md:col-span-2 md:col-start-2 md:row-start-1">
           <IntervalsRecharts intervals={activity.intervals} />
         </div>
 
         {/* Carte GPS - 1x1 */}
-        <div className="md:col-span-3 md:col-start-4 md:row-start-1">
+        <div className="h-[200px] md:h-auto md:col-span-3 md:col-start-4 md:row-start-1">
           <ActivityMapCard coordinates={activity.coordinates} location={activity.location} />
         </div>
 
@@ -147,12 +147,12 @@ export default function ActivityAnalysisPage({
         </div>
 
         {/* Zones Cardiaques - 1x1 */}
-        <div className="md:col-span-2 md:col-start-2 md:row-start-2">
+        <div className="h-[200px] md:h-auto md:col-span-2 md:col-start-2 md:row-start-2">
           <HeartRateZonesChart zones={activity.heartRateZones} />
         </div>
 
         {/* Évolution FC - 3x3 */}
-        <div className="md:col-span-3 md:row-span-1 md:col-start-1 md:row-start-3">
+        <div className="h-[200px] md:h-auto md:col-span-3 md:row-span-1 md:col-start-1 md:row-start-3">
           <HeartRateEvolutionCard
             timeSeries={activity.timeSeries}
             zones={activity.heartRateZones}
@@ -162,7 +162,7 @@ export default function ActivityAnalysisPage({
         </div>
 
         {/* Liste Intervalles - 3x2 */}
-        <div className="md:col-span-3 md:row-span-2 md:col-start-4 md:row-start-2">
+        <div className="h-[400px] md:h-auto md:col-span-3 md:row-span-2 md:col-start-4 md:row-start-2">
           <IntervalsListCard
             kmLaps={bigQueryActivity?.kilometer_laps}
             intervals={activity.intervals}

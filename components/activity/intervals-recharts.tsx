@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import type { ActivityInterval } from "@/types/activity-detail";
-import { Timer } from "lucide-react";
 
 interface IntervalsRechartsProps {
   intervals: ActivityInterval[];
@@ -64,12 +63,7 @@ export function IntervalsRecharts({ intervals }: IntervalsRechartsProps) {
 
       {/* Header */}
       <div className="px-4 pt-3 pb-2 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-orange-500/20 ring-1 ring-orange-400/30">
-            <Timer className="h-4 w-4 text-orange-400" />
-          </div>
-          <span className="text-sm font-semibold tracking-tight">Intervalles</span>
-        </div>
+        <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">Intervalles</span>
       </div>
 
       {/* Chart */}

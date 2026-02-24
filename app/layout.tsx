@@ -44,7 +44,7 @@ export default function RootLayout({
                     <RightPanelTrigger />
                   </div>
                 </header>
-                <div className="flex-1 overflow-y-auto px-6 pt-2 pb-6">
+                <div className="flex-1 overflow-y-auto px-2 md:px-6 pt-2 pb-6">
                   {children}
                 </div>
               </main>

@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import type { HeartRateZone } from "@/types/activity-detail";
-import { Heart } from "lucide-react";
 
 interface HeartRateZonesChartProps {
   zones: HeartRateZone[];
@@ -40,9 +39,8 @@ export function HeartRateZonesChart({ zones }: HeartRateZonesChartProps) {
       <div className="h-px w-full bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
       {/* Header compact */}
-      <div className="px-3 pt-2.5 pb-1.5 flex items-center gap-1.5 flex-shrink-0">
-        <Heart className="h-3 w-3 text-red-400" />
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Zones cardio</span>
+      <div className="px-3 pt-2.5 pb-1.5 flex items-center flex-shrink-0">
+        <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">Zones cardio</span>
       </div>
 
       {/* Barres — chaque ligne prend une part égale de la hauteur restante */}

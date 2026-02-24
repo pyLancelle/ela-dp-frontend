@@ -11,15 +11,20 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { BarChartCard } from "@/components/magicui/bar-chart-card";
 import { MagicCard } from "@/components/magicui/magic-card";
 
+const DAY_FR_TO_EN: Record<string, string> = {
+  L: "M", M: "T", Me: "W", J: "T", V: "F", S: "S", D: "S",
+};
+const dayEn = (d: string) => DAY_FR_TO_EN[d] ?? d;
+
 export default function Home() {
   const { data, isLoading } = useHomepage();
 
   return (
-    <div className="px-6 pt-1 pb-2 min-h-[calc(100vh-8rem)]">
+    <div className="px-3 md:px-6 pt-1 pb-2 min-h-[calc(100vh-8rem)]">
       <BentoGrid>
 
         {/* Running Card - 2x2 */}
-        <BlurFade delay={0.05} className="md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1">
+        <BlurFade delay={0.05} className="h-[340px] md:h-auto md:col-span-2 md:row-span-2 md:col-start-3 md:row-start-1">
           <MagicCard>
             <RunningCard data={data?.running ?? null} loading={isLoading} />
           </MagicCard>
@@ -37,27 +42,18 @@ export default function Home() {
         </BlurFade>
 
         {/* Listening Time Chart - 2x1 */}
-        <BlurFade delay={0.15} className="md:col-span-2 md:col-start-5 md:row-start-1">
+        <BlurFade delay={0.15} className="h-[180px] md:h-auto md:col-span-2 md:col-start-5 md:row-start-1">
           <MagicCard>
             <BarChartCard
               title="Temps d'écoute"
-              kpi={
-                data?.music?.listeningTime?.averagePerDay
-                  ? (() => {
-                      const avg = parseFloat(data.music.listeningTime.averagePerDay);
-                      const h = Math.floor(avg / 60);
-                      const m = Math.floor(avg % 60);
-                      return h > 0 ? `${h}h${m > 0 ? `${m}` : ""}` : `${m}m`;
-                    })()
-                  : "—"
-              }
+              kpi={data?.music?.listeningTime?.averagePerDay ?? "—"}
               kpiLabel="moy/jour"
               subtitle="10 derniers jours"
               color="#1DB954"
               loading={isLoading}
               data={
                 data?.music?.listeningTime?.days?.map((d) => ({
-                  label: { Lun: "L", Mar: "M", Mer: "M", Jeu: "J", Ven: "V", Sam: "S", Dim: "D" }[d.day] ?? d.day.charAt(0),
+                  label: dayEn(d.day),
                   value: d.heightPercentage,
                   formatted: d.formatted,
                 })) ?? []
@@ -67,7 +63,7 @@ export default function Home() {
         </BlurFade>
 
         {/* Weekly Running Volume - 1x1 */}
-        <BlurFade delay={0.20} className="md:col-span-1 md:col-start-3 md:row-start-3">
+        <BlurFade delay={0.20} className="h-[180px] md:h-auto md:col-span-1 md:col-start-3 md:row-start-3">
           <MagicCard>
             <BarChartCard
               title="Volume hebdo"
@@ -90,14 +86,14 @@ export default function Home() {
         </BlurFade>
 
         {/* Sleep Stages Chart - 2x1 */}
-        <BlurFade delay={0.25} className="md:col-span-2 md:col-start-1 md:row-start-1">
+        <BlurFade delay={0.25} className="h-[180px] md:h-auto md:col-span-2 md:col-start-1 md:row-start-1">
           <MagicCard>
             <SleepStagesCard data={data?.sleepStages} loading={isLoading} />
           </MagicCard>
         </BlurFade>
 
         {/* Sleep Score - 1x1 */}
-        <BlurFade delay={0.30} className="md:col-span-1 md:col-start-1 md:row-start-2">
+        <BlurFade delay={0.30} className="h-[180px] md:h-auto md:col-span-1 md:col-start-1 md:row-start-2">
           <MagicCard>
             <BarChartCard
               title="Sommeil"
@@ -109,7 +105,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.sleepScores?.daily?.map((d) => ({
-                  label: d.day,
+                  label: dayEn(d.day),
                   value: d.score,
                   formatted: d.score.toString(),
                 })) ?? []
@@ -119,7 +115,7 @@ export default function Home() {
         </BlurFade>
 
         {/* Body Battery - 1x1 */}
-        <BlurFade delay={0.35} className="md:col-span-1 md:col-start-2 md:row-start-2">
+        <BlurFade delay={0.35} className="h-[180px] md:h-auto md:col-span-1 md:col-start-2 md:row-start-2">
           <MagicCard>
             <BarChartCard
               title="Body Battery"
@@ -131,7 +127,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.bodyBattery?.daily?.map((d) => ({
-                  label: d.day,
+                  label: dayEn(d.day),
                   value: d.range[1],
                   range: d.range,
                 })) ?? []
@@ -141,7 +137,7 @@ export default function Home() {
         </BlurFade>
 
         {/* HRV - 1x1 */}
-        <BlurFade delay={0.40} className="md:col-span-1 md:col-start-1 md:row-start-3">
+        <BlurFade delay={0.40} className="h-[180px] md:h-auto md:col-span-1 md:col-start-1 md:row-start-3">
           <MagicCard>
             <BarChartCard
               title="HRV"
@@ -153,7 +149,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.hrv?.daily?.map((d) => ({
-                  label: d.day,
+                  label: dayEn(d.day),
                   value: d.hrv,
                   formatted: `${d.hrv}`,
                 })) ?? []
@@ -163,7 +159,7 @@ export default function Home() {
         </BlurFade>
 
         {/* Resting HR - 1x1 */}
-        <BlurFade delay={0.45} className="md:col-span-1 md:col-start-2 md:row-start-3">
+        <BlurFade delay={0.45} className="h-[180px] md:h-auto md:col-span-1 md:col-start-2 md:row-start-3">
           <MagicCard>
             <BarChartCard
               title="FC Repos"
@@ -175,7 +171,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.restingHr?.daily?.map((d) => ({
-                  label: d.day,
+                  label: dayEn(d.day),
                   value: d.hr,
                   formatted: `${d.hr}`,
                 })) ?? []
@@ -185,7 +181,7 @@ export default function Home() {
         </BlurFade>
 
         {/* Stress - 1x1 */}
-        <BlurFade delay={0.50} className="md:col-span-1 md:col-start-1 md:row-start-4">
+        <BlurFade delay={0.50} className="h-[180px] md:h-auto md:col-span-1 md:col-start-1 md:row-start-4">
           <MagicCard>
             <BarChartCard
               title="Stress"
@@ -194,10 +190,11 @@ export default function Home() {
               kpiLabel="/100"
               subtitle="7 derniers jours"
               color="#f59e0b"
+              yMax={100}
               loading={isLoading}
               data={
                 data?.stress?.daily?.map((d) => ({
-                  label: d.day,
+                  label: dayEn(d.day),
                   value: d.stress,
                   formatted: d.stress.toString(),
                 })) ?? []
@@ -207,7 +204,7 @@ export default function Home() {
         </BlurFade>
 
         {/* Steps - 1x1 */}
-        <BlurFade delay={0.55} className="md:col-span-1 md:col-start-2 md:row-start-4">
+        <BlurFade delay={0.55} className="h-[180px] md:h-auto md:col-span-1 md:col-start-2 md:row-start-4">
           <MagicCard>
             <BarChartCard
               title="Pas"
@@ -226,7 +223,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.steps?.daily?.map((d) => ({
-                  label: d.day,
+                  label: dayEn(d.day),
                   value: d.steps,
                   formatted: d.steps >= 1000
                     ? `${(d.steps / 1000).toFixed(1)}K`
@@ -238,14 +235,14 @@ export default function Home() {
         </BlurFade>
 
         {/* VO2 Max Trend - 1x1 */}
-        <BlurFade delay={0.60} className="md:col-span-1 md:col-start-3 md:row-start-4">
+        <BlurFade delay={0.60} className="h-[180px] md:h-auto md:col-span-1 md:col-start-3 md:row-start-4">
           <MagicCard>
             <Vo2maxCard data={data?.vo2maxTrend} loading={isLoading} />
           </MagicCard>
         </BlurFade>
 
         {/* Race Predictions - 1x2 */}
-        <BlurFade delay={0.65} className="md:col-span-1 md:col-start-4 md:row-span-2 md:row-start-3">
+        <BlurFade delay={0.65} className="h-[320px] md:h-auto md:col-span-1 md:col-start-4 md:row-span-2 md:row-start-3">
           <MagicCard beamDuration={7}>
             <RacePredictionsCard
               predictions={data?.racePredictions?.predictions}

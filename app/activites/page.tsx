@@ -39,7 +39,7 @@ export default function ActivitesPage() {
   const { data: activities = [], isLoading, isError, error } = useActivitiesList();
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-3 md:p-6">
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
           <Loader2 className="h-7 w-7 animate-spin" />
@@ -59,17 +59,17 @@ export default function ActivitesPage() {
           </div>
         </BlurFade>
       ) : (
-        <div className="grid grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
           {buildGridItems(activities).map((item) =>
             item.kind === "separator" ? (
-              <div key={item.key} className="col-span-6 flex items-center gap-4 pt-2">
+              <div key={item.key} className="col-span-1 md:col-span-6 flex items-center gap-4 pt-2">
                 <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50 capitalize">
                   {item.label}
                 </span>
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
             ) : (
-              <div key={item.activity.id} className="col-span-2">
+              <div key={item.activity.id} className="col-span-1 md:col-span-2">
                 <ActivityRichCard activity={item.activity} index={item.index} />
               </div>
             )

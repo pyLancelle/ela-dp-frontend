@@ -115,7 +115,7 @@ function TraceCell({ seed, color, inView, polyline }: { seed: string; color: str
 
   if (!pts) {
     return (
-      <BentoCell className="flex items-center justify-center">
+      <BentoCell className="flex items-center justify-center h-full md:min-h-[80px]">
         <span className="text-[9px] text-muted-foreground/20 uppercase tracking-widest">no gps</span>
       </BentoCell>
     );
@@ -269,11 +269,13 @@ export function ActivityRichCard({ activity, index }: Props) {
             </div>
           </div>
 
-          {/* Bento body — 3 colonnes */}
-          <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 p-2.5 flex-1">
+          {/* Bento body */}
+          <div className="grid grid-cols-2 md:grid-cols-[1fr_1fr_1fr] gap-2 p-2.5 flex-1">
             <KpiCell distance={activity.distance} duration={activity.duration} avgHr={avgHr} color={cfg.color} />
             <ZonesCell zones={hrZones} inView={inView} />
-            <TraceCell seed={activity.id} color={cfg.color} inView={inView} polyline={activity.polyline} />
+            <div className="col-span-2 md:col-span-1 md:min-h-[80px]">
+              <TraceCell seed={activity.id} color={cfg.color} inView={inView} polyline={activity.polyline} />
+            </div>
           </div>
 
         </div>
