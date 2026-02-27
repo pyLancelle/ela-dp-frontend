@@ -2,19 +2,19 @@
 import { NextRequest } from 'next/server';
 import { cachedResponse, errorResponse } from '@/lib/api/response';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const GCS_HOMEPAGE_URL = 'https://storage.googleapis.com/ela-dp-export/homepage.json';
 
 export async function GET(request: NextRequest) {
   try {
-    // Call the consolidated FastAPI backend endpoint
-    const response = await fetch(`${API_BASE_URL}/api/homepage`, {
+    // Fetch homepage data from GCS static JSON export
+    const response = await fetch(GCS_HOMEPAGE_URL, {
       cache: 'no-store',
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Homepage API failed with status ${response.status}:`, errorText);
-      throw new Error(`API call to homepage endpoint failed: ${response.status} ${response.statusText}`);
+      console.error(`GCS homepage fetch failed with status ${response.status}:`, errorText);
+      throw new Error(`Failed to fetch homepage.json from GCS: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();

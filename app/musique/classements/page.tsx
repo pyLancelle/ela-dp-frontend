@@ -112,7 +112,7 @@ export default function ClassementsPage() {
                         <TableCell className="px-3 py-1">
                           <div className="flex items-center gap-2 min-w-0">
                             <a
-                              href={track.trackExternalUrl}
+                              href={track.external_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex-shrink-0 hover:opacity-80 transition-opacity block relative overflow-hidden rounded"
@@ -194,7 +194,7 @@ export default function ClassementsPage() {
                         <TableCell className="px-3 py-1">
                           <div className="flex items-center gap-2 min-w-0">
                             <a
-                              href={artist.artistexternalurl}
+                              href={artist.external_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex-shrink-0 hover:opacity-80 transition-opacity block relative overflow-hidden rounded"
@@ -217,7 +217,7 @@ export default function ClassementsPage() {
                                 {truncateText(artist.name, 36)}
                               </div>
                               <div className="text-[11px] text-muted-foreground">
-                                {artist.track_count}
+                                {artist.play_count} plays
                               </div>
                             </div>
                           </div>
@@ -276,7 +276,7 @@ export default function ClassementsPage() {
                         <TableCell className="px-3 py-1">
                           <div className="flex items-center gap-2 min-w-0">
                             <a
-                              href={album.albumexternalurl}
+                              href={album.external_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex-shrink-0 hover:opacity-80 transition-opacity block relative overflow-hidden rounded"

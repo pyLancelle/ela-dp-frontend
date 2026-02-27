@@ -1,9 +1,13 @@
 "use client";
 
-import { Loader2, Inbox } from "lucide-react";
+import { useState } from "react";
+import { Loader2, Inbox, ChevronDown } from "lucide-react";
 import { useActivitiesList } from "@/hooks/queries";
 import { ActivityRichCard, type ActivityListItem } from "@/components/activity/activity-rich-card";
 import { BlurFade } from "@/components/magicui/blur-fade";
+import { Button } from "@/components/ui/button";
+
+const PAGE_SIZE = 20;
 
 function monthKey(rawDate: string): string {
   const d = new Date(rawDate);
@@ -37,6 +41,11 @@ function buildGridItems(activities: ActivityListItem[]): GridItem[] {
 
 export default function ActivitesPage() {
   const { data: activities = [], isLoading, isError, error } = useActivitiesList();
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const visibleActivities = activities.slice(0, visibleCount);
+  const hasMore = visibleCount < activities.length;
+  const remaining = activities.length - visibleCount;
 
   return (
     <div className="flex flex-col gap-6 p-3 md:p-6">
@@ -59,22 +68,38 @@ export default function ActivitesPage() {
           </div>
         </BlurFade>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-          {buildGridItems(activities).map((item) =>
-            item.kind === "separator" ? (
-              <div key={item.key} className="col-span-1 md:col-span-6 flex items-center gap-4 pt-2">
-                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50 capitalize">
-                  {item.label}
-                </span>
-                <div className="flex-1 h-px bg-white/[0.06]" />
-              </div>
-            ) : (
-              <div key={item.activity.id} className="col-span-1 md:col-span-2">
-                <ActivityRichCard activity={item.activity} index={item.index} />
-              </div>
-            )
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+            {buildGridItems(visibleActivities).map((item) =>
+              item.kind === "separator" ? (
+                <div key={item.key} className="col-span-1 md:col-span-6 flex items-center gap-4 pt-2">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50 capitalize">
+                    {item.label}
+                  </span>
+                  <div className="flex-1 h-px bg-white/[0.06]" />
+                </div>
+              ) : (
+                <div key={item.activity.id} className="col-span-1 md:col-span-2">
+                  <ActivityRichCard activity={item.activity} index={item.index} />
+                </div>
+              )
+            )}
+          </div>
+
+          {hasMore && (
+            <div className="flex justify-center pt-2 pb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                className="gap-2"
+              >
+                <ChevronDown className="h-4 w-4" />
+                Afficher plus ({Math.min(remaining, PAGE_SIZE)} sur {remaining} restantes)
+              </Button>
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import { cachedResponse, errorResponse } from '@/lib/api/response';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const GCS_BASE_URL = 'https://storage.googleapis.com/ela-dp-export';
 
 export async function GET(
   _request: Request,
@@ -9,22 +9,21 @@ export async function GET(
   try {
     const { id: activityId } = await params;
 
-    const isLast = activityId === 'last' || isNaN(parseInt(activityId, 10));
-    const endpoint = isLast
-      ? `${API_BASE_URL}/api/activities/detail/last`
-      : `${API_BASE_URL}/api/activities/detail/${activityId}`;
-
-    const response = await fetch(endpoint, { cache: 'no-store' });
+    const response = await fetch(`${GCS_BASE_URL}/activity_${activityId}.json`, {
+      cache: 'no-store',
+    });
 
     if (!response.ok) {
       if (response.status === 404) {
         return errorResponse('Activity not found', 404);
       }
-      throw new Error(`API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`GCS activity detail fetch failed (${activityId}):`, errorText);
+      throw new Error(`Failed to fetch activity ${activityId} from GCS: ${response.status}`);
     }
 
     const data = await response.json();
-    return cachedResponse(data, isLast ? 'activityLast' : 'activityDetail');
+    return cachedResponse(data, 'activityDetail');
   } catch (error) {
     console.error('Error fetching activity:', error);
     return errorResponse(

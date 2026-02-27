@@ -1,6 +1,6 @@
 import { cachedResponse, errorResponse } from '@/lib/api/response';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const GCS_ACTIVITIES_URL = 'https://storage.googleapis.com/ela-dp-export/activities_list.json';
 
 interface ActivityFromAPI {
   activityId: number;
@@ -85,15 +85,18 @@ function toHrZones(a: ActivityFromAPI): [number, number, number, number, number]
 
 export async function GET() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/activities/list`, {
+    const response = await fetch(GCS_ACTIVITIES_URL, {
       cache: 'no-store',
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`GCS activities fetch failed with status ${response.status}:`, errorText);
+      throw new Error(`Failed to fetch activities_list.json from GCS: ${response.status}`);
     }
 
-    const raw: ActivityFromAPI[] = await response.json();
+    const json = await response.json();
+    const raw: ActivityFromAPI[] = json.activities || json;
 
     const activities: Activity[] = raw.map((a) => ({
       id: a.activityId.toString(),
