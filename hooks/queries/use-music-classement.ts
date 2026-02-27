@@ -9,7 +9,7 @@ export interface TopTrack {
   artist_name: string;
   total_duration: string;
   play_count: number;
-  trackExternalUrl: string;
+  external_url: string;
   image_url: string;
 }
 
@@ -18,9 +18,8 @@ export interface TopArtist {
   name: string;
   total_duration: string;
   play_count: number;
-  track_count: number;
   image_url: string;
-  artistexternalurl: string;
+  external_url: string;
   tracks?: {
     name: string;
     duration: string;
@@ -35,9 +34,8 @@ export interface TopAlbum {
   artist_name: string;
   total_duration: string;
   play_count: number;
-  track_count: number;
   image_url: string;
-  albumexternalurl: string;
+  external_url: string;
 }
 
 export interface MusicClassementResponse {
