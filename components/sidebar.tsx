@@ -39,11 +39,6 @@ const navSections: NavSection[] = [
         icon: Trophy,
       },
       {
-        title: "Joués récemment",
-        href: "/musique/recently-played",
-        icon: Music,
-      },
-      {
         title: "Artistes",
         href: "/music/artists",
         icon: Users,
