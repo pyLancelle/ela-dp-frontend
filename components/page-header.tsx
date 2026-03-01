@@ -8,6 +8,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/activites": "Activités",
   "/musique/classements": "Classements Musicaux",
   "/musique/recently-played": "Derniers titres joués",
+  "/music/artists": "Focus Artiste",
 };
 
 export function PageHeader() {

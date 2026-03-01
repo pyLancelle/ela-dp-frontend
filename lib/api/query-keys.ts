@@ -25,5 +25,9 @@ export const queryKeys = {
       [...queryKeys.music.all, "classement", { period, limit }] as const,
     recentlyPlayed: (filters: RecentlyPlayedFilters) =>
       [...queryKeys.music.all, "recentlyPlayed", filters] as const,
+    artistFocusList: () =>
+      [...queryKeys.music.all, "artistFocusList"] as const,
+    artistFocus: (id: string) =>
+      [...queryKeys.music.all, "artistFocus", id] as const,
   },
 } as const;

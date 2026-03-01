@@ -11,6 +11,8 @@ interface HeatmapDay {
 interface ArtistHeatmapProps {
   data: HeatmapDay[];
   title?: string;
+  /** Earliest date to display (YYYY-MM-DD). Defaults to "2025-07-01". */
+  startDate?: string;
 }
 
 const MONTH_LABELS = [
@@ -84,34 +86,27 @@ function buildGrid(data: HeatmapDay[], days: number): GridResult {
 
 export function ArtistHeatmap({
   data,
-  title = "Activité d'écoute — 300 derniers jours",
+  title = "Activité d'écoute",
+  startDate = "2025-07-01",
 }: ArtistHeatmapProps) {
   const max = Math.max(...data.map((d) => d.minutes), 1);
   const containerRef = useRef<HTMLDivElement>(null);
   const [cellSize, setCellSize] = useState(11);
-  const [days, setDays] = useState(300);
+
+  const days = 300;
+  const totalWeeks = Math.ceil(days / 7) + 1;
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const compute = (width: number, height: number) => {
-      // Espace disponible pour la grille
       const gridW = width - DAY_LABEL_W - DAY_LABEL_GAP;
       const gridH = height - MONTH_LABEL_H - GAP;
 
-      // On veut des cellules carrées : cellSize × cellSize
-      // Nombre de semaines pour `days` jours ≈ days/7
-      // gridW = weeks * cellSize + (weeks-1) * GAP
-      // gridH = ROWS * cellSize + (ROWS-1) * GAP
-      //   => cellSize_from_H = (gridH - (ROWS-1)*GAP) / ROWS
-
+      const cellFromW = (gridW - (totalWeeks - 1) * GAP) / totalWeeks;
       const cellFromH = (gridH - (ROWS - 1) * GAP) / ROWS;
-      const weeksFromH = Math.floor((gridW + GAP) / (cellFromH + GAP));
-      const daysFromH = weeksFromH * 7;
-
-      setCellSize(Math.floor(cellFromH));
-      setDays(daysFromH);
+      setCellSize(Math.max(1, Math.floor(Math.min(cellFromW, cellFromH))));
     };
 
     const ro = new ResizeObserver((entries) => {
@@ -124,7 +119,7 @@ export function ArtistHeatmap({
     if (width > 0 && height > 0) compute(width, height);
 
     return () => ro.disconnect();
-  }, []);
+  }, [totalWeeks]);
 
   const { weeks, monthPositions } = buildGrid(data, days);
 
@@ -165,9 +160,9 @@ export function ArtistHeatmap({
             {monthPositions.map(({ label, col }) => (
               <span
                 key={`${label}-${col}`}
-                className="absolute text-[9px] text-muted-foreground -translate-x-1/2"
+                className="absolute text-[9px] text-muted-foreground"
                 style={{
-                  left: `${((col + 0.5) / weeks.length) * 100}%`,
+                  left: `${col * (cellSize + GAP)}px`,
                   top: "2px",
                 }}
               >

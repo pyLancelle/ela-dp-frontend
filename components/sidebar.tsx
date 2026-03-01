@@ -130,7 +130,7 @@ export function Sidebar() {
             <div className="space-y-0.5">
               {section.items.map((item, itemIdx) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 
                 return (
                   <BlurFade
