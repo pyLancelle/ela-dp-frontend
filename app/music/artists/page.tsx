@@ -382,7 +382,7 @@ function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
           {realAlbums.length} albums
         </span>
       </div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 flex-1 overflow-y-auto">
+      <div className="flex gap-4 flex-1 overflow-x-auto pb-2">
         {sorted.map((album) => {
           const pct = Math.round(album.completion_rate * 100);
           const badge = DEPTH_BADGE[album.listen_depth] ?? DEPTH_BADGE.shallow;
@@ -392,7 +392,7 @@ function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
               href={album.album_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex flex-col gap-1.5"
+              className="group flex flex-col gap-1.5 flex-shrink-0 w-28"
             >
               <div className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
                 {album.album_image_url ? (
