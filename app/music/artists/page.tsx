@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/magicui/bento-grid";
 import { MagicCard } from "@/components/magicui/magic-card";
@@ -230,10 +230,10 @@ function ListeningRhythmCard({ heatmap }: { heatmap: ArtistHeatmapEntry[] }) {
   function getColor(minutes: number): string {
     if (minutes === 0) return "bg-white/5";
     const ratio = minutes / max;
-    if (ratio < 0.15) return "bg-purple-900/60";
-    if (ratio < 0.4) return "bg-purple-700/70";
+    if (ratio < 0.15) return "bg-purple-300/40";
+    if (ratio < 0.4) return "bg-purple-400/60";
     if (ratio < 0.7) return "bg-purple-500/80";
-    return "bg-purple-300/90";
+    return "bg-purple-600/90";
   }
 
   return (
@@ -297,64 +297,64 @@ const DEPTH_BADGE: Record<string, { label: string; class: string }> = {
   shallow: { label: "Effleuré", class: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
 };
 
-function AlbumsCard({ albums }: { albums: ArtistAlbum[] }) {
+function TopAlbumsContent({ albums }: { albums: ArtistAlbum[] }) {
   const realAlbums = albums.filter(
     (a) => a.album_type === "album" || a.total_tracks >= 7
   );
-  const sorted = [...realAlbums].sort((a, b) => b.release_date.localeCompare(a.release_date));
+  const sorted = [...realAlbums].sort((a, b) => b.total_plays - a.total_plays);
+  const maxPlays = sorted[0]?.total_plays ?? 1;
+
   return (
     <div className="liquid-glass-card rounded-xl p-4 h-full flex flex-col">
       <div className="flex items-center gap-2 mb-3">
         <Disc3 className="w-3.5 h-3.5 text-muted-foreground" />
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Albums
+          Top Albums
         </p>
-        <span className="ml-auto text-[10px] text-muted-foreground/40 tabular-nums">
-          {realAlbums.length} albums
-        </span>
       </div>
-      <div className="flex flex-col gap-1.5 flex-1 overflow-y-auto">
-        {sorted.map((album) => {
-          const badge = DEPTH_BADGE[album.listen_depth] ?? DEPTH_BADGE.shallow;
+      <div className="flex flex-col gap-1 flex-1 overflow-y-auto">
+        {sorted.map((album, idx) => {
+          const widthPct = (album.total_plays / maxPlays) * 100;
           return (
             <a
               key={album.album_id}
               href={album.album_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              className="group relative flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 transition-colors"
             >
+              <div
+                className="absolute left-0 top-0 h-full rounded-lg bg-cyan-500/5"
+                style={{ width: `${widthPct}%` }}
+              />
+              <span className="relative text-xs font-semibold w-5 flex-shrink-0 text-muted-foreground tabular-nums">
+                {idx + 1}
+              </span>
               {album.album_image_url ? (
                 <img
                   src={album.album_image_url}
                   alt=""
-                  className="w-9 h-9 rounded-md object-cover flex-shrink-0 border border-white/10"
+                  className="relative w-8 h-8 rounded-md object-cover flex-shrink-0 border border-white/10"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-md bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10">
-                  <Disc3 className="w-4 h-4 text-muted-foreground/60" />
+                <div className="relative w-8 h-8 rounded-md bg-white/5 flex items-center justify-center flex-shrink-0 border border-white/10">
+                  <Disc3 className="w-3.5 h-3.5 text-muted-foreground/60" />
                 </div>
               )}
-              <div className="flex-1 min-w-0">
+              <div className="relative flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{album.album_name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[10px] text-muted-foreground tabular-nums">
-                    {album.tracks_heard}/{album.total_tracks} titres
-                  </span>
-                  <div className="w-12 h-1 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-cyan-500/60"
-                      style={{ width: `${Math.round(album.completion_rate * 100)}%` }}
-                    />
-                  </div>
-                </div>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {album.release_date.slice(0, 4)}
+                </p>
               </div>
-              <Badge
-                variant="outline"
-                className={`text-[8px] px-1.5 py-0 h-4 flex-shrink-0 ${badge.class}`}
-              >
-                {badge.label}
-              </Badge>
+              <div className="relative flex flex-col items-end flex-shrink-0">
+                <span className="text-[10px] text-muted-foreground tabular-nums">
+                  {album.total_plays} plays
+                </span>
+                <span className="text-[9px] text-muted-foreground/50 tabular-nums">
+                  {album.total_duration}
+                </span>
+              </div>
             </a>
           );
         })}
@@ -370,6 +370,102 @@ function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
     (a) => a.album_type === "album" || a.total_tracks >= 7
   );
   const sorted = [...realAlbums].sort((a, b) => b.release_date.localeCompare(a.release_date));
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const [coverSize, setCoverSize] = useState(160);
+
+  useEffect(() => {
+    const el = desktopRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0].contentRect.height;
+      if (h > 40) setCoverSize(Math.floor(h - 30));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Drag to scroll (desktop only)
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollStart = useRef(0);
+  const hasDragged = useRef(false);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    const el = desktopRef.current;
+    if (!el) return;
+    isDragging.current = true;
+    hasDragged.current = false;
+    startX.current = e.clientX;
+    scrollStart.current = el.scrollLeft;
+    el.setPointerCapture(e.pointerId);
+    el.style.cursor = "grabbing";
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    const dx = e.clientX - startX.current;
+    if (Math.abs(dx) > 3) hasDragged.current = true;
+    desktopRef.current!.scrollLeft = scrollStart.current - dx;
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const el = desktopRef.current;
+    if (el) {
+      el.releasePointerCapture(e.pointerId);
+      el.style.cursor = "grab";
+    }
+  };
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (hasDragged.current) e.preventDefault();
+  };
+
+  const albumCard = (album: ArtistAlbum, size?: number) => {
+    const badge = DEPTH_BADGE[album.listen_depth] ?? DEPTH_BADGE.shallow;
+    return (
+      <a
+        key={album.album_id}
+        href={album.album_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        draggable={false}
+        className="group flex flex-col gap-1 flex-shrink-0"
+      >
+        <div
+          className="relative rounded-lg overflow-hidden border border-white/10"
+          style={size ? { width: size, height: size } : undefined}
+        >
+          {album.album_image_url ? (
+            <img
+              src={album.album_image_url}
+              alt={album.album_name}
+              className={`${size ? "w-full h-full" : "w-full aspect-square"} object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none`}
+              draggable={false}
+            />
+          ) : (
+            <div className={`${size ? "w-full h-full" : "w-full aspect-square"} bg-white/5 flex items-center justify-center`}>
+              <Disc3 className="w-8 h-8 text-muted-foreground/30" />
+            </div>
+          )}
+        </div>
+        <div className="flex-shrink-0" style={size ? { width: size } : undefined}>
+          <p className="text-[10px] font-medium truncate leading-tight">
+            {album.album_name}
+          </p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <span className="text-[8px] text-muted-foreground/40 tabular-nums">
+              {album.tracks_heard}/{album.total_tracks}
+            </span>
+            <Badge
+              variant="outline"
+              className={`text-[7px] px-1 py-0 h-3.5 ${badge.class}`}
+            >
+              {badge.label}
+            </Badge>
+          </div>
+        </div>
+      </a>
+    );
+  };
 
   return (
     <div className="liquid-glass-card rounded-xl p-4 h-full flex flex-col">
@@ -382,60 +478,24 @@ function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
           {realAlbums.length} albums
         </span>
       </div>
-      <div className="flex gap-4 flex-1 overflow-x-auto pb-2">
-        {sorted.map((album) => {
-          const pct = Math.round(album.completion_rate * 100);
-          const badge = DEPTH_BADGE[album.listen_depth] ?? DEPTH_BADGE.shallow;
-          return (
-            <a
-              key={album.album_id}
-              href={album.album_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col gap-1.5 flex-shrink-0 w-28"
-            >
-              <div className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
-                {album.album_image_url ? (
-                  <img
-                    src={album.album_image_url}
-                    alt={album.album_name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                    <Disc3 className="w-8 h-8 text-muted-foreground/30" />
-                  </div>
-                )}
-                {/* Completion overlay */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
-                  <div
-                    className="h-full bg-cyan-400/80"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium truncate leading-tight">
-                  {album.album_name}
-                </p>
-                <p className="text-[10px] text-muted-foreground/60 truncate">
-                  {album.artist_names}
-                </p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[9px] text-muted-foreground/40 tabular-nums">
-                    {album.tracks_heard}/{album.total_tracks}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={`text-[7px] px-1 py-0 h-3.5 ${badge.class}`}
-                  >
-                    {badge.label}
-                  </Badge>
-                </div>
-              </div>
-            </a>
-          );
-        })}
+
+      {/* Mobile: grille verticale */}
+      <div className="grid grid-cols-3 gap-2 md:hidden overflow-y-auto flex-1 min-h-0">
+        {sorted.map((album) => albumCard(album))}
+      </div>
+
+      {/* Desktop: scroll horizontal avec covers dynamiques */}
+      <div
+        ref={desktopRef}
+        className="hidden md:flex gap-3 flex-1 min-h-0 overflow-x-auto overflow-y-hidden items-start pb-1 cursor-grab select-none"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onClickCapture={onClickCapture}
+        onDragStart={(e) => e.preventDefault()}
+      >
+        {sorted.map((album) => albumCard(album, coverSize))}
       </div>
     </div>
   );
@@ -596,7 +656,7 @@ function ArtistContent({
       {/* Row 1: Hero (4) + Stats (1) + Streak (1) */}
       <BlurFade
         delay={0.05}
-        className="md:col-span-4 md:row-span-1 md:col-start-1 md:row-start-1"
+        className="row-span-2 md:col-span-4 md:row-span-1 md:col-start-1 md:row-start-1"
       >
         <MagicCard beamDuration={7}>
           <HeroContent overview={overview} />
@@ -605,7 +665,7 @@ function ArtistContent({
 
       <BlurFade
         delay={0.1}
-        className="md:col-span-1 md:col-start-5 md:row-start-1 md:row-span-1"
+        className="row-span-1 md:col-span-1 md:col-start-5 md:row-start-1 md:row-span-1"
       >
         <MagicCard>
           <OverviewStats overview={overview} />
@@ -614,7 +674,7 @@ function ArtistContent({
 
       <BlurFade
         delay={0.12}
-        className="md:col-span-1 md:col-start-6 md:row-start-1 md:row-span-1"
+        className="row-span-1 md:col-span-1 md:col-start-6 md:row-start-1 md:row-span-1"
       >
         <MagicCard beamDuration={6}>
           <StreakCard streak={overview.current_streak} />
@@ -624,7 +684,7 @@ function ArtistContent({
       {/* Row 2: Heatmap calendar (3) + Evolution chart (3) */}
       <BlurFade
         delay={0.15}
-        className="md:col-span-3 md:col-start-1 md:row-start-2 md:row-span-1"
+        className="row-span-1 md:col-span-3 md:col-start-1 md:row-start-2 md:row-span-1"
       >
         <MagicCard beamDuration={7}>
           <ArtistHeatmap data={heatmapData} />
@@ -633,7 +693,7 @@ function ArtistContent({
 
       <BlurFade
         delay={0.2}
-        className="md:col-span-3 md:col-start-4 md:row-start-2 md:row-span-1"
+        className="row-span-1 md:col-span-3 md:col-start-4 md:row-start-2 md:row-span-1"
       >
         <MagicCard>
           <ArtistListeningChart data={chartData} />
@@ -643,7 +703,7 @@ function ArtistContent({
       {/* Row 3: Listening Rhythm (2) + Albums (2) + Top Tracks (2) */}
       <BlurFade
         delay={0.22}
-        className="md:col-span-2 md:col-start-1 md:row-start-3 md:row-span-1"
+        className="row-span-1 md:col-span-2 md:col-start-1 md:row-start-3 md:row-span-1"
       >
         <MagicCard>
           <ListeningRhythmCard heatmap={heatmap} />
@@ -652,16 +712,16 @@ function ArtistContent({
 
       <BlurFade
         delay={0.26}
-        className="md:col-span-2 md:col-start-3 md:row-start-3 md:row-span-2"
+        className="row-span-2 md:col-span-2 md:col-start-3 md:row-start-3 md:row-span-2"
       >
         <MagicCard>
-          <AlbumsCard albums={albums} />
+          <TopAlbumsContent albums={albums} />
         </MagicCard>
       </BlurFade>
 
       <BlurFade
         delay={0.28}
-        className="md:col-span-2 md:col-start-5 md:row-start-3 md:row-span-2"
+        className="row-span-2 md:col-span-2 md:col-start-5 md:row-start-3 md:row-span-2"
       >
         <MagicCard>
           <TopTracksContent tracks={top_tracks} />
@@ -671,7 +731,7 @@ function ArtistContent({
       {/* Row 5: Albums Mosaic full width */}
       <BlurFade
         delay={0.3}
-        className="md:col-span-6 md:col-start-1 md:row-start-5 md:row-span-2"
+        className="row-span-3 md:col-span-6 md:col-start-1 md:row-start-5 md:row-span-2"
       >
         <MagicCard>
           <AlbumsMosaic albums={albums} />

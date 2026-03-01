@@ -101,12 +101,10 @@ export function ArtistHeatmap({
     if (!el) return;
 
     const compute = (width: number, height: number) => {
-      const gridW = width - DAY_LABEL_W - DAY_LABEL_GAP;
       const gridH = height - MONTH_LABEL_H - GAP;
-
-      const cellFromW = (gridW - (totalWeeks - 1) * GAP) / totalWeeks;
       const cellFromH = (gridH - (ROWS - 1) * GAP) / ROWS;
-      setCellSize(Math.max(1, Math.floor(Math.min(cellFromW, cellFromH))));
+      const minCell = 8;
+      setCellSize(Math.max(minCell, Math.floor(cellFromH)));
     };
 
     const ro = new ResizeObserver((entries) => {
@@ -129,95 +127,97 @@ export function ArtistHeatmap({
         {title}
       </p>
 
-      <div ref={containerRef} className="flex flex-1 min-h-0 min-w-0" style={{ gap: `${DAY_LABEL_GAP}px` }}>
-        {/* Day labels */}
-        <div
-          className="flex flex-col flex-shrink-0 justify-start"
-          style={{
-            width: `${DAY_LABEL_W}px`,
-            marginTop: `${MONTH_LABEL_H}px`,
-            gap: `${GAP}px`,
-          }}
-        >
-          {DAY_LABELS.map((d, i) => (
-            <div
-              key={i}
-              className="text-[8px] text-muted-foreground flex items-center justify-end leading-none flex-shrink-0"
-              style={{ height: `${cellSize}px` }}
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        {/* Grid area */}
-        <div className="flex flex-col flex-1 min-w-0">
-          {/* Month labels */}
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
+        <div className="flex h-full" style={{ gap: `${DAY_LABEL_GAP}px`, minWidth: `${DAY_LABEL_W + DAY_LABEL_GAP + weeks.length * (cellSize + GAP)}px` }}>
+          {/* Day labels */}
           <div
-            className="relative flex-shrink-0"
-            style={{ height: `${MONTH_LABEL_H}px` }}
-          >
-            {monthPositions.map(({ label, col }) => (
-              <span
-                key={`${label}-${col}`}
-                className="absolute text-[9px] text-muted-foreground"
-                style={{
-                  left: `${col * (cellSize + GAP)}px`,
-                  top: "2px",
-                }}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-
-          {/* 2D grid avec cellules carrées de taille fixe */}
-          <div
-            className="grid"
+            className="flex flex-col flex-shrink-0 justify-start"
             style={{
-              gridTemplateColumns: `repeat(${weeks.length}, ${cellSize}px)`,
-              gridTemplateRows: `repeat(${ROWS}, ${cellSize}px)`,
-              gridAutoFlow: "column",
+              width: `${DAY_LABEL_W}px`,
+              marginTop: `${MONTH_LABEL_H}px`,
               gap: `${GAP}px`,
             }}
           >
-            {weeks.map((week, wi) =>
-              week.map((day, di) => {
-                if (day === null) {
+            {DAY_LABELS.map((d, i) => (
+              <div
+                key={i}
+                className="text-[8px] text-muted-foreground flex items-center justify-end leading-none flex-shrink-0"
+                style={{ height: `${cellSize}px` }}
+              >
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Grid area */}
+          <div className="flex flex-col flex-1 min-w-0">
+            {/* Month labels */}
+            <div
+              className="relative flex-shrink-0"
+              style={{ height: `${MONTH_LABEL_H}px` }}
+            >
+              {monthPositions.map(({ label, col }) => (
+                <span
+                  key={`${label}-${col}`}
+                  className="absolute text-[9px] text-muted-foreground"
+                  style={{
+                    left: `${col * (cellSize + GAP)}px`,
+                    top: "2px",
+                  }}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+
+            {/* 2D grid avec cellules carrées de taille fixe */}
+            <div
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${weeks.length}, ${cellSize}px)`,
+                gridTemplateRows: `repeat(${ROWS}, ${cellSize}px)`,
+                gridAutoFlow: "column",
+                gap: `${GAP}px`,
+              }}
+            >
+              {weeks.map((week, wi) =>
+                week.map((day, di) => {
+                  if (day === null) {
+                    return (
+                      <div key={`${wi}-${di}`} className="rounded-[3px] opacity-0" />
+                    );
+                  }
+
+                  const label =
+                    day.minutes > 0
+                      ? `${new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", {
+                          day: "numeric", month: "short", year: "numeric",
+                        })} — ${day.minutes} min`
+                      : new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", {
+                          day: "numeric", month: "short",
+                        });
+
                   return (
-                    <div key={`${wi}-${di}`} className="rounded-[3px] opacity-0" />
-                  );
-                }
-
-                const label =
-                  day.minutes > 0
-                    ? `${new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", {
-                        day: "numeric", month: "short", year: "numeric",
-                      })} — ${day.minutes} min`
-                    : new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", {
-                        day: "numeric", month: "short",
-                      });
-
-                return (
-                  <motion.div
-                    key={`${wi}-${di}`}
-                    className="relative group"
-                    initial={{ opacity: 0, scale: 0.4 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2, delay: wi * 0.005, ease: "easeOut" }}
-                  >
-                    <div
-                      className={`w-full h-full rounded-[3px] transition-transform hover:scale-110 cursor-default ${getIntensityClass(day.minutes, max)}`}
-                    />
-                    <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex">
-                      <div className="liquid-glass-filter rounded px-2 py-1 text-[9px] whitespace-nowrap text-foreground shadow-lg">
-                        {label}
+                    <motion.div
+                      key={`${wi}-${di}`}
+                      className="relative group"
+                      initial={{ opacity: 0, scale: 0.4 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: wi * 0.005, ease: "easeOut" }}
+                    >
+                      <div
+                        className={`w-full h-full rounded-[3px] transition-transform hover:scale-110 cursor-default ${getIntensityClass(day.minutes, max)}`}
+                      />
+                      <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex">
+                        <div className="liquid-glass-filter rounded px-2 py-1 text-[9px] whitespace-nowrap text-foreground shadow-lg">
+                          {label}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
+                    </motion.div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </div>
