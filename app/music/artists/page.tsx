@@ -363,6 +363,84 @@ function AlbumsCard({ albums }: { albums: ArtistAlbum[] }) {
   );
 }
 
+// ── Albums Mosaic ────────────────────────────────────────────────────────
+
+function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
+  const realAlbums = albums.filter(
+    (a) => a.album_type === "album" || a.total_tracks >= 7
+  );
+  const sorted = [...realAlbums].sort((a, b) => b.release_date.localeCompare(a.release_date));
+
+  return (
+    <div className="liquid-glass-card rounded-xl p-4 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-3">
+        <Disc3 className="w-3.5 h-3.5 text-muted-foreground" />
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Discographie
+        </p>
+        <span className="ml-auto text-[10px] text-muted-foreground/40 tabular-nums">
+          {realAlbums.length} albums
+        </span>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 flex-1 overflow-y-auto">
+        {sorted.map((album) => {
+          const pct = Math.round(album.completion_rate * 100);
+          const badge = DEPTH_BADGE[album.listen_depth] ?? DEPTH_BADGE.shallow;
+          return (
+            <a
+              key={album.album_id}
+              href={album.album_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col gap-1.5"
+            >
+              <div className="relative aspect-square rounded-lg overflow-hidden border border-white/10">
+                {album.album_image_url ? (
+                  <img
+                    src={album.album_image_url}
+                    alt={album.album_name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                    <Disc3 className="w-8 h-8 text-muted-foreground/30" />
+                  </div>
+                )}
+                {/* Completion overlay */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                  <div
+                    className="h-full bg-cyan-400/80"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium truncate leading-tight">
+                  {album.album_name}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 truncate">
+                  {album.artist_names}
+                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                    {album.tracks_heard}/{album.total_tracks}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={`text-[7px] px-1 py-0 h-3.5 ${badge.class}`}
+                  >
+                    {badge.label}
+                  </Badge>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Top Tracks ───────────────────────────────────────────────────────────────
 
 function TopTracksContent({ tracks }: { tracks: ArtistTopTrack[] }) {
@@ -587,6 +665,16 @@ function ArtistContent({
       >
         <MagicCard>
           <TopTracksContent tracks={top_tracks} />
+        </MagicCard>
+      </BlurFade>
+
+      {/* Row 5: Albums Mosaic full width */}
+      <BlurFade
+        delay={0.3}
+        className="md:col-span-6 md:col-start-1 md:row-start-5 md:row-span-2"
+      >
+        <MagicCard>
+          <AlbumsMosaic albums={albums} />
         </MagicCard>
       </BlurFade>
 
