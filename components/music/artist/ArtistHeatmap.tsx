@@ -8,11 +8,19 @@ interface HeatmapDay {
   minutes: number;
 }
 
+interface AccentColor {
+  r: number;
+  g: number;
+  b: number;
+}
+
 interface ArtistHeatmapProps {
   data: HeatmapDay[];
   title?: string;
   /** Earliest date to display (YYYY-MM-DD). Defaults to "2025-07-01". */
   startDate?: string;
+  /** Dynamic accent color extracted from artist image. Falls back to cyan. */
+  accentColor?: AccentColor | null;
 }
 
 const MONTH_LABELS = [
@@ -29,10 +37,22 @@ const MONTH_LABEL_H = 16;
 function getIntensityClass(minutes: number, max: number): string {
   if (minutes === 0) return "bg-white/5 border border-white/10";
   const ratio = minutes / max;
-  if (ratio < 0.15) return "bg-cyan-900/60 border border-cyan-800/40";
-  if (ratio < 0.4)  return "bg-cyan-700/70 border border-cyan-600/40";
-  if (ratio < 0.7)  return "bg-cyan-500/80 border border-cyan-400/50";
-  return "bg-cyan-300/90 border border-cyan-200/60";
+  if (ratio < 0.15) return "bg-cyan-300/40 border border-cyan-300/20";
+  if (ratio < 0.4)  return "bg-cyan-400/60 border border-cyan-400/30";
+  if (ratio < 0.7)  return "bg-cyan-500/80 border border-cyan-500/40";
+  return "bg-cyan-600/90 border border-cyan-600/50";
+}
+
+function getIntensityStyle(minutes: number, max: number, c: AccentColor): React.CSSProperties {
+  if (minutes === 0) {
+    return { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" };
+  }
+  const ratio = minutes / max;
+  const { r, g, b } = c;
+  if (ratio < 0.15) return { background: `rgba(${r},${g},${b},0.25)`, border: `1px solid rgba(${r},${g},${b},0.15)` };
+  if (ratio < 0.4)  return { background: `rgba(${r},${g},${b},0.45)`, border: `1px solid rgba(${r},${g},${b},0.25)` };
+  if (ratio < 0.7)  return { background: `rgba(${r},${g},${b},0.65)`, border: `1px solid rgba(${r},${g},${b},0.35)` };
+  return { background: `rgba(${r},${g},${b},0.85)`, border: `1px solid rgba(${r},${g},${b},0.5)` };
 }
 
 interface GridResult {
@@ -87,24 +107,26 @@ function buildGrid(data: HeatmapDay[], days: number): GridResult {
 export function ArtistHeatmap({
   data,
   title = "Activité d'écoute",
-  startDate = "2025-07-01",
+  accentColor,
 }: ArtistHeatmapProps) {
   const max = Math.max(...data.map((d) => d.minutes), 1);
   const containerRef = useRef<HTMLDivElement>(null);
   const [cellSize, setCellSize] = useState(11);
 
-  const days = 300;
-  const totalWeeks = Math.ceil(days / 7) + 1;
+  const days = 24 * 7; // 24 semaines pour matcher les 24 colonnes du rythme d'écoute
+  const totalWeeks = 24;
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const compute = (width: number, height: number) => {
+      const gridW = width - DAY_LABEL_W - DAY_LABEL_GAP;
       const gridH = height - MONTH_LABEL_H - GAP;
+      const cellFromW = (gridW - (totalWeeks - 1) * GAP) / totalWeeks;
       const cellFromH = (gridH - (ROWS - 1) * GAP) / ROWS;
       const minCell = 8;
-      setCellSize(Math.max(minCell, Math.floor(cellFromH)));
+      setCellSize(Math.max(minCell, Math.floor(Math.min(cellFromW, cellFromH))));
     };
 
     const ro = new ResizeObserver((entries) => {
@@ -200,20 +222,14 @@ export function ArtistHeatmap({
                   return (
                     <motion.div
                       key={`${wi}-${di}`}
-                      className="relative group"
                       initial={{ opacity: 0, scale: 0.4 }}
                       animate={{ opacity: 1, scale: 1 }}
+                      whileHover={{ scale: 1.15 }}
                       transition={{ duration: 0.2, delay: wi * 0.005, ease: "easeOut" }}
-                    >
-                      <div
-                        className={`w-full h-full rounded-[3px] transition-transform hover:scale-110 cursor-default ${getIntensityClass(day.minutes, max)}`}
-                      />
-                      <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex">
-                        <div className="liquid-glass-filter rounded px-2 py-1 text-[9px] whitespace-nowrap text-foreground shadow-lg">
-                          {label}
-                        </div>
-                      </div>
-                    </motion.div>
+                      className={`rounded-[3px] cursor-default ${accentColor ? "" : getIntensityClass(day.minutes, max)}`}
+                      style={accentColor ? getIntensityStyle(day.minutes, max, accentColor) : undefined}
+                      title={label}
+                    />
                   );
                 })
               )}

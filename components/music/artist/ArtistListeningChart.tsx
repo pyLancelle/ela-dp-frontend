@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -16,9 +17,16 @@ interface MonthlyDataPoint {
   minutes: number;
 }
 
+interface AccentColor {
+  r: number;
+  g: number;
+  b: number;
+}
+
 interface ArtistListeningChartProps {
   data: MonthlyDataPoint[];
   title?: string;
+  accentColor?: AccentColor | null;
 }
 
 interface CustomTooltipProps {
@@ -39,10 +47,16 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   );
 }
 
-export function ArtistListeningChart({ data, title = "Évolution d'écoute" }: ArtistListeningChartProps) {
+export function ArtistListeningChart({ data, title = "Évolution d'écoute", accentColor }: ArtistListeningChartProps) {
+  const strokeColor = accentColor
+    ? `rgb(${accentColor.r},${accentColor.g},${accentColor.b})`
+    : "#06b6d4";
+
+  const gradientId = useMemo(() => `artistChartGrad-${Math.random().toString(36).slice(2, 8)}`, []);
+
   return (
-    <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">
+    <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col px-3 pt-2 pb-2">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-1 flex-shrink-0">
         {title}
       </p>
 
@@ -50,9 +64,9 @@ export function ArtistListeningChart({ data, title = "Évolution d'écoute" }: A
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="artistChartGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.5} />
-                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={strokeColor} stopOpacity={0.5} />
+                <stop offset="95%" stopColor={strokeColor} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
@@ -74,11 +88,11 @@ export function ArtistListeningChart({ data, title = "Évolution d'écoute" }: A
             <Area
               type="monotone"
               dataKey="minutes"
-              stroke="#06b6d4"
+              stroke={strokeColor}
               strokeWidth={2}
-              fill="url(#artistChartGrad)"
+              fill={`url(#${gradientId})`}
               dot={false}
-              activeDot={{ r: 4, fill: "#06b6d4", strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: strokeColor, strokeWidth: 0 }}
               isAnimationActive
               animationDuration={700}
               animationEasing="ease-out"
