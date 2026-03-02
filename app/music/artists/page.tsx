@@ -17,13 +17,29 @@ import {
   Calendar,
   BarChart3,
   Disc3,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import type {
   ArtistOverview,
   ArtistTopTrack,
   ArtistCalendarDay,
   ArtistHeatmapEntry,
   ArtistAlbum,
+  ArtistSummary,
 } from "@/types/artist-focus";
 
 // ── Data transformers ────────────────────────────────────────────────────────
@@ -90,22 +106,6 @@ function formatDate(dateStr: string) {
 }
 
 // ── Hero Card ────────────────────────────────────────────────────────────────
-
-import { ChevronsUpDown, Check } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
-import type { ArtistSummary } from "@/types/artist-focus";
 
 function formatSelectorHours(duration: string): string {
   const hMatch = duration.match(/(\d+)h/);
