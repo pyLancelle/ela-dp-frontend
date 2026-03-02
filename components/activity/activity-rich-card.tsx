@@ -125,7 +125,7 @@ function TraceCell({ seed, color, inView, polyline }: { seed: string; color: str
   const len = pts.reduce((acc: number, p: [number, number], i: number) => i === 0 ? 0 : acc + Math.hypot(p[0] - pts[i-1][0], p[1] - pts[i-1][1]), 0);
 
   return (
-    <BentoCell className="relative" style={{ background: `radial-gradient(ellipse at 50% 60%, ${color}08, transparent 70%)` }}>
+    <BentoCell className="relative h-full" style={{ background: `radial-gradient(ellipse at 50% 60%, ${color}08, transparent 70%)` }}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-full"
@@ -273,7 +273,7 @@ export function ActivityRichCard({ activity, index }: Props) {
           <div className="grid grid-cols-2 md:grid-cols-[1fr_1fr_1fr] gap-2 p-2.5 flex-1">
             <KpiCell distance={activity.distance} duration={activity.duration} avgHr={avgHr} color={cfg.color} />
             <ZonesCell zones={hrZones} inView={inView} />
-            <div className="col-span-2 md:col-span-1 md:min-h-[80px]">
+            <div className="col-span-2 md:col-span-1 md:min-h-[80px] h-full">
               <TraceCell seed={activity.id} color={cfg.color} inView={inView} polyline={activity.polyline} />
             </div>
           </div>
