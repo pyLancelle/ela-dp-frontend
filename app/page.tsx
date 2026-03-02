@@ -11,10 +11,8 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { BarChartCard } from "@/components/magicui/bar-chart-card";
 import { MagicCard } from "@/components/magicui/magic-card";
 
-const DAY_FR_TO_EN: Record<string, string> = {
-  L: "M", M: "T", Me: "W", J: "T", V: "F", S: "S", D: "S",
-};
-const dayEn = (d: string) => DAY_FR_TO_EN[d] ?? d;
+// Day labels arrive from backend already as single English letters (M, T, W, T, F, S, S)
+const dayLabel = (d: string) => d;
 
 export default function Home() {
   const { data, isLoading } = useHomepage();
@@ -53,7 +51,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.music?.listeningTime?.days?.map((d) => ({
-                  label: dayEn(d.day),
+                  label: dayLabel(d.day),
                   value: d.heightPercentage,
                   formatted: d.formatted,
                 })) ?? []
@@ -105,7 +103,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.sleepScores?.daily?.map((d) => ({
-                  label: dayEn(d.day),
+                  label: dayLabel(d.day),
                   value: d.score,
                   formatted: d.score.toString(),
                 })) ?? []
@@ -127,7 +125,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.bodyBattery?.daily?.map((d) => ({
-                  label: dayEn(d.day),
+                  label: dayLabel(d.day),
                   value: d.range[1],
                   range: d.range,
                 })) ?? []
@@ -149,7 +147,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.hrv?.daily?.map((d) => ({
-                  label: dayEn(d.day),
+                  label: dayLabel(d.day),
                   value: d.hrv,
                   formatted: `${d.hrv}`,
                 })) ?? []
@@ -171,7 +169,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.sleepBodyBattery?.restingHr?.daily?.map((d) => ({
-                  label: dayEn(d.day),
+                  label: dayLabel(d.day),
                   value: d.hr,
                   formatted: `${d.hr}`,
                 })) ?? []
@@ -194,7 +192,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.stress?.daily?.map((d) => ({
-                  label: dayEn(d.day),
+                  label: dayLabel(d.day),
                   value: d.stress,
                   formatted: d.stress.toString(),
                 })) ?? []
@@ -223,7 +221,7 @@ export default function Home() {
               loading={isLoading}
               data={
                 data?.steps?.daily?.map((d) => ({
-                  label: dayEn(d.day),
+                  label: dayLabel(d.day),
                   value: d.steps,
                   formatted: d.steps >= 1000
                     ? `${(d.steps / 1000).toFixed(1)}K`
