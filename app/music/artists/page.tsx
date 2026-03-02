@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/magicui/bento-grid";
 import { MagicCard } from "@/components/magicui/magic-card";
@@ -8,7 +9,6 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { NumberTicker } from "@/components/magicui/number-ticker";
 import { ArtistHeatmap } from "@/components/music/artist/ArtistHeatmap";
 import { ArtistListeningChart } from "@/components/music/artist/ArtistListeningChart";
-import { ArtistSelector } from "@/components/music/artist/ArtistSelector";
 import { useArtistFocusList, useArtistFocus } from "@/hooks/queries";
 import { useImageColor } from "@/hooks/use-image-color";
 import {
@@ -17,14 +17,29 @@ import {
   Calendar,
   BarChart3,
   Disc3,
-  Loader2,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import type {
   ArtistOverview,
   ArtistTopTrack,
   ArtistCalendarDay,
   ArtistHeatmapEntry,
   ArtistAlbum,
+  ArtistSummary,
 } from "@/types/artist-focus";
 
 // ── Data transformers ────────────────────────────────────────────────────────
@@ -92,7 +107,32 @@ function formatDate(dateStr: string) {
 
 // ── Hero Card ────────────────────────────────────────────────────────────────
 
-function HeroContent({ overview, accentColor }: { overview: ArtistOverview; accentColor?: { r: number; g: number; b: number } | null }) {
+function formatSelectorHours(duration: string): string {
+  const hMatch = duration.match(/(\d+)h/);
+  const mMatch = duration.match(/(\d+)m/);
+  const h = hMatch ? parseInt(hMatch[1]) : 0;
+  const m = mMatch ? parseInt(mMatch[1]) : 0;
+  return `${Math.round(h + m / 60)}h`;
+}
+
+function HeroContent({
+  overview,
+  accentColor,
+  artists,
+  selectedId,
+  onSelect,
+}: {
+  overview: ArtistOverview;
+  accentColor?: { r: number; g: number; b: number } | null;
+  artists: ArtistSummary[];
+  selectedId: string | null;
+  onSelect: (artistId: string) => void;
+}) {
+  const [selectorOpen, setSelectorOpen] = useState(false);
+  const sorted = [...artists].sort((a, b) =>
+    a.artist_name.localeCompare(b.artist_name, "fr", { sensitivity: "base" })
+  );
+
   const bgStyle: React.CSSProperties = accentColor
     ? {
         background: `linear-gradient(135deg, rgba(${accentColor.r},${accentColor.g},${accentColor.b},0.3) 0%, rgba(${accentColor.r},${accentColor.g},${accentColor.b},0.08) 60%, transparent 100%)`,
@@ -119,9 +159,65 @@ function HeroContent({ overview, accentColor }: { overview: ArtistOverview; acce
       {/* Contenu à droite */}
       <div className="relative z-10 flex flex-col justify-between flex-1 min-w-0 p-5">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight mb-1.5">
-            {overview.artist_name}
-          </h1>
+          <Popover open={selectorOpen} onOpenChange={setSelectorOpen}>
+            <PopoverTrigger asChild>
+              <button
+                role="combobox"
+                aria-expanded={selectorOpen}
+                className="flex items-center gap-2 text-2xl md:text-3xl font-bold text-foreground leading-tight mb-1.5 hover:text-foreground/80 transition-colors cursor-pointer group"
+              >
+                <span className="truncate">{overview.artist_name}</span>
+                <ChevronsUpDown className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors flex-shrink-0" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[320px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Rechercher un artiste..." />
+                <CommandList>
+                  <CommandEmpty>Aucun artiste trouvé.</CommandEmpty>
+                  <CommandGroup>
+                    {sorted.map((artist) => (
+                      <CommandItem
+                        key={artist.artist_id}
+                        value={artist.artist_name}
+                        onSelect={() => {
+                          onSelect(artist.artist_id);
+                          setSelectorOpen(false);
+                        }}
+                        className="flex items-center gap-3 py-2"
+                      >
+                        {artist.image_url ? (
+                          <img
+                            src={artist.image_url}
+                            alt=""
+                            className="w-7 h-7 rounded-full object-cover ring-1 ring-white/10 flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-white/10 flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {artist.artist_name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {formatSelectorHours(artist.total_duration)}
+                          </p>
+                        </div>
+                        <Check
+                          className={cn(
+                            "h-4 w-4 flex-shrink-0",
+                            selectedId === artist.artist_id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           {overview.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               {overview.genres.slice(0, 2).map((g) => (
@@ -266,7 +362,7 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
 
   const grid: number[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
   for (const entry of heatmap) {
-    const dayIdx = (entry.day_of_week + 6) % 7;
+    const dayIdx = (entry.day_of_week + 5) % 7;
     grid[dayIdx][entry.hour_of_day] = Math.round(entry.total_duration_ms / 60000);
   }
   const max = Math.max(...grid.flat(), 1);
@@ -373,7 +469,7 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
                   style={{ width: `${cellSize}px`, marginRight: h < COLS - 1 ? `${GAP}px` : 0 }}
                 >
                   {h % 6 === 0 && (
-                    <span className="text-[7px] text-muted-foreground/50">{h}h</span>
+                    <span className="text-[9px] font-medium text-muted-foreground/60">{h}h</span>
                   )}
                 </div>
               ))}
@@ -387,18 +483,16 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
 
 // ── Albums Card ──────────────────────────────────────────────────────────
 
-const DEPTH_BADGE: Record<string, { label: string; class: string }> = {
-  complete: { label: "Complet", class: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-  partial: { label: "Partiel", class: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  shallow: { label: "Effleuré", class: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
-};
-
-function TopAlbumsContent({ albums }: { albums: ArtistAlbum[] }) {
+function TopAlbumsContent({ albums, accentColor }: { albums: ArtistAlbum[]; accentColor?: { r: number; g: number; b: number } | null }) {
   const realAlbums = albums.filter(
     (a) => a.album_type === "album" || a.total_tracks >= 7
   );
   const sorted = [...realAlbums].sort((a, b) => b.total_plays - a.total_plays);
   const maxPlays = sorted[0]?.total_plays ?? 1;
+
+  const barBg = accentColor
+    ? `rgba(${accentColor.r},${accentColor.g},${accentColor.b},0.08)`
+    : undefined;
 
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col px-3 pt-2 pb-2">
@@ -417,8 +511,8 @@ function TopAlbumsContent({ albums }: { albums: ArtistAlbum[] }) {
               className="group relative flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 transition-colors"
             >
               <div
-                className="absolute left-0 top-0 h-full rounded-lg bg-cyan-500/5"
-                style={{ width: `${widthPct}%` }}
+                className={cn("absolute left-0 top-0 h-full rounded-lg", !accentColor && "bg-cyan-500/5")}
+                style={{ width: `${widthPct}%`, ...(barBg ? { background: barBg } : {}) }}
               />
               <span className="relative text-xs font-semibold w-5 flex-shrink-0 text-muted-foreground tabular-nums">
                 {idx + 1}
@@ -513,7 +607,13 @@ function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
   };
 
   const albumCard = (album: ArtistAlbum, size?: number) => {
-    const badge = DEPTH_BADGE[album.listen_depth] ?? DEPTH_BADGE.shallow;
+    const ratio = album.total_tracks > 0 ? album.tracks_heard / album.total_tracks : 0;
+    const depthColor = ratio >= 0.8
+      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+      : ratio >= 0.4
+        ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+        : "bg-zinc-500/20 text-zinc-400 border-zinc-500/30";
+
     return (
       <a
         key={album.album_id}
@@ -546,13 +646,13 @@ function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
           </p>
           <div className="flex items-center gap-1 mt-0.5">
             <span className="text-[8px] text-muted-foreground/40 tabular-nums">
-              {album.tracks_heard}/{album.total_tracks}
+              {album.release_date.slice(0, 4)}
             </span>
             <Badge
               variant="outline"
-              className={`text-[7px] px-1 py-0 h-3.5 ${badge.class}`}
+              className={`text-[7px] px-1 py-0 h-3.5 tabular-nums ${depthColor}`}
             >
-              {badge.label}
+              {album.tracks_heard}/{album.total_tracks}
             </Badge>
           </div>
         </div>
@@ -595,8 +695,13 @@ function AlbumsMosaic({ albums }: { albums: ArtistAlbum[] }) {
 
 // ── Top Tracks ───────────────────────────────────────────────────────────────
 
-function TopTracksContent({ tracks }: { tracks: ArtistTopTrack[] }) {
+function TopTracksContent({ tracks, accentColor }: { tracks: ArtistTopTrack[]; accentColor?: { r: number; g: number; b: number } | null }) {
   const maxPlays = tracks[0]?.play_count ?? 1;
+
+  const barBg = accentColor
+    ? `rgba(${accentColor.r},${accentColor.g},${accentColor.b},0.08)`
+    : undefined;
+
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col px-3 pt-2 pb-2">
       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-1 flex-shrink-0">
@@ -614,8 +719,8 @@ function TopTracksContent({ tracks }: { tracks: ArtistTopTrack[] }) {
               className="group relative flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 transition-colors"
             >
               <div
-                className="absolute left-0 top-0 h-full rounded-lg bg-cyan-500/5"
-                style={{ width: `${widthPct}%` }}
+                className={cn("absolute left-0 top-0 h-full rounded-lg", !accentColor && "bg-cyan-500/5")}
+                style={{ width: `${widthPct}%`, ...(barBg ? { background: barBg } : {}) }}
               />
               <span className="relative text-xs font-semibold w-5 flex-shrink-0 text-muted-foreground tabular-nums">
                 {track.track_rank}
@@ -655,14 +760,53 @@ function TopTracksContent({ tracks }: { tracks: ArtistTopTrack[] }) {
 
 // ── Loading skeleton ─────────────────────────────────────────────────────────
 
+function SkeletonBlock({ className }: { className?: string }) {
+  return <div className={cn("rounded-xl bg-white/5 animate-pulse", className)} />;
+}
+
 function LoadingSkeleton() {
   return (
-    <div className="flex items-center justify-center py-20">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Chargement des données...</p>
+    <BentoGrid>
+      {/* Hero */}
+      <div className="row-span-2 md:col-span-2 md:row-span-1 md:col-start-1 md:row-start-1">
+        <SkeletonBlock className="h-full min-h-[120px]" />
       </div>
-    </div>
+      {/* 3 KPIs */}
+      <div className="md:col-span-1 md:col-start-3 md:row-start-1">
+        <SkeletonBlock className="h-full min-h-[100px]" />
+      </div>
+      <div className="md:col-span-1 md:col-start-4 md:row-start-1">
+        <SkeletonBlock className="h-full min-h-[100px]" />
+      </div>
+      <div className="md:col-span-1 md:col-start-5 md:row-start-1">
+        <SkeletonBlock className="h-full min-h-[100px]" />
+      </div>
+      {/* Streak */}
+      <div className="md:col-span-1 md:col-start-6 md:row-start-1">
+        <SkeletonBlock className="h-full min-h-[100px]" />
+      </div>
+      {/* Chart row */}
+      <div className="md:col-span-6 md:col-start-1 md:row-start-2">
+        <SkeletonBlock className="h-full min-h-[160px]" />
+      </div>
+      {/* Row 3-4 */}
+      <div className="md:col-span-2 md:col-start-1 md:row-start-3">
+        <SkeletonBlock className="h-full min-h-[140px]" />
+      </div>
+      <div className="row-span-2 md:col-span-2 md:col-start-3 md:row-start-3 md:row-span-2">
+        <SkeletonBlock className="h-full min-h-[140px]" />
+      </div>
+      <div className="row-span-2 md:col-span-2 md:col-start-5 md:row-start-3 md:row-span-2">
+        <SkeletonBlock className="h-full min-h-[140px]" />
+      </div>
+      <div className="md:col-span-2 md:col-start-1 md:row-start-4">
+        <SkeletonBlock className="h-full min-h-[140px]" />
+      </div>
+      {/* Discography */}
+      <div className="md:col-span-6 md:col-start-1 md:row-start-5">
+        <SkeletonBlock className="h-full min-h-[160px]" />
+      </div>
+    </BentoGrid>
   );
 }
 
@@ -687,11 +831,10 @@ function EmptyState() {
 
 export default function ArtistFocusPage() {
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
-  const { data: indexData, isLoading: isLoadingList } = useArtistFocusList();
+  const { data: indexData } = useArtistFocusList();
   const {
     data: detailData,
     isLoading: isLoadingDetail,
-    isFetching: isFetchingDetail,
   } = useArtistFocus(selectedArtistId);
 
   const artists = indexData?.artists ?? [];
@@ -703,28 +846,18 @@ export default function ArtistFocusPage() {
 
   return (
     <div className="px-6 pt-1 pb-2 min-h-[calc(100vh-8rem)]">
-      {/* Selector */}
-      <BlurFade delay={0.05} duration={0.5}>
-        <div className="flex items-center gap-3 mb-4">
-          <ArtistSelector
-            artists={artists}
-            selectedId={selectedArtistId}
-            onSelect={setSelectedArtistId}
-            isLoading={isLoadingList}
-          />
-          {isFetchingDetail && selectedArtistId && (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          )}
-        </div>
-      </BlurFade>
-
       {/* Content */}
       {!selectedArtistId ? (
         <EmptyState />
       ) : isLoadingDetail ? (
         <LoadingSkeleton />
       ) : detailData ? (
-        <ArtistContent data={detailData} />
+        <ArtistContent
+          data={detailData}
+          artists={artists}
+          selectedId={selectedArtistId}
+          onSelect={setSelectedArtistId}
+        />
       ) : null}
     </div>
   );
@@ -732,8 +865,14 @@ export default function ArtistFocusPage() {
 
 function ArtistContent({
   data,
+  artists,
+  selectedId,
+  onSelect,
 }: {
   data: import("@/types/artist-focus").ArtistFocusDetailResponse;
+  artists: ArtistSummary[];
+  selectedId: string | null;
+  onSelect: (artistId: string) => void;
 }) {
   const { overview, top_tracks, albums, calendar, heatmap } = data;
   const accentColor = useImageColor(overview.image_url);
@@ -749,7 +888,13 @@ function ArtistContent({
         className="row-span-2 md:col-span-2 md:row-span-1 md:col-start-1 md:row-start-1"
       >
         <MagicCard beamDuration={7}>
-          <HeroContent overview={overview} accentColor={accentColor} />
+          <HeroContent
+            overview={overview}
+            accentColor={accentColor}
+            artists={artists}
+            selectedId={selectedId}
+            onSelect={onSelect}
+          />
         </MagicCard>
       </BlurFade>
 
@@ -823,7 +968,7 @@ function ArtistContent({
         className="row-span-2 md:col-span-2 md:col-start-5 md:row-start-3 md:row-span-2"
       >
         <MagicCard>
-          <TopAlbumsContent albums={albums} />
+          <TopAlbumsContent albums={albums} accentColor={accentColor} />
         </MagicCard>
       </BlurFade>
 
@@ -833,14 +978,14 @@ function ArtistContent({
         className="row-span-2 md:col-span-2 md:col-start-3 md:row-start-3 md:row-span-2"
       >
         <MagicCard>
-          <TopTracksContent tracks={top_tracks} />
+          <TopTracksContent tracks={top_tracks} accentColor={accentColor} />
         </MagicCard>
       </BlurFade>
 
-      {/* Row 6: Albums Mosaic full width */}
+      {/* Row 5: Albums Mosaic full width */}
       <BlurFade
         delay={0.3}
-        className="row-span-3 md:col-span-6 md:col-start-1 md:row-start-5 md:row-span-2"
+        className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-5 md:row-span-1"
       >
         <MagicCard>
           <AlbumsMosaic albums={albums} />
