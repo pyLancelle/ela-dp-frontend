@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { DotPattern } from "@/components/magicui/dot-pattern";
 import { QueryProvider } from "@/providers/query-provider";
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

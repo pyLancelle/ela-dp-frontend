@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Activity, Music, Trophy, Users, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Home, Activity, Trophy, Users, PanelLeftClose, PanelLeftOpen, Dumbbell, CalendarCheck, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { BlurFade } from "@/components/magicui/blur-fade";
@@ -42,6 +42,26 @@ const navSections: NavSection[] = [
         title: "Artistes",
         href: "/music/artists",
         icon: Users,
+      },
+    ],
+  },
+  {
+    title: "Training",
+    items: [
+      {
+        title: "Plan d'entraînement",
+        href: "/training/plan",
+        icon: Dumbbell,
+      },
+      {
+        title: "Suivi hebdomadaire",
+        href: "/training/weekly",
+        icon: CalendarCheck,
+      },
+      {
+        title: "Nouveau plan",
+        href: "/training/new",
+        icon: Plus,
       },
     ],
   },
