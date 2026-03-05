@@ -1,6 +1,6 @@
 import { cachedResponse, errorResponse } from '@/lib/api/response';
 
-const GCS_ACTIVITIES_URL = 'https://storage.googleapis.com/ela-dp-export/activities_list.json';
+const GCS_ACTIVITIES_URL = 'https://storage.googleapis.com/ela-dp-export/garmin/activities_list.json';
 
 interface ActivityFromAPI {
   activityId: number;

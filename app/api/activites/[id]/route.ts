@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { id: activityId } = await params;
 
-    const response = await fetch(`${GCS_BASE_URL}/activity_${activityId}.json`, {
+    const response = await fetch(`${GCS_BASE_URL}/garmin/activity_${activityId}.json`, {
       cache: 'no-store',
     });
 
