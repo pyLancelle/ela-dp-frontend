@@ -2,60 +2,8 @@
 
 ## Git Workflow
 
-### Branches protegees
-- `main` : branche de production, sacree. Merge uniquement par pull request.
-- `develop` : branche de developpement. Merge uniquement par pull request.
+Pour toute tache impliquant des modifications de code, utiliser le skill `/task-git`.
 
-### Alias Git disponible
-
-L'alias `git sync` est configure globalement et synchronise les branches principales depuis le remote :
-```
-git sync
-# Equivalent a : git checkout main && git pull origin main && git fetch origin && git branch -f develop origin/develop
-```
-
-### Protocole pour chaque nouvelle tache
-
-Ce protocole est **obligatoire** et doit etre suivi a la lettre :
-
-1. `git sync` (synchronise main et develop depuis le remote)
-2. `git checkout develop` puis creer la branche : `git checkout -b <prefixe>/<nom-descriptif>`
-3. Implementer les changements avec des commits atomiques (conventional commits)
-4. `git push origin <branche>`
-5. Ouvrir la PR vers `develop` via `gh pr create --base develop`
-6. Review la PR avec `gh pr diff`, analyser les changements, et laisser un commentaire de review via `gh pr comment` (resume du diff, points verifies, anomalies eventuelles)
-
-Ne jamais push directement sur `main` ou `develop`.
-
-### Convention de nommage des branches
-
-| Prefixe      | Usage                      | Exemple                          |
-|--------------|----------------------------|----------------------------------|
-| `feature/`   | Nouvelle fonctionnalite    | `feature/artist-focus-page`      |
-| `fix/`       | Correction de bug          | `fix/heart-rate-zone-calc`       |
-| `refactor/`  | Restructuration technique  | `refactor/spotify-data-model`    |
-| `chore/`     | Maintenance, config, deps  | `chore/upgrade-next-15`          |
-| `docs/`      | Documentation              | `docs/api-endpoints`             |
-
-Les noms de branches sont en **kebab-case**, descriptifs et concis.
-
-### Conventional Commits
-
-Format : `<type>(<scope optionnel>): <description>`
-
-| Type         | Quand l'utiliser                                    |
-|--------------|-----------------------------------------------------|
-| `feat`       | Nouvelle fonctionnalite visible                     |
-| `fix`        | Correction de bug                                   |
-| `refactor`   | Restructuration sans changement fonctionnel         |
-| `chore`      | Maintenance (deps, config, CI)                      |
-| `docs`       | Documentation uniquement                            |
-| `style`      | Formatage, linting (pas de changement de logique)   |
-| `test`       | Ajout ou modification de tests                      |
-| `perf`       | Amelioration de performance                         |
-| `ci`         | Configuration CI/CD                                 |
-
-Regles d'or :
-- Un commit = un changement logique. Pas de commits fourre-tout.
-- Imperatif present en anglais : "add", "fix", "update" (pas "added", "fixes").
-- Premiere ligne < 72 caracteres.
+Regles absolues :
+- Ne JAMAIS push directement sur `main` ou `develop`.
+- Merge uniquement par pull request.
