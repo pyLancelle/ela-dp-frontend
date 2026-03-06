@@ -11,5 +11,4 @@ export {
   type TopAlbum,
   type MusicClassementResponse,
 } from "./use-music-classement";
-export { useRecentlyPlayed } from "./use-recently-played";
 export { useArtistFocusList, useArtistFocus } from "./use-artist-focus";

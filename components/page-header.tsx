@@ -7,7 +7,6 @@ const ROUTE_TITLES: Record<string, string> = {
   "/": "Welcome, Etienne !",
   "/activites": "Activités",
   "/musique/classements": "Classements Musicaux",
-  "/musique/recently-played": "Derniers titres joués",
   "/music/artists": "Focus Artiste",
 };
 
