@@ -6,12 +6,20 @@
 - `main` : branche de production, sacree. Merge uniquement par pull request.
 - `develop` : branche de developpement. Merge uniquement par pull request.
 
+### Alias Git disponible
+
+L'alias `git sync` est configure globalement et synchronise les branches principales depuis le remote :
+```
+git sync
+# Equivalent a : git checkout main && git pull origin main && git fetch origin && git branch -f develop origin/develop
+```
+
 ### Protocole pour chaque nouvelle tache
 
 Ce protocole est **obligatoire** et doit etre suivi a la lettre :
 
-1. `git checkout develop && git pull origin develop`
-2. Creer la branche depuis develop : `git checkout -b <prefixe>/<nom-descriptif>`
+1. `git sync` (synchronise main et develop depuis le remote)
+2. `git checkout develop` puis creer la branche : `git checkout -b <prefixe>/<nom-descriptif>`
 3. Implementer les changements avec des commits atomiques (conventional commits)
 4. `git push origin <branche>`
 5. Ouvrir la PR vers `develop` via `gh pr create --base develop`
