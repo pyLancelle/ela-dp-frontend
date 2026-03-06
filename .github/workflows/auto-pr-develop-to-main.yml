@@ -1,0 +1,56 @@
+name: Auto PR develop to main
+
+on:
+  pull_request:
+    branches: [develop]
+    types: [closed]
+
+jobs:
+  create-release-pr:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Check for existing PR
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING=$(gh pr list --base main --head develop --state open --json number --jq '.[0].number')
+          echo "existing_pr=$EXISTING" >> "$GITHUB_OUTPUT"
+
+      - name: Create PR develop -> main
+        if: steps.check.outputs.existing_pr == ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head develop \
+            --title "Release: merge develop into main" \
+            --body "$(cat <<'EOF'
+          ## Auto-generated release PR
+
+          This PR was automatically created after a merge into `develop`.
+
+          **Source PR:** #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
+
+          Please review before merging into `main`.
+          EOF
+          )"
+
+      - name: Update existing PR
+        if: steps.check.outputs.existing_pr != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ steps.check.outputs.existing_pr }} \
+            --body "New merge into \`develop\` from PR #${{ github.event.pull_request.number }} — **${{ github.event.pull_request.title }}**"

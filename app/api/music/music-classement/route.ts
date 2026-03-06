@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get('period') || 'all_time';
 
     if (!VALID_PERIODS.includes(period)) {
-      return errorResponse(`Invalid period: ${period}`, 400);
+      return errorResponse('Invalid period', 400);
     }
 
     const response = await fetch(`${GCS_BASE_URL}/music_classement_${period}.json`, {
