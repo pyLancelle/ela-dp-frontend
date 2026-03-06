@@ -21,6 +21,7 @@ interface TopTrack {
   artistName: string;
   imageUrl?: string | null;
   totalDuration: string;
+  artistIds?: string[];
 }
 
 interface TopMusicCardProps {
@@ -175,7 +176,7 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       <Avatar src={track.imageUrl ?? undefined} alt={track.name} fallback={track.name} />
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium truncate">{track.name}</div>
-                        <ArtistLinks artistName={track.artistName} className="text-[10px] text-muted-foreground" />
+                        <ArtistLinks artistName={track.artistName} artistIds={track.artistIds} className="text-[10px] text-muted-foreground" />
                       </div>
                       <div className="text-[10px] font-medium text-muted-foreground tabular-nums flex-shrink-0">
                         {track.totalDuration}

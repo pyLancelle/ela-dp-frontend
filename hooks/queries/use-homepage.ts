@@ -38,6 +38,7 @@ interface HomepageRawData {
     play_count: number;
     albumimageurl: string | null;
     trackExternalUrl: string | null;
+    artist_ids?: string[];
   }[];
   sleep_stages: {
     level_name: string;
@@ -240,6 +241,7 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
         playCount: track.play_count || 0,
         imageUrl: track.albumimageurl || null,
         externalUrl: track.trackExternalUrl || null,
+        artistIds: track.artist_ids,
       })),
     };
   }
