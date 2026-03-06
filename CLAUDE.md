@@ -15,7 +15,7 @@ Ce protocole est **obligatoire** et doit etre suivi a la lettre :
 3. Implementer les changements avec des commits atomiques (conventional commits)
 4. `git push origin <branche>`
 5. Ouvrir la PR vers `develop` via `gh pr create --base develop`
-6. Review la PR avec `gh pr diff` et laisser un commentaire de review via `gh pr comment`
+6. Review la PR avec `gh pr diff`, analyser les changements, et laisser un commentaire de review via `gh pr comment` (resume du diff, points verifies, anomalies eventuelles)
 
 Ne jamais push directement sur `main` ou `develop`.
 
