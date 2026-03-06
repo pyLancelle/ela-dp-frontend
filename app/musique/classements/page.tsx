@@ -135,7 +135,7 @@ export default function ClassementsPage() {
                               <div className="text-xs font-medium truncate" title={track.name}>
                                 {truncateText(track.name, 36)}
                               </div>
-                              <ArtistLinks artistName={track.artist_name} className="text-[11px] text-muted-foreground" />
+                              <ArtistLinks artistName={track.artist_name} artistIds={track.artist_ids} className="text-[11px] text-muted-foreground" />
                             </div>
                           </div>
                         </TableCell>
@@ -212,7 +212,7 @@ export default function ClassementsPage() {
                               </span>
                             </a>
                             <div className="flex-1 min-w-0">
-                              <ArtistLinks artistName={artist.name} className="text-xs font-medium" />
+                              <ArtistLinks artistName={artist.name} artistIds={artist.artist_ids} className="text-xs font-medium" />
                               <div className="text-[11px] text-muted-foreground">
                                 {artist.play_count} plays
                               </div>
@@ -294,7 +294,7 @@ export default function ClassementsPage() {
                               <div className="text-xs font-medium truncate" title={album.name}>
                                 {truncateText(album.name, 36)}
                               </div>
-                              <ArtistLinks artistName={album.artist_name} className="text-[11px] text-muted-foreground" />
+                              <ArtistLinks artistName={album.artist_name} artistIds={album.artist_ids} className="text-[11px] text-muted-foreground" />
                             </div>
                           </div>
                         </TableCell>

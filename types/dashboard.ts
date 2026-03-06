@@ -21,6 +21,7 @@ export interface MusicDashboardData {
         playCount: number;
         imageUrl: string | null;
         externalUrl: string | null;
+        artistId?: string;
     }[];
 
     topTracks: {

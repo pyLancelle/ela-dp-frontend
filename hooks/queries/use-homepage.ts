@@ -28,6 +28,7 @@ interface HomepageRawData {
     total_duration: string;
     albumimageurl: string | null;
     artistexternalurl: string | null;
+    artistid?: string;
   }[];
   top_tracks: {
     rank: number;
@@ -229,6 +230,7 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
         playCount: artist.play_count || 0,
         imageUrl: artist.albumimageurl || null,
         externalUrl: artist.artistexternalurl || null,
+        artistId: artist.artistid || undefined,
       })),
       topTracks: data.top_tracks.map((track) => ({
         rank: track.rank,

@@ -861,11 +861,18 @@ function ArtistFocusInner() {
 
   const artists = indexData?.artists ?? [];
 
-  // Auto-select artist from URL search param
-  // TODO: accept ?id=<artist_id> directly once classement/homepage APIs provide artist_id
+  // Auto-select artist from URL search params (?id= preferred, ?name= fallback)
   useEffect(() => {
+    if (selectedArtistId) return;
+
+    const idParam = searchParams.get("id");
+    if (idParam) {
+      setSelectedArtistId(idParam);
+      return;
+    }
+
     const nameParam = searchParams.get("name");
-    if (nameParam && artists.length > 0 && !selectedArtistId) {
+    if (nameParam && artists.length > 0) {
       const match = artists.find(
         (a) => a.artist_name.toLowerCase() === nameParam.toLowerCase()
       );
@@ -877,15 +884,11 @@ function ArtistFocusInner() {
   const handleSelect = useCallback(
     (artistId: string) => {
       setSelectedArtistId(artistId);
-      const artist = artists.find((a) => a.artist_id === artistId);
-      const name = artist?.artist_name;
-      // TODO: switch to ?id=<artist_id> once available
-      router.replace(
-        name ? `${pathname}?name=${encodeURIComponent(name)}` : pathname,
-        { scroll: false }
-      );
+      router.replace(`${pathname}?id=${encodeURIComponent(artistId)}`, {
+        scroll: false,
+      });
     },
-    [artists, router, pathname]
+    [router, pathname]
   );
 
   const hasData = !!detailData && !!selectedArtistId;
