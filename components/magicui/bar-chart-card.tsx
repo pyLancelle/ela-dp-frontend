@@ -82,12 +82,6 @@ export function BarChartCard({
     ? Math.max(...data.map((d) => d.range?.[1] ?? d.value), 1)
     : Math.max(...data.map((d) => d.value), 1));
 
-  const avg = isFloating
-    ? data.reduce((s, d) => s + (d.range?.[1] ?? d.value), 0) / (data.length || 1)
-    : data.reduce((s, d) => s + d.value, 0) / (data.length || 1);
-
-  const avgPct = (avg / globalMax) * 100;
-
   return (
     <div
       ref={ref}
@@ -124,12 +118,6 @@ export function BarChartCard({
       <div className="flex-1 flex flex-col min-h-0">
         {/* Bars area */}
         <div className="flex-1 relative min-h-0">
-          {/* Ligne de moyenne */}
-          <div
-            className="absolute inset-x-0 border-t border-dashed border-muted-foreground/30 pointer-events-none z-10"
-            style={{ bottom: `${avgPct}%` }}
-          />
-
           {/* Bars row */}
           <div className="absolute inset-0 flex items-end gap-[5px]">
             {data.map((day, i) => {
@@ -161,24 +149,23 @@ export function BarChartCard({
 
               // Barre classique
               const heightPct = (day.value / globalMax) * 100;
-              const isAboveAvg = day.value >= avg;
 
               return (
                 <div key={i} className="flex-1 flex flex-col items-center justify-end h-full">
                   <span className="text-[9px] font-medium mb-0.5 text-foreground/70 whitespace-nowrap">
                     {day.formatted ?? day.value.toLocaleString("fr-FR")}
                   </span>
-                  <motion.div
-                    className="w-4/5 rounded-t-sm"
-                    style={{
-                      background: isAboveAvg
-                        ? `linear-gradient(to top, ${color}cc, ${color})`
-                        : `linear-gradient(to top, ${color}55, ${color}88)`,
-                    }}
-                    initial={{ height: "0%" }}
-                    animate={inView ? { height: `${heightPct}%` } : { height: "0%" }}
-                    transition={{ duration: 0.6, delay: 0.05 + i * 0.06, ease: [0.34, 1.56, 0.64, 1] }}
-                  />
+                  <div className="w-full h-full relative">
+                    <motion.div
+                      className="absolute bottom-0 w-4/5 left-1/2 -translate-x-1/2 rounded-t-sm"
+                      style={{
+                        background: `linear-gradient(to top, ${color}cc, ${color})`,
+                      }}
+                      initial={{ height: "0%" }}
+                      animate={inView ? { height: `${heightPct}%` } : { height: "0%" }}
+                      transition={{ duration: 0.6, delay: 0.05 + i * 0.06, ease: [0.34, 1.56, 0.64, 1] }}
+                    />
+                  </div>
                 </div>
               );
             })}

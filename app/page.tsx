@@ -47,6 +47,7 @@ export default function Home() {
               subtitle="10 derniers jours"
               color="#1DB954"
               loading={isLoading}
+              yMax={100}
               data={
                 data?.music?.listeningTime?.days?.map((d) => ({
                   label: d.day,
