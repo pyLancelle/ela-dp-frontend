@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/magicui/bento-grid";
@@ -840,6 +841,17 @@ function EmptyState() {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ArtistFocusPage() {
+  return (
+    <Suspense>
+      <ArtistFocusInner />
+    </Suspense>
+  );
+}
+
+function ArtistFocusInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const { data: indexData } = useArtistFocusList();
   const {
@@ -849,6 +861,32 @@ export default function ArtistFocusPage() {
 
   const artists = indexData?.artists ?? [];
 
+  // Auto-select artist from URL search param
+  // TODO: accept ?id=<artist_id> directly once classement/homepage APIs provide artist_id
+  useEffect(() => {
+    const nameParam = searchParams.get("name");
+    if (nameParam && artists.length > 0 && !selectedArtistId) {
+      const match = artists.find(
+        (a) => a.artist_name.toLowerCase() === nameParam.toLowerCase()
+      );
+      if (match) setSelectedArtistId(match.artist_id);
+    }
+  }, [searchParams, artists, selectedArtistId]);
+
+  // Sync URL with selected artist
+  const handleSelect = useCallback(
+    (artistId: string) => {
+      setSelectedArtistId(artistId);
+      const artist = artists.find((a) => a.artist_id === artistId);
+      const name = artist?.artist_name;
+      // TODO: switch to ?id=<artist_id> once available
+      router.replace(
+        name ? `${pathname}?name=${encodeURIComponent(name)}` : pathname,
+        { scroll: false }
+      );
+    },
+    [artists, router, pathname]
+  );
 
   const hasData = !!detailData && !!selectedArtistId;
 
@@ -858,7 +896,7 @@ export default function ArtistFocusPage() {
         data={hasData ? detailData : null}
         artists={artists}
         selectedId={selectedArtistId}
-        onSelect={setSelectedArtistId}
+        onSelect={handleSelect}
         isLoading={isLoadingDetail && !!selectedArtistId}
       />
     </div>
