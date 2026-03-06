@@ -367,8 +367,8 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
   const ROWS = 7;
   const GAP = 3;
   const DAY_LABEL_W = 10;
-  const DAY_LABEL_GAP = 6;
-  const HOUR_LABEL_H = 14;
+  const DAY_LABEL_GAP = 10;
+  const HOUR_LABEL_H = 16;
 
   const grid: number[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
   for (const entry of heatmap) {
@@ -421,7 +421,7 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
   }, []);
 
   return (
-    <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col px-3 pt-2 pb-2">
+    <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col px-3 pt-2 pb-2 w-full">
       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-1 flex-shrink-0">
         Rythme d&apos;écoute
       </p>
