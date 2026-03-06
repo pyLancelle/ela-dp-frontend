@@ -57,8 +57,9 @@ function calendarToWeeklyChart(calendar: ArtistCalendarDay[]) {
   // Build lookup from calendar data
   const dayMap = new Map<string, { minutes: number; plays: number }>();
   for (const d of calendar) {
-    if (d.listen_date >= START) {
-      dayMap.set(d.listen_date, {
+    const dateKey = d.listen_date.slice(0, 10);
+    if (dateKey >= START) {
+      dayMap.set(dateKey, {
         minutes: Math.round(d.total_duration_ms / 60000),
         plays: d.play_count,
       });
