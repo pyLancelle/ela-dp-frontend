@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    if (!id || id.length < 5) {
+    if (!id || !/^[a-zA-Z0-9]{5,}$/.test(id)) {
       return errorResponse('Invalid artist ID', 400);
     }
 
