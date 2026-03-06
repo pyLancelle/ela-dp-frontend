@@ -9,6 +9,10 @@ export async function GET(
   try {
     const { id: activityId } = await params;
 
+    if (!/^\d+$/.test(activityId)) {
+      return errorResponse('Invalid activity ID', 400);
+    }
+
     const response = await fetch(`${GCS_BASE_URL}/garmin/activity_${activityId}.json`, {
       cache: 'no-store',
     });
