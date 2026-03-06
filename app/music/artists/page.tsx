@@ -123,7 +123,7 @@ function HeroContent({
   selectedId,
   onSelect,
 }: {
-  overview: ArtistOverview;
+  overview: ArtistOverview | null;
   accentColor?: { r: number; g: number; b: number } | null;
   artists: ArtistSummary[];
   selectedId: string | null;
@@ -143,7 +143,7 @@ function HeroContent({
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden h-full relative flex p-3" style={bgStyle}>
       {/* Photo carrée à gauche */}
-      {overview.image_url ? (
+      {overview?.image_url ? (
         <div className="relative z-10 h-full aspect-square flex-shrink-0 rounded-lg overflow-hidden">
           <img
             src={overview.image_url}
@@ -152,7 +152,7 @@ function HeroContent({
           />
         </div>
       ) : (
-        <div className="h-full aspect-square flex-shrink-0 bg-white/5 flex items-center justify-center rounded-lg">
+        <div className="h-full aspect-square flex-shrink-0 bg-muted/50 flex items-center justify-center rounded-lg">
           <Music2 className="w-10 h-10 text-muted-foreground/30" />
         </div>
       )}
@@ -165,9 +165,16 @@ function HeroContent({
               <button
                 role="combobox"
                 aria-expanded={selectorOpen}
-                className="flex items-center gap-2 text-2xl md:text-3xl font-bold text-foreground leading-tight mb-1.5 hover:text-foreground/80 transition-colors cursor-pointer group"
+                className={cn(
+                  "flex items-center gap-2 text-2xl md:text-3xl font-bold leading-tight mb-1.5 transition-colors cursor-pointer group",
+                  overview
+                    ? "text-foreground hover:text-foreground/80"
+                    : "text-muted-foreground/50 hover:text-muted-foreground/70"
+                )}
               >
-                <span className="truncate">{overview.artist_name}</span>
+                <span className="truncate">
+                  {overview ? overview.artist_name : "Artiste"}
+                </span>
                 <ChevronsUpDown className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors flex-shrink-0" />
               </button>
             </PopoverTrigger>
@@ -219,7 +226,7 @@ function HeroContent({
               </Command>
             </PopoverContent>
           </Popover>
-          {overview.genres.length > 0 && (
+          {overview && overview.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               {overview.genres.slice(0, 2).map((g) => (
                 <Badge
@@ -232,9 +239,11 @@ function HeroContent({
               ))}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            Découvert le {formatDate(overview.first_heard)}
-          </p>
+          {overview && (
+            <p className="text-xs text-muted-foreground">
+              Découvert le {formatDate(overview.first_heard)}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -762,7 +771,7 @@ function TopTracksContent({ tracks, accentColor }: { tracks: ArtistTopTrack[]; a
 // ── Loading skeleton ─────────────────────────────────────────────────────────
 
 function SkeletonBlock({ className }: { className?: string }) {
-  return <div className={cn("rounded-xl bg-white/5 animate-pulse", className)} />;
+  return <div className={cn("rounded-xl bg-muted/50 animate-pulse", className)} />;
 }
 
 function LoadingSkeleton() {
@@ -840,26 +849,18 @@ export default function ArtistFocusPage() {
 
   const artists = indexData?.artists ?? [];
 
-  // Auto-select first artist when list loads
-  if (artists.length > 0 && selectedArtistId === null) {
-    setSelectedArtistId(artists[0].artist_id);
-  }
+
+  const hasData = !!detailData && !!selectedArtistId;
 
   return (
     <div className="px-6 pt-1 pb-2 min-h-[calc(100vh-8rem)]">
-      {/* Content */}
-      {!selectedArtistId ? (
-        <EmptyState />
-      ) : isLoadingDetail ? (
-        <LoadingSkeleton />
-      ) : detailData ? (
-        <ArtistContent
-          data={detailData}
-          artists={artists}
-          selectedId={selectedArtistId}
-          onSelect={setSelectedArtistId}
-        />
-      ) : null}
+      <ArtistContent
+        data={hasData ? detailData : null}
+        artists={artists}
+        selectedId={selectedArtistId}
+        onSelect={setSelectedArtistId}
+        isLoading={isLoadingDetail && !!selectedArtistId}
+      />
     </div>
   );
 }
@@ -869,17 +870,20 @@ function ArtistContent({
   artists,
   selectedId,
   onSelect,
+  isLoading,
 }: {
-  data: import("@/types/artist-focus").ArtistFocusDetailResponse;
+  data: import("@/types/artist-focus").ArtistFocusDetailResponse | null;
   artists: ArtistSummary[];
   selectedId: string | null;
   onSelect: (artistId: string) => void;
+  isLoading: boolean;
 }) {
-  const { overview, top_tracks, albums, calendar, heatmap } = data;
-  const accentColor = useImageColor(overview.image_url);
+  const overview = data?.overview ?? null;
+  const accentColor = useImageColor(overview?.image_url ?? null);
+  const showSkeleton = !data || isLoading;
 
-  const heatmapData = calendarToHeatmap(calendar);
-  const chartData = calendarToWeeklyChart(calendar);
+  const heatmapData = data ? calendarToHeatmap(data.calendar) : [];
+  const chartData = data ? calendarToWeeklyChart(data.calendar) : [];
 
   return (
     <BentoGrid>
@@ -889,13 +893,22 @@ function ArtistContent({
         className="row-span-2 md:col-span-2 md:row-span-1 md:col-start-1 md:row-start-1"
       >
         <MagicCard beamDuration={7}>
-          <HeroContent
-            overview={overview}
-            accentColor={accentColor}
-            artists={artists}
-            selectedId={selectedId}
-            onSelect={onSelect}
-          />
+          {overview ? (
+            <HeroContent
+              overview={overview}
+              accentColor={accentColor}
+              artists={artists}
+              selectedId={selectedId}
+              onSelect={onSelect}
+            />
+          ) : (
+            <HeroContent
+              overview={null}
+              artists={artists}
+              selectedId={selectedId}
+              onSelect={onSelect}
+            />
+          )}
         </MagicCard>
       </BlurFade>
 
@@ -903,36 +916,52 @@ function ArtistContent({
         delay={0.08}
         className="row-span-1 md:col-span-1 md:col-start-3 md:row-start-1 md:row-span-1"
       >
-        <MagicCard>
-          <KpiCard label="Écoutes" value={overview.total_plays} icon={<Music2 className="w-3.5 h-3.5" />} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[100px]" />
+        ) : (
+          <MagicCard>
+            <KpiCard label="Écoutes" value={overview!.total_plays} icon={<Music2 className="w-3.5 h-3.5" />} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       <BlurFade
         delay={0.1}
         className="row-span-1 md:col-span-1 md:col-start-4 md:row-start-1 md:row-span-1"
       >
-        <MagicCard>
-          <KpiCard label="Durée" value={formatDurationHours(overview.total_duration).value} suffix={formatDurationHours(overview.total_duration).unit} icon={<Calendar className="w-3.5 h-3.5" />} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[100px]" />
+        ) : (
+          <MagicCard>
+            <KpiCard label="Durée" value={formatDurationHours(overview!.total_duration).value} suffix={formatDurationHours(overview!.total_duration).unit} icon={<Calendar className="w-3.5 h-3.5" />} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       <BlurFade
         delay={0.11}
         className="row-span-1 md:col-span-1 md:col-start-5 md:row-start-1 md:row-span-1"
       >
-        <MagicCard>
-          <KpiCard label="Titres" value={overview.unique_tracks} icon={<Disc3 className="w-3.5 h-3.5" />} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[100px]" />
+        ) : (
+          <MagicCard>
+            <KpiCard label="Titres" value={overview!.unique_tracks} icon={<Disc3 className="w-3.5 h-3.5" />} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       <BlurFade
         delay={0.12}
         className="row-span-1 md:col-span-1 md:col-start-6 md:row-start-1 md:row-span-1"
       >
-        <MagicCard beamDuration={6}>
-          <StreakCard streak={computeWeeklyStreak(calendar)} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[100px]" />
+        ) : (
+          <MagicCard beamDuration={6}>
+            <StreakCard streak={computeWeeklyStreak(data!.calendar)} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       {/* Row 2: Evolution chart (6) */}
@@ -940,9 +969,13 @@ function ArtistContent({
         delay={0.15}
         className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-2 md:row-span-1"
       >
-        <MagicCard>
-          <ArtistListeningChart data={chartData} accentColor={accentColor} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[160px]" />
+        ) : (
+          <MagicCard>
+            <ArtistListeningChart data={chartData} accentColor={accentColor} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       {/* Row 3: Heatmap (2) + Listening Rhythm (2) + Top Albums (2) */}
@@ -950,27 +983,39 @@ function ArtistContent({
         delay={0.18}
         className="row-span-1 md:col-span-2 md:col-start-1 md:row-start-3 md:row-span-1"
       >
-        <MagicCard beamDuration={7}>
-          <ArtistHeatmap data={heatmapData} accentColor={accentColor} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[140px]" />
+        ) : (
+          <MagicCard beamDuration={7}>
+            <ArtistHeatmap data={heatmapData} accentColor={accentColor} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       <BlurFade
         delay={0.22}
         className="row-span-1 md:col-span-2 md:col-start-1 md:row-start-4 md:row-span-1"
       >
-        <MagicCard>
-          <ListeningRhythmCard heatmap={heatmap} accentColor={accentColor} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[140px]" />
+        ) : (
+          <MagicCard>
+            <ListeningRhythmCard heatmap={data!.heatmap} accentColor={accentColor} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       <BlurFade
         delay={0.26}
         className="row-span-2 md:col-span-2 md:col-start-5 md:row-start-3 md:row-span-2"
       >
-        <MagicCard>
-          <TopAlbumsContent albums={albums} accentColor={accentColor} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[140px]" />
+        ) : (
+          <MagicCard>
+            <TopAlbumsContent albums={data!.albums} accentColor={accentColor} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       {/* Row 4: Top Tracks (2) sous les heatmaps */}
@@ -978,9 +1023,13 @@ function ArtistContent({
         delay={0.28}
         className="row-span-2 md:col-span-2 md:col-start-3 md:row-start-3 md:row-span-2"
       >
-        <MagicCard>
-          <TopTracksContent tracks={top_tracks} accentColor={accentColor} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[140px]" />
+        ) : (
+          <MagicCard>
+            <TopTracksContent tracks={data!.top_tracks} accentColor={accentColor} />
+          </MagicCard>
+        )}
       </BlurFade>
 
       {/* Row 5: Albums Mosaic full width */}
@@ -988,9 +1037,13 @@ function ArtistContent({
         delay={0.3}
         className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-5 md:row-span-1"
       >
-        <MagicCard>
-          <AlbumsMosaic albums={albums} />
-        </MagicCard>
+        {showSkeleton ? (
+          <SkeletonBlock className="h-full min-h-[160px]" />
+        ) : (
+          <MagicCard>
+            <AlbumsMosaic albums={data!.albums} />
+          </MagicCard>
+        )}
       </BlurFade>
 
     </BentoGrid>
