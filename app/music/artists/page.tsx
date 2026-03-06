@@ -840,10 +840,6 @@ export default function ArtistFocusPage() {
 
   const artists = indexData?.artists ?? [];
 
-  // Auto-select first artist when list loads
-  if (artists.length > 0 && selectedArtistId === null) {
-    setSelectedArtistId(artists[0].artist_id);
-  }
 
   return (
     <div className="px-6 pt-1 pb-2 min-h-[calc(100vh-8rem)]">
