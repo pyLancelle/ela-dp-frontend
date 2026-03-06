@@ -116,90 +116,6 @@ function formatSelectorHours(duration: string): string {
   return `${Math.round(h + m / 60)}h`;
 }
 
-function HeroSelector({
-  artists,
-  selectedId,
-  onSelect,
-}: {
-  artists: ArtistSummary[];
-  selectedId: string | null;
-  onSelect: (artistId: string) => void;
-}) {
-  const [selectorOpen, setSelectorOpen] = useState(false);
-  const sorted = [...artists].sort((a, b) =>
-    a.artist_name.localeCompare(b.artist_name, "fr", { sensitivity: "base" })
-  );
-
-  return (
-    <div className="liquid-glass-card rounded-xl overflow-hidden h-full relative flex p-3">
-      <div className="h-full aspect-square flex-shrink-0 bg-white/5 flex items-center justify-center rounded-lg">
-        <Music2 className="w-10 h-10 text-muted-foreground/30" />
-      </div>
-      <div className="relative z-10 flex flex-col justify-center flex-1 min-w-0 p-5">
-        <Popover open={selectorOpen} onOpenChange={setSelectorOpen}>
-          <PopoverTrigger asChild>
-            <button
-              role="combobox"
-              aria-expanded={selectorOpen}
-              className="flex items-center gap-2 text-2xl md:text-3xl font-bold text-muted-foreground/50 leading-tight hover:text-muted-foreground/70 transition-colors cursor-pointer group"
-            >
-              <span className="truncate">Choisir un artiste</span>
-              <ChevronsUpDown className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors flex-shrink-0" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[320px] p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Rechercher un artiste..." />
-              <CommandList>
-                <CommandEmpty>Aucun artiste trouvé.</CommandEmpty>
-                <CommandGroup>
-                  {sorted.map((artist) => (
-                    <CommandItem
-                      key={artist.artist_id}
-                      value={artist.artist_name}
-                      onSelect={() => {
-                        onSelect(artist.artist_id);
-                        setSelectorOpen(false);
-                      }}
-                      className="flex items-center gap-3 py-2"
-                    >
-                      {artist.image_url ? (
-                        <img
-                          src={artist.image_url}
-                          alt=""
-                          className="w-7 h-7 rounded-full object-cover ring-1 ring-white/10 flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-white/10 flex-shrink-0" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {artist.artist_name}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {formatSelectorHours(artist.total_duration)}
-                        </p>
-                      </div>
-                      <Check
-                        className={cn(
-                          "h-4 w-4 flex-shrink-0",
-                          selectedId === artist.artist_id
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
-    </div>
-  );
-}
-
 function HeroContent({
   overview,
   accentColor,
@@ -207,7 +123,7 @@ function HeroContent({
   selectedId,
   onSelect,
 }: {
-  overview: ArtistOverview;
+  overview: ArtistOverview | null;
   accentColor?: { r: number; g: number; b: number } | null;
   artists: ArtistSummary[];
   selectedId: string | null;
@@ -227,7 +143,7 @@ function HeroContent({
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden h-full relative flex p-3" style={bgStyle}>
       {/* Photo carrée à gauche */}
-      {overview.image_url ? (
+      {overview?.image_url ? (
         <div className="relative z-10 h-full aspect-square flex-shrink-0 rounded-lg overflow-hidden">
           <img
             src={overview.image_url}
@@ -236,7 +152,7 @@ function HeroContent({
           />
         </div>
       ) : (
-        <div className="h-full aspect-square flex-shrink-0 bg-white/5 flex items-center justify-center rounded-lg">
+        <div className="h-full aspect-square flex-shrink-0 bg-muted/50 flex items-center justify-center rounded-lg">
           <Music2 className="w-10 h-10 text-muted-foreground/30" />
         </div>
       )}
@@ -249,9 +165,16 @@ function HeroContent({
               <button
                 role="combobox"
                 aria-expanded={selectorOpen}
-                className="flex items-center gap-2 text-2xl md:text-3xl font-bold text-foreground leading-tight mb-1.5 hover:text-foreground/80 transition-colors cursor-pointer group"
+                className={cn(
+                  "flex items-center gap-2 text-2xl md:text-3xl font-bold leading-tight mb-1.5 transition-colors cursor-pointer group",
+                  overview
+                    ? "text-foreground hover:text-foreground/80"
+                    : "text-muted-foreground/50 hover:text-muted-foreground/70"
+                )}
               >
-                <span className="truncate">{overview.artist_name}</span>
+                <span className="truncate">
+                  {overview ? overview.artist_name : "Artiste"}
+                </span>
                 <ChevronsUpDown className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground/70 transition-colors flex-shrink-0" />
               </button>
             </PopoverTrigger>
@@ -303,7 +226,7 @@ function HeroContent({
               </Command>
             </PopoverContent>
           </Popover>
-          {overview.genres.length > 0 && (
+          {overview && overview.genres.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               {overview.genres.slice(0, 2).map((g) => (
                 <Badge
@@ -316,9 +239,11 @@ function HeroContent({
               ))}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            Découvert le {formatDate(overview.first_heard)}
-          </p>
+          {overview && (
+            <p className="text-xs text-muted-foreground">
+              Découvert le {formatDate(overview.first_heard)}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -846,7 +771,7 @@ function TopTracksContent({ tracks, accentColor }: { tracks: ArtistTopTrack[]; a
 // ── Loading skeleton ─────────────────────────────────────────────────────────
 
 function SkeletonBlock({ className }: { className?: string }) {
-  return <div className={cn("rounded-xl bg-white/5 animate-pulse", className)} />;
+  return <div className={cn("rounded-xl bg-muted/50 animate-pulse", className)} />;
 }
 
 function LoadingSkeleton() {
@@ -977,7 +902,8 @@ function ArtistContent({
               onSelect={onSelect}
             />
           ) : (
-            <HeroSelector
+            <HeroContent
+              overview={null}
               artists={artists}
               selectedId={selectedId}
               onSelect={onSelect}
