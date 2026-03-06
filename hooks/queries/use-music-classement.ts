@@ -11,6 +11,7 @@ export interface TopTrack {
   play_count: number;
   external_url: string;
   image_url: string;
+  artist_ids?: string[];
 }
 
 export interface TopArtist {
@@ -20,6 +21,7 @@ export interface TopArtist {
   play_count: number;
   image_url: string;
   external_url: string;
+  artist_ids?: string[];
   tracks?: {
     name: string;
     duration: string;
@@ -36,6 +38,7 @@ export interface TopAlbum {
   play_count: number;
   image_url: string;
   external_url: string;
+  artist_ids?: string[];
 }
 
 export interface MusicClassementResponse {

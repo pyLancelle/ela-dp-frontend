@@ -12,6 +12,7 @@ interface TopArtist {
   imageUrl?: string | null;
   trackCount: number;
   totalDuration: string;
+  artistId?: string;
 }
 
 interface TopTrack {
@@ -20,6 +21,7 @@ interface TopTrack {
   artistName: string;
   imageUrl?: string | null;
   totalDuration: string;
+  artistIds?: string[];
 }
 
 interface TopMusicCardProps {
@@ -152,8 +154,7 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       </span>
                       <Avatar src={artist.imageUrl ?? undefined} alt={artist.name} fallback={artist.name} />
                       <div className="flex-1 min-w-0">
-                        {/* TODO: use ?id=<artist_id> once available in dashboard API */}
-                        <ArtistLinks artistName={artist.name} className="text-xs font-medium" />
+                        <ArtistLinks artistName={artist.name} artistIds={artist.artistId ? [artist.artistId] : undefined} className="text-xs font-medium" />
                         <div className="text-[10px] text-muted-foreground">{artist.trackCount} plays</div>
                       </div>
                       <div className="text-[10px] font-medium text-muted-foreground tabular-nums flex-shrink-0">
@@ -175,7 +176,7 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       <Avatar src={track.imageUrl ?? undefined} alt={track.name} fallback={track.name} />
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium truncate">{track.name}</div>
-                        <ArtistLinks artistName={track.artistName} className="text-[10px] text-muted-foreground" />
+                        <ArtistLinks artistName={track.artistName} artistIds={track.artistIds} className="text-[10px] text-muted-foreground" />
                       </div>
                       <div className="text-[10px] font-medium text-muted-foreground tabular-nums flex-shrink-0">
                         {track.totalDuration}
