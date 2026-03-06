@@ -1,3 +1,8 @@
+---
+name: task-git
+description: Protocole Git obligatoire pour toute tache impliquant des modifications de fichiers. Gere le cycle complet : synchronisation, creation de branche, commits atomiques, push, PR et review.
+---
+
 # Skill: task-git
 
 Description: Protocole Git obligatoire pour toute tache impliquant des modifications de fichiers. Gere le cycle complet : synchronisation, creation de branche, commits atomiques, push, PR et review.
