@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect, Suspense, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/magicui/bento-grid";
@@ -850,6 +850,8 @@ export default function ArtistFocusPage() {
 
 function ArtistFocusInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const { data: indexData } = useArtistFocusList();
   const {
@@ -871,6 +873,21 @@ function ArtistFocusInner() {
     }
   }, [searchParams, artists, selectedArtistId]);
 
+  // Sync URL with selected artist
+  const handleSelect = useCallback(
+    (artistId: string) => {
+      setSelectedArtistId(artistId);
+      const artist = artists.find((a) => a.artist_id === artistId);
+      const name = artist?.artist_name;
+      // TODO: switch to ?id=<artist_id> once available
+      router.replace(
+        name ? `${pathname}?name=${encodeURIComponent(name)}` : pathname,
+        { scroll: false }
+      );
+    },
+    [artists, router, pathname]
+  );
+
   const hasData = !!detailData && !!selectedArtistId;
 
   return (
@@ -879,7 +896,7 @@ function ArtistFocusInner() {
         data={hasData ? detailData : null}
         artists={artists}
         selectedId={selectedArtistId}
-        onSelect={setSelectedArtistId}
+        onSelect={handleSelect}
         isLoading={isLoadingDetail && !!selectedArtistId}
       />
     </div>
