@@ -85,7 +85,7 @@ function buildGrid(data: HeatmapDay[], days: number): GridResult {
   for (let week = 0; week < totalWeeks; week++) {
     const col: (HeatmapDay | null)[] = [];
     for (let day = 0; day < ROWS; day++) {
-      const dateStr = cursor.toISOString().slice(0, 10);
+      const dateStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
       const isFuture = cursor > today;
       const isBeforeStart = cursor < start;
       col.push((isFuture || isBeforeStart) ? null : { date: dateStr, minutes: map[dateStr] ?? 0 });
