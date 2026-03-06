@@ -28,6 +28,7 @@ interface HomepageRawData {
     total_duration: string;
     albumimageurl: string | null;
     artistexternalurl: string | null;
+    artistid?: string;
   }[];
   top_tracks: {
     rank: number;
@@ -37,6 +38,7 @@ interface HomepageRawData {
     play_count: number;
     albumimageurl: string | null;
     trackExternalUrl: string | null;
+    artist_ids?: string[];
   }[];
   sleep_stages: {
     level_name: string;
@@ -229,6 +231,7 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
         playCount: artist.play_count || 0,
         imageUrl: artist.albumimageurl || null,
         externalUrl: artist.artistexternalurl || null,
+        artistId: artist.artistid || undefined,
       })),
       topTracks: data.top_tracks.map((track) => ({
         rank: track.rank,
@@ -238,6 +241,7 @@ function transformHomepageData(data: HomepageRawData): HomepageData {
         playCount: track.play_count || 0,
         imageUrl: track.albumimageurl || null,
         externalUrl: track.trackExternalUrl || null,
+        artistIds: track.artist_ids,
       })),
     };
   }

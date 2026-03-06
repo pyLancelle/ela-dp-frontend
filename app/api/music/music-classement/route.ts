@@ -27,6 +27,17 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
+    // Normalize: some periods use "artistid" (string) instead of "artist_ids" (array)
+    for (const key of ['top_tracks', 'top_artists', 'top_albums'] as const) {
+      if (Array.isArray(data[key])) {
+        for (const item of data[key]) {
+          if (!item.artist_ids && item.artistid) {
+            item.artist_ids = [item.artistid];
+          }
+        }
+      }
+    }
+
     return cachedResponse(data, 'musicClassement');
 
   } catch (error) {
