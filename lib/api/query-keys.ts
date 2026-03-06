@@ -1,13 +1,3 @@
-export interface RecentlyPlayedFilters {
-  page?: number;
-  pageSize?: number;
-  dateFrom?: string;
-  dateTo?: string;
-  timeFrom?: string;
-  timeTo?: string;
-  artist?: string;
-}
-
 export const queryKeys = {
   homepage: {
     all: ["homepage"] as const,
@@ -23,8 +13,6 @@ export const queryKeys = {
     all: ["music"] as const,
     classement: (period: string, limit?: number) =>
       [...queryKeys.music.all, "classement", { period, limit }] as const,
-    recentlyPlayed: (filters: RecentlyPlayedFilters) =>
-      [...queryKeys.music.all, "recentlyPlayed", filters] as const,
     artistFocusList: () =>
       [...queryKeys.music.all, "artistFocusList"] as const,
     artistFocus: (id: string) =>
