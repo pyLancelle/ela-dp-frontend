@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { BentoGrid } from "@/components/magicui/bento-grid";
@@ -840,6 +841,15 @@ function EmptyState() {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ArtistFocusPage() {
+  return (
+    <Suspense>
+      <ArtistFocusInner />
+    </Suspense>
+  );
+}
+
+function ArtistFocusInner() {
+  const searchParams = useSearchParams();
   const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
   const { data: indexData } = useArtistFocusList();
   const {
@@ -849,6 +859,17 @@ export default function ArtistFocusPage() {
 
   const artists = indexData?.artists ?? [];
 
+  // Auto-select artist from URL search param
+  // TODO: accept ?id=<artist_id> directly once classement/homepage APIs provide artist_id
+  useEffect(() => {
+    const nameParam = searchParams.get("name");
+    if (nameParam && artists.length > 0 && !selectedArtistId) {
+      const match = artists.find(
+        (a) => a.artist_name.toLowerCase() === nameParam.toLowerCase()
+      );
+      if (match) setSelectedArtistId(match.artist_id);
+    }
+  }, [searchParams, artists, selectedArtistId]);
 
   const hasData = !!detailData && !!selectedArtistId;
 

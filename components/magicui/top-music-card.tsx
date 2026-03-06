@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Music, User } from "lucide-react";
+import Link from "next/link";
 
 interface TopArtist {
   rank: number;
@@ -151,7 +152,14 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       </span>
                       <Avatar src={artist.imageUrl ?? undefined} alt={artist.name} fallback={artist.name} />
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium truncate">{artist.name}</div>
+                        {/* TODO: use ?id=<artist_id> once available in dashboard API */}
+                        <Link
+                          href={`/music/artists?name=${encodeURIComponent(artist.name)}`}
+                          className="text-xs font-medium truncate block hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {artist.name}
+                        </Link>
                         <div className="text-[10px] text-muted-foreground">{artist.trackCount} plays</div>
                       </div>
                       <div className="text-[10px] font-medium text-muted-foreground tabular-nums flex-shrink-0">
@@ -173,7 +181,13 @@ export function TopMusicCard({ topArtists, topTracks, loading, className }: TopM
                       <Avatar src={track.imageUrl ?? undefined} alt={track.name} fallback={track.name} />
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium truncate">{track.name}</div>
-                        <div className="text-[10px] text-muted-foreground truncate">{track.artistName}</div>
+                        <Link
+                          href={`/music/artists?name=${encodeURIComponent(track.artistName)}`}
+                          className="text-[10px] text-muted-foreground truncate block hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {track.artistName}
+                        </Link>
                       </div>
                       <div className="text-[10px] font-medium text-muted-foreground tabular-nums flex-shrink-0">
                         {track.totalDuration}

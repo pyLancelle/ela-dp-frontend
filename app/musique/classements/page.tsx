@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Music, User, Loader2, Disc, ExternalLink } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { DateRangeFilter, DateFilterPreset } from "@/components/date-range-filter";
 import { DateRange } from "react-day-picker";
 import { useMusicClassement } from "@/hooks/queries";
@@ -134,9 +135,14 @@ export default function ClassementsPage() {
                               <div className="text-xs font-medium truncate" title={track.name}>
                                 {truncateText(track.name, 36)}
                               </div>
-                              <div className="text-[11px] text-muted-foreground truncate" title={track.artist_name}>
+                              <Link
+                                href={`/music/artists?name=${encodeURIComponent(track.artist_name)}`}
+                                className="text-[11px] text-muted-foreground truncate block hover:underline"
+                                title={track.artist_name}
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {truncateText(track.artist_name, 36)}
-                              </div>
+                              </Link>
                             </div>
                           </div>
                         </TableCell>
@@ -213,9 +219,14 @@ export default function ClassementsPage() {
                               </span>
                             </a>
                             <div className="flex-1 min-w-0">
-                              <div className="text-xs font-medium truncate" title={artist.name}>
+                              <Link
+                                href={`/music/artists?name=${encodeURIComponent(artist.name)}`}
+                                className="text-xs font-medium truncate block hover:underline"
+                                title={artist.name}
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {truncateText(artist.name, 36)}
-                              </div>
+                              </Link>
                               <div className="text-[11px] text-muted-foreground">
                                 {artist.play_count} plays
                               </div>
@@ -297,9 +308,14 @@ export default function ClassementsPage() {
                               <div className="text-xs font-medium truncate" title={album.name}>
                                 {truncateText(album.name, 36)}
                               </div>
-                              <div className="text-[11px] text-muted-foreground truncate" title={album.artist_name}>
+                              <Link
+                                href={`/music/artists?name=${encodeURIComponent(album.artist_name)}`}
+                                className="text-[11px] text-muted-foreground truncate block hover:underline"
+                                title={album.artist_name}
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {truncateText(album.artist_name, 36)}
-                              </div>
+                              </Link>
                             </div>
                           </div>
                         </TableCell>
