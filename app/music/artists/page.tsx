@@ -10,7 +10,6 @@ import { BlurFade } from "@/components/magicui/blur-fade";
 import { NumberTicker } from "@/components/magicui/number-ticker";
 import { ArtistHeatmap } from "@/components/music/artist/ArtistHeatmap";
 import { ArtistListeningChart } from "@/components/music/artist/ArtistListeningChart";
-import { AlbumBumpChart, ALBUM_BUMP_MOCK } from "@/components/music/artist/AlbumBumpChart";
 import { useArtistFocusList, useArtistFocus } from "@/hooks/queries";
 import { useImageColor } from "@/hooks/use-image-color";
 import {
@@ -999,20 +998,10 @@ function ArtistContent({
         )}
       </BlurFade>
 
-      {/* Row 4: Bump Chart full width */}
-      <BlurFade
-        delay={0.3}
-        className="row-span-2 min-h-[320px] md:min-h-0 md:col-span-6 md:col-start-1 md:row-start-4 md:row-span-2"
-      >
-        <MagicCard>
-          <AlbumBumpChart data={ALBUM_BUMP_MOCK} />
-        </MagicCard>
-      </BlurFade>
-
-      {/* Row 6: Albums Mosaic full width */}
+      {/* Row 5: Albums Mosaic full width */}
       <BlurFade
         delay={0.33}
-        className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-6 md:row-span-1"
+        className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-4 md:row-span-1"
       >
         {showSkeleton ? (
           <SkeletonBlock className="h-full min-h-[160px]" />
