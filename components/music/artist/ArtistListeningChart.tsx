@@ -54,13 +54,28 @@ export function ArtistListeningChart({ data, title = "Évolution d'écoute", acc
 
   const gradientId = useMemo(() => `artistChartGrad-${Math.random().toString(36).slice(2, 8)}`, []);
 
+  // N'afficher que le nom du mois à la première semaine de chaque mois
+  const monthTicks = useMemo(() => {
+    const seen = new Set<string>();
+    return data.map((d) => {
+      // "month" field looks like "2 oct." — extract month part
+      const parts = d.month.trim().split(/\s+/);
+      const monthLabel = parts.slice(1).join(" "); // "oct.", "nov.", etc.
+      if (!seen.has(monthLabel)) {
+        seen.add(monthLabel);
+        return monthLabel;
+      }
+      return "";
+    });
+  }, [data]);
+
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col px-3 pt-2 pb-2">
       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-1 flex-shrink-0">
         {title}
       </p>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-[150px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
@@ -75,7 +90,8 @@ export function ArtistListeningChart({ data, title = "Évolution d'écoute", acc
               tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
-              interval={1}
+              interval={0}
+              tickFormatter={(_, index) => monthTicks[index] ?? ""}
             />
             <YAxis
               tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
