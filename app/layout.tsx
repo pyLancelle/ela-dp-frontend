@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/page-header";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DotPattern } from "@/components/magicui/dot-pattern";
 import { QueryProvider } from "@/providers/query-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -52,6 +53,7 @@ export default function RootLayout({
             </div>
           </RightPanelProvider>
         </QueryProvider>
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   );
