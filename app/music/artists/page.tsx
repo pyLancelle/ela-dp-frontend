@@ -15,7 +15,7 @@ import { useImageColor } from "@/hooks/use-image-color";
 import {
   Music2,
   Flame,
-  Calendar,
+
   BarChart3,
   Disc3,
   ChevronsUpDown,
@@ -145,7 +145,7 @@ function HeroContent({
     <div className="liquid-glass-card rounded-xl overflow-hidden h-full relative flex p-3" style={bgStyle}>
       {/* Photo carrée à gauche */}
       {overview?.image_url ? (
-        <div className="relative z-10 h-full aspect-square flex-shrink-0 rounded-lg overflow-hidden">
+        <div className="relative z-10 w-24 h-24 md:w-auto md:h-full md:aspect-square flex-shrink-0 rounded-lg overflow-hidden">
           <img
             src={overview.image_url}
             alt={overview.artist_name}
@@ -153,13 +153,13 @@ function HeroContent({
           />
         </div>
       ) : (
-        <div className="h-full aspect-square flex-shrink-0 bg-muted/50 flex items-center justify-center rounded-lg">
+        <div className="w-24 h-24 md:w-auto md:h-full md:aspect-square flex-shrink-0 bg-muted/50 flex items-center justify-center rounded-lg">
           <Music2 className="w-10 h-10 text-muted-foreground/30" />
         </div>
       )}
 
       {/* Contenu à droite */}
-      <div className="relative z-10 flex flex-col justify-between flex-1 min-w-0 p-5">
+      <div className="relative z-10 flex flex-col justify-between flex-1 min-w-0 p-3 md:p-5">
         <div>
           <Popover open={selectorOpen} onOpenChange={setSelectorOpen}>
             <PopoverTrigger asChild>
@@ -262,38 +262,6 @@ function formatDurationHours(durationStr: string): { value: number; unit: string
   return { value: m, unit: "min" };
 }
 
-function KpiCard({
-  label,
-  value,
-  suffix,
-  icon,
-}: {
-  label: string;
-  value: number;
-  suffix?: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="liquid-glass-card rounded-xl h-full flex flex-col items-center justify-center p-4 gap-1">
-      <span className="text-muted-foreground/30">{icon}</span>
-      <div className="flex items-baseline gap-0.5">
-        <NumberTicker
-          value={value}
-          className="text-2xl font-black tabular-nums leading-none"
-        />
-        {suffix && (
-          <span className="text-[10px] font-semibold text-muted-foreground/50">
-            {suffix}
-          </span>
-        )}
-      </div>
-      <span className="text-[8px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40">
-        {label}
-      </span>
-    </div>
-  );
-}
-
 // ── Streak Card ──────────────────────────────────────────────────────────────
 
 function computeWeeklyStreak(calendar: ArtistCalendarDay[]): number {
@@ -369,7 +337,7 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
   const GAP = 3;
   const DAY_LABEL_W = 10;
   const DAY_LABEL_GAP = 10;
-  const HOUR_LABEL_H = 16;
+  const HOUR_LABEL_H = 14;
 
   const grid: number[][] = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
   for (const entry of heatmap) {
@@ -404,20 +372,18 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const compute = (width: number, height: number) => {
+    const compute = (width: number) => {
       const gridW = width - DAY_LABEL_W - DAY_LABEL_GAP;
-      const gridH = height - HOUR_LABEL_H - GAP;
-      const cellFromW = (gridW - (COLS - 1) * GAP) / COLS;
-      const cellFromH = (gridH - (ROWS - 1) * GAP) / ROWS;
-      setCellSize(Math.max(6, Math.floor(Math.min(cellFromW, cellFromH))));
+      const cell = Math.floor((gridW - (COLS - 1) * GAP) / COLS);
+      setCellSize(Math.max(6, cell));
     };
     const ro = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      if (width > 0 && height > 0) compute(width, height);
+      const { width } = entries[0].contentRect;
+      if (width > 0) compute(width);
     });
     ro.observe(el);
-    const { width, height } = el.getBoundingClientRect();
-    if (width > 0 && height > 0) compute(width, height);
+    const { width } = el.getBoundingClientRect();
+    if (width > 0) compute(width);
     return () => ro.disconnect();
   }, []);
 
@@ -426,17 +392,17 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground mb-1 flex-shrink-0">
         Rythme d&apos;écoute
       </p>
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
-        <div className="flex h-full" style={{ gap: `${DAY_LABEL_GAP}px`, minWidth: `${DAY_LABEL_W + DAY_LABEL_GAP + COLS * (cellSize + GAP)}px` }}>
+      <div ref={containerRef} className="flex-1 min-h-0 flex flex-col justify-center overflow-hidden">
+        <div className="flex" style={{ gap: `${DAY_LABEL_GAP}px` }}>
           {/* Day labels */}
           <div
-            className="flex flex-col flex-shrink-0 justify-start"
-            style={{ width: `${DAY_LABEL_W}px`, gap: `${GAP}px` }}
+            className="flex flex-col flex-shrink-0"
+            style={{ width: `${DAY_LABEL_W}px`, gap: `${GAP}px`, paddingBottom: `${HOUR_LABEL_H + GAP}px` }}
           >
             {RHYTHM_DAY_LABELS.map((d, i) => (
               <div
                 key={i}
-                className="text-[8px] text-muted-foreground flex items-center justify-end leading-none flex-shrink-0"
+                className="text-[8px] text-muted-foreground flex items-center justify-end leading-none"
                 style={{ height: `${cellSize}px` }}
               >
                 {d}
@@ -444,8 +410,8 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
             ))}
           </div>
 
-          {/* Grid area */}
-          <div className="flex flex-col flex-1 min-w-0">
+          {/* Grid + hour labels */}
+          <div className="flex flex-col min-w-0">
             <div
               className="grid"
               style={{
@@ -469,10 +435,7 @@ function ListeningRhythmCard({ heatmap, accentColor }: { heatmap: ArtistHeatmapE
               )}
             </div>
             {/* Hour labels */}
-            <div
-              className="flex flex-shrink-0"
-              style={{ marginTop: `${GAP}px`, height: `${HOUR_LABEL_H}px` }}
-            >
+            <div className="flex flex-shrink-0" style={{ marginTop: `${GAP}px`, height: `${HOUR_LABEL_H}px` }}>
               {Array.from({ length: COLS }, (_, h) => (
                 <div
                   key={h}
@@ -926,6 +889,7 @@ function ArtistContent({
   const heatmapData = data ? calendarToHeatmap(data.calendar) : [];
   const chartData = data ? calendarToWeeklyChart(data.calendar) : [];
 
+
   return (
     <BentoGrid>
       {/* Row 1: Hero (2) + 3 KPIs (1 each) + Streak (1) */}
@@ -953,41 +917,16 @@ function ArtistContent({
         </MagicCard>
       </BlurFade>
 
-      <BlurFade
-        delay={0.08}
-        className="row-span-1 md:col-span-1 md:col-start-3 md:row-start-1 md:row-span-1"
-      >
-        {showSkeleton ? (
-          <SkeletonBlock className="h-full min-h-[100px]" />
-        ) : (
-          <MagicCard>
-            <KpiCard label="Écoutes" value={overview!.total_plays} icon={<Music2 className="w-3.5 h-3.5" />} />
-          </MagicCard>
-        )}
-      </BlurFade>
-
+      {/* Row 1 suite: Chart (col 3-5) + Streak (col 6) */}
       <BlurFade
         delay={0.1}
-        className="row-span-1 md:col-span-1 md:col-start-4 md:row-start-1 md:row-span-1"
+        className="row-span-1 min-h-[200px] md:min-h-0 md:col-span-3 md:col-start-3 md:row-start-1 md:row-span-1"
       >
         {showSkeleton ? (
-          <SkeletonBlock className="h-full min-h-[100px]" />
+          <SkeletonBlock className="h-full min-h-[160px]" />
         ) : (
           <MagicCard>
-            <KpiCard label="Durée" value={formatDurationHours(overview!.total_duration).value} suffix={formatDurationHours(overview!.total_duration).unit} icon={<Calendar className="w-3.5 h-3.5" />} />
-          </MagicCard>
-        )}
-      </BlurFade>
-
-      <BlurFade
-        delay={0.11}
-        className="row-span-1 md:col-span-1 md:col-start-5 md:row-start-1 md:row-span-1"
-      >
-        {showSkeleton ? (
-          <SkeletonBlock className="h-full min-h-[100px]" />
-        ) : (
-          <MagicCard>
-            <KpiCard label="Titres" value={overview!.unique_tracks} icon={<Disc3 className="w-3.5 h-3.5" />} />
+            <ArtistListeningChart data={chartData} accentColor={accentColor} />
           </MagicCard>
         )}
       </BlurFade>
@@ -1005,24 +944,10 @@ function ArtistContent({
         )}
       </BlurFade>
 
-      {/* Row 2: Evolution chart (6) */}
-      <BlurFade
-        delay={0.15}
-        className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-2 md:row-span-1"
-      >
-        {showSkeleton ? (
-          <SkeletonBlock className="h-full min-h-[160px]" />
-        ) : (
-          <MagicCard>
-            <ArtistListeningChart data={chartData} accentColor={accentColor} />
-          </MagicCard>
-        )}
-      </BlurFade>
-
-      {/* Row 3: Heatmap (2) + Listening Rhythm (2) + Top Albums (2) */}
+      {/* Row 2: Heatmap (2) + Listening Rhythm (2) + Top Albums (2) */}
       <BlurFade
         delay={0.18}
-        className="row-span-1 md:col-span-2 md:col-start-1 md:row-start-3 md:row-span-1"
+        className="row-span-1 md:col-span-2 md:col-start-1 md:row-start-2 md:row-span-1"
       >
         {showSkeleton ? (
           <SkeletonBlock className="h-full min-h-[140px]" />
@@ -1035,7 +960,7 @@ function ArtistContent({
 
       <BlurFade
         delay={0.22}
-        className="row-span-1 md:col-span-2 md:col-start-1 md:row-start-4 md:row-span-1"
+        className="row-span-1 md:col-span-2 md:col-start-1 md:row-start-3 md:row-span-1"
       >
         {showSkeleton ? (
           <SkeletonBlock className="h-full min-h-[140px]" />
@@ -1048,7 +973,7 @@ function ArtistContent({
 
       <BlurFade
         delay={0.26}
-        className="row-span-2 md:col-span-2 md:col-start-5 md:row-start-3 md:row-span-2"
+        className="row-span-2 md:col-span-2 md:col-start-5 md:row-start-2 md:row-span-2"
       >
         {showSkeleton ? (
           <SkeletonBlock className="h-full min-h-[140px]" />
@@ -1059,10 +984,10 @@ function ArtistContent({
         )}
       </BlurFade>
 
-      {/* Row 4: Top Tracks (2) sous les heatmaps */}
+      {/* Row 3: Top Tracks sous les heatmaps */}
       <BlurFade
         delay={0.28}
-        className="row-span-2 md:col-span-2 md:col-start-3 md:row-start-3 md:row-span-2"
+        className="row-span-2 md:col-span-2 md:col-start-3 md:row-start-2 md:row-span-2"
       >
         {showSkeleton ? (
           <SkeletonBlock className="h-full min-h-[140px]" />
@@ -1075,8 +1000,8 @@ function ArtistContent({
 
       {/* Row 5: Albums Mosaic full width */}
       <BlurFade
-        delay={0.3}
-        className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-5 md:row-span-1"
+        delay={0.33}
+        className="row-span-1 md:col-span-6 md:col-start-1 md:row-start-4 md:row-span-1"
       >
         {showSkeleton ? (
           <SkeletonBlock className="h-full min-h-[160px]" />

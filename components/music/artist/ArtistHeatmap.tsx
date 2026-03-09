@@ -17,9 +17,6 @@ interface AccentColor {
 interface ArtistHeatmapProps {
   data: HeatmapDay[];
   title?: string;
-  /** Earliest date to display (YYYY-MM-DD). Defaults to "2025-07-01". */
-  startDate?: string;
-  /** Dynamic accent color extracted from artist image. Falls back to cyan. */
   accentColor?: AccentColor | null;
 }
 
@@ -29,10 +26,11 @@ const MONTH_LABELS = [
 ];
 const DAY_LABELS = ["L", "M", "M", "J", "V", "S", "D"];
 const ROWS = 7;
+const COLS = 24;
 const GAP = 3;
 const DAY_LABEL_W = 10;
 const DAY_LABEL_GAP = 10;
-const MONTH_LABEL_H = 16;
+const XLABEL_H = 14;
 
 function getIntensityClass(minutes: number, max: number): string {
   if (minutes === 0) return "bg-white/5 border border-white/10";
@@ -55,12 +53,7 @@ function getIntensityStyle(minutes: number, max: number, c: AccentColor): React.
   return { background: `rgba(${r},${g},${b},0.85)`, border: `1px solid rgba(${r},${g},${b},0.5)` };
 }
 
-interface GridResult {
-  weeks: (HeatmapDay | null)[][];
-  monthPositions: { label: string; col: number }[];
-}
-
-function buildGrid(data: HeatmapDay[], days: number): GridResult {
+function buildGrid(data: HeatmapDay[]) {
   const map: Record<string, number> = {};
   for (const d of data) map[d.date] = d.minutes;
 
@@ -68,7 +61,7 @@ function buildGrid(data: HeatmapDay[], days: number): GridResult {
   today.setHours(0, 0, 0, 0);
 
   const start = new Date(today);
-  start.setDate(today.getDate() - days);
+  start.setDate(today.getDate() - COLS * 7);
 
   const offsetToMonday = (start.getDay() + 6) % 7;
   const gridStart = new Date(start);
@@ -79,10 +72,7 @@ function buildGrid(data: HeatmapDay[], days: number): GridResult {
   let lastMonth = -1;
   const cursor = new Date(gridStart);
 
-  const totalDays = Math.ceil((today.getTime() - gridStart.getTime()) / 86400000) + 1;
-  const totalWeeks = Math.ceil(totalDays / 7);
-
-  for (let week = 0; week < totalWeeks; week++) {
+  for (let week = 0; week < COLS; week++) {
     const col: (HeatmapDay | null)[] = [];
     for (let day = 0; day < ROWS; day++) {
       const dateStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
@@ -104,44 +94,30 @@ function buildGrid(data: HeatmapDay[], days: number): GridResult {
   return { weeks, monthPositions };
 }
 
-export function ArtistHeatmap({
-  data,
-  title = "Activité d'écoute",
-  accentColor,
-}: ArtistHeatmapProps) {
+export function ArtistHeatmap({ data, title = "Activité d'écoute", accentColor }: ArtistHeatmapProps) {
   const max = Math.max(...data.map((d) => d.minutes), 1);
   const containerRef = useRef<HTMLDivElement>(null);
   const [cellSize, setCellSize] = useState(11);
 
-  const days = 24 * 7; // 24 semaines pour matcher les 24 colonnes du rythme d'écoute
-  const totalWeeks = 24;
-
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-
-    const compute = (width: number, height: number) => {
+    const compute = (width: number) => {
       const gridW = width - DAY_LABEL_W - DAY_LABEL_GAP;
-      const gridH = height - MONTH_LABEL_H - GAP;
-      const cellFromW = (gridW - (totalWeeks - 1) * GAP) / totalWeeks;
-      const cellFromH = (gridH - (ROWS - 1) * GAP) / ROWS;
-      const minCell = 8;
-      setCellSize(Math.max(minCell, Math.floor(Math.min(cellFromW, cellFromH))));
+      const cell = Math.floor((gridW - (COLS - 1) * GAP) / COLS);
+      setCellSize(Math.max(6, cell));
     };
-
     const ro = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      if (width > 0 && height > 0) compute(width, height);
+      const { width } = entries[0].contentRect;
+      if (width > 0) compute(width);
     });
     ro.observe(el);
-
-    const { width, height } = el.getBoundingClientRect();
-    if (width > 0 && height > 0) compute(width, height);
-
+    const { width } = el.getBoundingClientRect();
+    if (width > 0) compute(width);
     return () => ro.disconnect();
-  }, [totalWeeks]);
+  }, []);
 
-  const { weeks, monthPositions } = buildGrid(data, days);
+  const { weeks, monthPositions } = buildGrid(data);
 
   return (
     <div className="liquid-glass-card rounded-xl overflow-hidden h-full flex flex-col px-3 pt-2 pb-2 w-full">
@@ -149,21 +125,17 @@ export function ArtistHeatmap({
         {title}
       </p>
 
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
-        <div className="flex h-full" style={{ gap: `${DAY_LABEL_GAP}px`, minWidth: `${DAY_LABEL_W + DAY_LABEL_GAP + weeks.length * (cellSize + GAP)}px` }}>
+      <div ref={containerRef} className="flex-1 min-h-0 flex flex-col justify-center overflow-hidden">
+        <div className="flex" style={{ gap: `${DAY_LABEL_GAP}px` }}>
           {/* Day labels */}
           <div
-            className="flex flex-col flex-shrink-0 justify-start"
-            style={{
-              width: `${DAY_LABEL_W}px`,
-              marginTop: `${MONTH_LABEL_H}px`,
-              gap: `${GAP}px`,
-            }}
+            className="flex flex-col flex-shrink-0"
+            style={{ width: `${DAY_LABEL_W}px`, gap: `${GAP}px`, paddingBottom: `${XLABEL_H + GAP}px` }}
           >
             {DAY_LABELS.map((d, i) => (
               <div
                 key={i}
-                className="text-[8px] text-muted-foreground flex items-center justify-end leading-none flex-shrink-0"
+                className="text-[8px] text-muted-foreground flex items-center justify-end leading-none"
                 style={{ height: `${cellSize}px` }}
               >
                 {d}
@@ -171,32 +143,12 @@ export function ArtistHeatmap({
             ))}
           </div>
 
-          {/* Grid area */}
-          <div className="flex flex-col flex-1 min-w-0">
-            {/* Month labels */}
-            <div
-              className="relative flex-shrink-0"
-              style={{ height: `${MONTH_LABEL_H}px` }}
-            >
-              {monthPositions.map(({ label, col }) => (
-                <span
-                  key={`${label}-${col}`}
-                  className="absolute text-[9px] text-muted-foreground"
-                  style={{
-                    left: `${col * (cellSize + GAP)}px`,
-                    top: "2px",
-                  }}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-
-            {/* 2D grid avec cellules carrées de taille fixe */}
+          {/* Grid + labels */}
+          <div className="flex flex-col min-w-0">
             <div
               className="grid"
               style={{
-                gridTemplateColumns: `repeat(${weeks.length}, ${cellSize}px)`,
+                gridTemplateColumns: `repeat(${COLS}, ${cellSize}px)`,
                 gridTemplateRows: `repeat(${ROWS}, ${cellSize}px)`,
                 gridAutoFlow: "column",
                 gap: `${GAP}px`,
@@ -204,21 +156,10 @@ export function ArtistHeatmap({
             >
               {weeks.map((week, wi) =>
                 week.map((day, di) => {
-                  if (day === null) {
-                    return (
-                      <div key={`${wi}-${di}`} className="rounded-[3px] opacity-0" />
-                    );
-                  }
-
-                  const label =
-                    day.minutes > 0
-                      ? `${new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", {
-                          day: "numeric", month: "short", year: "numeric",
-                        })} — ${day.minutes} min`
-                      : new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", {
-                          day: "numeric", month: "short",
-                        });
-
+                  if (day === null) return <div key={`${wi}-${di}`} className="rounded-[3px] opacity-0" />;
+                  const label = day.minutes > 0
+                    ? `${new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })} — ${day.minutes} min`
+                    : new Date(day.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
                   return (
                     <motion.div
                       key={`${wi}-${di}`}
@@ -233,6 +174,19 @@ export function ArtistHeatmap({
                   );
                 })
               )}
+            </div>
+
+            {/* Month labels en bas */}
+            <div className="relative flex-shrink-0" style={{ height: `${XLABEL_H}px`, marginTop: `${GAP}px` }}>
+              {monthPositions.map(({ label, col }) => (
+                <span
+                  key={`${label}-${col}`}
+                  className="absolute text-[9px] text-muted-foreground"
+                  style={{ left: `${col * (cellSize + GAP)}px`, top: "2px" }}
+                >
+                  {label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
