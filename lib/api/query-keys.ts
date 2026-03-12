@@ -18,4 +18,8 @@ export const queryKeys = {
     artistFocus: (id: string) =>
       [...queryKeys.music.all, "artistFocus", id] as const,
   },
+  sleep: {
+    all: ["sleep"] as const,
+    data: () => [...queryKeys.sleep.all, "data"] as const,
+  },
 } as const;

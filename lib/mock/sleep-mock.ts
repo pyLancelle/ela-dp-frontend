@@ -1,0 +1,93 @@
+import type { SleepRawData } from "@/types/sleep";
+
+export const SLEEP_MOCK_DATA: SleepRawData = {
+  sleep_stages: [
+    { level_name: "light", start_time: "2026-03-11T23:22:00", end_time: "2026-03-11T23:48:00" },
+    { level_name: "deep", start_time: "2026-03-11T23:48:00", end_time: "2026-03-12T00:35:00" },
+    { level_name: "light", start_time: "2026-03-12T00:35:00", end_time: "2026-03-12T01:10:00" },
+    { level_name: "rem", start_time: "2026-03-12T01:10:00", end_time: "2026-03-12T01:42:00" },
+    { level_name: "awake_restless", start_time: "2026-03-12T01:42:00", end_time: "2026-03-12T01:48:00" },
+    { level_name: "light", start_time: "2026-03-12T01:48:00", end_time: "2026-03-12T02:30:00" },
+    { level_name: "deep", start_time: "2026-03-12T02:30:00", end_time: "2026-03-12T03:15:00" },
+    { level_name: "light", start_time: "2026-03-12T03:15:00", end_time: "2026-03-12T03:55:00" },
+    { level_name: "rem", start_time: "2026-03-12T03:55:00", end_time: "2026-03-12T04:40:00" },
+    { level_name: "awake_restless", start_time: "2026-03-12T04:40:00", end_time: "2026-03-12T04:45:00" },
+    { level_name: "light", start_time: "2026-03-12T04:45:00", end_time: "2026-03-12T05:20:00" },
+    { level_name: "rem", start_time: "2026-03-12T05:20:00", end_time: "2026-03-12T06:05:00" },
+    { level_name: "light", start_time: "2026-03-12T06:05:00", end_time: "2026-03-12T06:45:00" },
+    { level_name: "awake_restless", start_time: "2026-03-12T06:45:00", end_time: "2026-03-12T06:52:00" },
+  ],
+  sleep_scores: {
+    average: 78,
+    daily: [
+      { date: "2026-03-06", day: "V", score: 72 },
+      { date: "2026-03-07", day: "S", score: 85 },
+      { date: "2026-03-08", day: "D", score: 81 },
+      { date: "2026-03-09", day: "L", score: 68 },
+      { date: "2026-03-10", day: "M", score: 77 },
+      { date: "2026-03-11", day: "M", score: 83 },
+      { date: "2026-03-12", day: "J", score: 80 },
+    ],
+  },
+  body_battery: {
+    average_gain: 42,
+    daily: [
+      { date: "2026-03-06", day: "V", bedtime: 12, waketime: 55, gain: 43 },
+      { date: "2026-03-07", day: "S", bedtime: 8, waketime: 62, gain: 54 },
+      { date: "2026-03-08", day: "D", bedtime: 15, waketime: 60, gain: 45 },
+      { date: "2026-03-09", day: "L", bedtime: 18, waketime: 48, gain: 30 },
+      { date: "2026-03-10", day: "M", bedtime: 10, waketime: 52, gain: 42 },
+      { date: "2026-03-11", day: "M", bedtime: 14, waketime: 58, gain: 44 },
+      { date: "2026-03-12", day: "J", bedtime: 11, waketime: 47, gain: 36 },
+    ],
+  },
+  hrv: {
+    average: 52,
+    baseline: 48,
+    daily: [
+      { date: "2026-03-06", day: "V", value: 45, is_above_baseline: false },
+      { date: "2026-03-07", day: "S", value: 58, is_above_baseline: true },
+      { date: "2026-03-08", day: "D", value: 55, is_above_baseline: true },
+      { date: "2026-03-09", day: "L", value: 42, is_above_baseline: false },
+      { date: "2026-03-10", day: "M", value: 51, is_above_baseline: true },
+      { date: "2026-03-11", day: "M", value: 56, is_above_baseline: true },
+      { date: "2026-03-12", day: "J", value: 49, is_above_baseline: true },
+    ],
+  },
+  resting_hr: {
+    average: 52,
+    daily: [
+      { date: "2026-03-06", day: "V", value: 54 },
+      { date: "2026-03-07", day: "S", value: 50 },
+      { date: "2026-03-08", day: "D", value: 51 },
+      { date: "2026-03-09", day: "L", value: 55 },
+      { date: "2026-03-10", day: "M", value: 53 },
+      { date: "2026-03-11", day: "M", value: 50 },
+      { date: "2026-03-12", day: "J", value: 52 },
+    ],
+  },
+  sleep_duration: {
+    average_minutes: 443,
+    daily: [
+      { date: "2026-03-06", day: "V", duration_minutes: 415, bedtime: "23:45", waketime: "6:40" },
+      { date: "2026-03-07", day: "S", duration_minutes: 510, bedtime: "23:10", waketime: "7:40" },
+      { date: "2026-03-08", day: "D", duration_minutes: 480, bedtime: "23:30", waketime: "7:30" },
+      { date: "2026-03-09", day: "L", duration_minutes: 390, bedtime: "0:15", waketime: "6:45" },
+      { date: "2026-03-10", day: "M", duration_minutes: 435, bedtime: "23:20", waketime: "6:35" },
+      { date: "2026-03-11", day: "M", duration_minutes: 460, bedtime: "23:00", waketime: "6:40" },
+      { date: "2026-03-12", day: "J", duration_minutes: 410, bedtime: "23:22", waketime: "6:52" },
+    ],
+  },
+  stress_daily: {
+    average_stress: 32,
+    daily: [
+      { date: "2026-03-06", day: "V", avg_stress: 38 },
+      { date: "2026-03-07", day: "S", avg_stress: 25 },
+      { date: "2026-03-08", day: "D", avg_stress: 28 },
+      { date: "2026-03-09", day: "L", avg_stress: 42 },
+      { date: "2026-03-10", day: "M", avg_stress: 35 },
+      { date: "2026-03-11", day: "M", avg_stress: 30 },
+      { date: "2026-03-12", day: "J", avg_stress: 26 },
+    ],
+  },
+};
