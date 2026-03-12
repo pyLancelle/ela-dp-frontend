@@ -18,4 +18,9 @@ export const queryKeys = {
     artistFocus: (id: string) =>
       [...queryKeys.music.all, "artistFocus", id] as const,
   },
+  sleep: {
+    all: ["sleep"] as const,
+    overview: () => [...queryKeys.sleep.all, "overview"] as const,
+    night: (date: string) => [...queryKeys.sleep.all, "night", date] as const,
+  },
 } as const;
