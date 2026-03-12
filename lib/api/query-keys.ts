@@ -20,6 +20,7 @@ export const queryKeys = {
   },
   sleep: {
     all: ["sleep"] as const,
-    data: () => [...queryKeys.sleep.all, "data"] as const,
+    overview: () => [...queryKeys.sleep.all, "overview"] as const,
+    night: (date: string) => [...queryKeys.sleep.all, "night", date] as const,
   },
 } as const;

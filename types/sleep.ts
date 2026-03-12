@@ -1,67 +1,52 @@
-// Types pour les données brutes de l'API sommeil (GCS JSON)
-export interface SleepRawData {
-  sleep_stages: {
+// ── Raw API types (GCS JSON) ────────────────────────────────────────
+
+export interface SleepOverviewRaw {
+  current_month: SleepMonthStats;
+  previous_month: SleepMonthStats;
+  daily: SleepDailyRow[];
+}
+
+export interface SleepMonthStats {
+  avg_score: number;
+  avg_duration_minutes: number;
+  avg_hrv: number;
+  avg_resting_hr: number;
+  avg_body_battery_gain: number;
+  avg_bedtime: string;
+  avg_waketime: string;
+}
+
+export interface SleepDailyRow {
+  date: string;
+  day: string;
+  score: number;
+  duration_minutes: number;
+  hrv: number;
+  resting_hr: number;
+  body_battery_gain: number;
+  bedtime: string;
+  waketime: string;
+}
+
+export interface SleepNightRaw {
+  date: string;
+  score: number;
+  duration_minutes: number;
+  hrv: number;
+  resting_hr: number;
+  body_battery_gain: number;
+  bedtime: string;
+  waketime: string;
+  stress: number;
+  stages: {
     level_name: string;
     start_time: string;
     end_time: string;
   }[];
-  sleep_scores: {
-    average: number;
-    daily: {
-      date: string;
-      day: string;
-      score: number;
-    }[];
-  };
-  body_battery: {
-    average_gain: number;
-    daily: {
-      date: string;
-      day: string;
-      bedtime: number;
-      waketime: number;
-      gain: number;
-    }[];
-  };
-  hrv: {
-    average: number;
-    baseline: number;
-    daily: {
-      date: string;
-      day: string;
-      value: number;
-      is_above_baseline: boolean;
-    }[];
-  };
-  resting_hr: {
-    average: number;
-    daily: {
-      date: string;
-      day: string;
-      value: number;
-    }[];
-  };
-  sleep_duration: {
-    average_minutes: number;
-    daily: {
-      date: string;
-      day: string;
-      duration_minutes: number;
-      bedtime: string;
-      waketime: string;
-    }[];
-  };
-  stress_daily: {
-    average_stress: number;
-    daily: {
-      date: string;
-      day: string;
-      avg_stress: number;
-    }[];
-  };
 }
 
-// Types transformés côté client
+// ── Transformed client types ────────────────────────────────────────
+
 export type SleepStage = "awake" | "rem" | "core" | "deep";
 
 export interface SleepSegment {
@@ -70,31 +55,45 @@ export interface SleepSegment {
   stage: SleepStage;
 }
 
-export interface SleepPageData {
-  sleepStages: SleepSegment[];
-  sleepScores: {
-    average: number;
-    daily: { day: string; score: number; date: string }[];
+export interface SleepOverviewData {
+  currentMonth: {
+    avgScore: number;
+    avgDurationMinutes: number;
+    avgHrv: number;
+    avgRestingHr: number;
+    avgBodyBatteryGain: number;
+    avgBedtime: string;
+    avgWaketime: string;
   };
-  bodyBattery: {
-    average: number;
-    daily: { day: string; range: [number, number]; delta: number; date: string }[];
+  previousMonth: {
+    avgScore: number;
+    avgDurationMinutes: number;
+    avgHrv: number;
+    avgRestingHr: number;
+    avgBodyBatteryGain: number;
   };
-  hrv: {
-    average: number;
-    baseline: number;
-    daily: { day: string; hrv: number; date: string; isAboveBaseline: boolean }[];
-  };
-  restingHr: {
-    average: number;
-    daily: { day: string; hr: number; date: string }[];
-  };
-  sleepDuration: {
-    averageMinutes: number;
-    daily: { day: string; durationMinutes: number; bedtime: string; waketime: string; date: string }[];
-  };
-  stress: {
-    average: number;
-    daily: { day: string; stress: number; date: string }[];
-  };
+  daily: {
+    date: string;
+    day: string;
+    score: number;
+    durationMinutes: number;
+    hrv: number;
+    restingHr: number;
+    bodyBatteryGain: number;
+    bedtime: string;
+    waketime: string;
+  }[];
+}
+
+export interface SleepNightData {
+  date: string;
+  score: number;
+  durationMinutes: number;
+  hrv: number;
+  restingHr: number;
+  bodyBatteryGain: number;
+  bedtime: string;
+  waketime: string;
+  stress: number;
+  stages: SleepSegment[];
 }

@@ -2,102 +2,86 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/api/query-keys";
 import { fetcher } from "@/lib/api/fetcher";
 import type {
-  SleepRawData,
-  SleepPageData,
+  SleepOverviewRaw,
+  SleepOverviewData,
+  SleepNightRaw,
+  SleepNightData,
   SleepStage,
 } from "@/types/sleep";
 
-function transformSleepData(data: SleepRawData): SleepPageData {
-  // Sleep stages
-  const sleepStages = (data.sleep_stages ?? []).map((row) => {
-    let stage: SleepStage = row.level_name as SleepStage;
-    if (row.level_name === "light") stage = "core";
-    else if (row.level_name === "awake_restless") stage = "awake";
-    return { startTime: row.start_time, endTime: row.end_time, stage };
-  });
+// ── Overview (30 days) ──────────────────────────────────────────────
 
-  // Sleep scores
-  const sleepScores = {
-    average: data.sleep_scores?.average ?? 0,
-    daily: (data.sleep_scores?.daily ?? []).map((d) => ({
+function transformOverview(raw: SleepOverviewRaw): SleepOverviewData {
+  return {
+    currentMonth: {
+      avgScore: raw.current_month.avg_score,
+      avgDurationMinutes: raw.current_month.avg_duration_minutes,
+      avgHrv: raw.current_month.avg_hrv,
+      avgRestingHr: raw.current_month.avg_resting_hr,
+      avgBodyBatteryGain: raw.current_month.avg_body_battery_gain,
+      avgBedtime: raw.current_month.avg_bedtime,
+      avgWaketime: raw.current_month.avg_waketime,
+    },
+    previousMonth: {
+      avgScore: raw.previous_month.avg_score,
+      avgDurationMinutes: raw.previous_month.avg_duration_minutes,
+      avgHrv: raw.previous_month.avg_hrv,
+      avgRestingHr: raw.previous_month.avg_resting_hr,
+      avgBodyBatteryGain: raw.previous_month.avg_body_battery_gain,
+    },
+    daily: raw.daily.map((d) => ({
+      date: d.date,
       day: d.day,
       score: d.score,
-      date: d.date,
-    })),
-  };
-
-  // Body battery
-  const bodyBattery = {
-    average: data.body_battery?.average_gain ?? 0,
-    daily: (data.body_battery?.daily ?? []).map((d) => ({
-      day: d.day,
-      range: [d.bedtime, d.waketime] as [number, number],
-      delta: d.gain,
-      date: d.date,
-    })),
-  };
-
-  // HRV
-  const hrv = {
-    average: data.hrv?.average ?? 0,
-    baseline: data.hrv?.baseline ?? 0,
-    daily: (data.hrv?.daily ?? []).map((d) => ({
-      day: d.day,
-      hrv: d.value,
-      date: d.date,
-      isAboveBaseline: d.is_above_baseline,
-    })),
-  };
-
-  // Resting HR
-  const restingHr = {
-    average: data.resting_hr?.average ?? 0,
-    daily: (data.resting_hr?.daily ?? []).map((d) => ({
-      day: d.day,
-      hr: d.value,
-      date: d.date,
-    })),
-  };
-
-  // Sleep duration
-  const sleepDuration = {
-    averageMinutes: data.sleep_duration?.average_minutes ?? 0,
-    daily: (data.sleep_duration?.daily ?? []).map((d) => ({
-      day: d.day,
       durationMinutes: d.duration_minutes,
+      hrv: d.hrv,
+      restingHr: d.resting_hr,
+      bodyBatteryGain: d.body_battery_gain,
       bedtime: d.bedtime,
       waketime: d.waketime,
-      date: d.date,
     })),
-  };
-
-  // Stress
-  const stress = {
-    average: data.stress_daily?.average_stress ?? 0,
-    daily: (data.stress_daily?.daily ?? []).map((d) => ({
-      day: d.day,
-      stress: d.avg_stress,
-      date: d.date,
-    })),
-  };
-
-  return {
-    sleepStages,
-    sleepScores,
-    bodyBattery,
-    hrv,
-    restingHr,
-    sleepDuration,
-    stress,
   };
 }
 
-export function useSleep() {
+export function useSleepOverview() {
   return useQuery({
-    queryKey: queryKeys.sleep.data(),
-    queryFn: () => fetcher<SleepRawData>("/api/sommeil"),
+    queryKey: queryKeys.sleep.overview(),
+    queryFn: () => fetcher<SleepOverviewRaw>("/api/sommeil"),
     staleTime: 15 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
-    select: transformSleepData,
+    select: transformOverview,
+  });
+}
+
+// ── Night detail ────────────────────────────────────────────────────
+
+function transformNight(raw: SleepNightRaw): SleepNightData {
+  return {
+    date: raw.date,
+    score: raw.score,
+    durationMinutes: raw.duration_minutes,
+    hrv: raw.hrv,
+    restingHr: raw.resting_hr,
+    bodyBatteryGain: raw.body_battery_gain,
+    bedtime: raw.bedtime,
+    waketime: raw.waketime,
+    stress: raw.stress,
+    stages: raw.stages.map((s) => {
+      let stage: SleepStage = s.level_name as SleepStage;
+      if (s.level_name === "light") stage = "core";
+      else if (s.level_name === "awake_restless") stage = "awake";
+      return { startTime: s.start_time, endTime: s.end_time, stage };
+    }),
+  };
+}
+
+export function useSleepNight(date: string) {
+  return useQuery({
+    queryKey: queryKeys.sleep.night(date),
+    queryFn: () => fetcher<SleepNightRaw>(`/api/sommeil/${date}`),
+    staleTime: 60 * 60 * 1000,
+    gcTime: 2 * 60 * 60 * 1000,
+    select: transformNight,
+    enabled: !!date,
   });
 }

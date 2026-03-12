@@ -1,93 +1,110 @@
-import type { SleepRawData } from "@/types/sleep";
+import type { SleepOverviewRaw, SleepNightRaw } from "@/types/sleep";
 
-export const SLEEP_MOCK_DATA: SleepRawData = {
-  sleep_stages: [
-    { level_name: "light", start_time: "2026-03-11T23:22:00", end_time: "2026-03-11T23:48:00" },
-    { level_name: "deep", start_time: "2026-03-11T23:48:00", end_time: "2026-03-12T00:35:00" },
-    { level_name: "light", start_time: "2026-03-12T00:35:00", end_time: "2026-03-12T01:10:00" },
-    { level_name: "rem", start_time: "2026-03-12T01:10:00", end_time: "2026-03-12T01:42:00" },
-    { level_name: "awake_restless", start_time: "2026-03-12T01:42:00", end_time: "2026-03-12T01:48:00" },
-    { level_name: "light", start_time: "2026-03-12T01:48:00", end_time: "2026-03-12T02:30:00" },
-    { level_name: "deep", start_time: "2026-03-12T02:30:00", end_time: "2026-03-12T03:15:00" },
-    { level_name: "light", start_time: "2026-03-12T03:15:00", end_time: "2026-03-12T03:55:00" },
-    { level_name: "rem", start_time: "2026-03-12T03:55:00", end_time: "2026-03-12T04:40:00" },
-    { level_name: "awake_restless", start_time: "2026-03-12T04:40:00", end_time: "2026-03-12T04:45:00" },
-    { level_name: "light", start_time: "2026-03-12T04:45:00", end_time: "2026-03-12T05:20:00" },
-    { level_name: "rem", start_time: "2026-03-12T05:20:00", end_time: "2026-03-12T06:05:00" },
-    { level_name: "light", start_time: "2026-03-12T06:05:00", end_time: "2026-03-12T06:45:00" },
-    { level_name: "awake_restless", start_time: "2026-03-12T06:45:00", end_time: "2026-03-12T06:52:00" },
-  ],
-  sleep_scores: {
-    average: 78,
-    daily: [
-      { date: "2026-03-06", day: "V", score: 72 },
-      { date: "2026-03-07", day: "S", score: 85 },
-      { date: "2026-03-08", day: "D", score: 81 },
-      { date: "2026-03-09", day: "L", score: 68 },
-      { date: "2026-03-10", day: "M", score: 77 },
-      { date: "2026-03-11", day: "M", score: 83 },
-      { date: "2026-03-12", day: "J", score: 80 },
-    ],
+// ── Helpers ──────────────────────────────────────────────────────────
+
+const DAY_LABELS = ["D", "L", "M", "M", "J", "V", "S"];
+
+function dayLabel(date: string) {
+  return DAY_LABELS[new Date(date).getDay()];
+}
+
+function seededRandom(seed: number) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function generateDaily(startDate: string, days: number) {
+  const daily = [];
+  const start = new Date(startDate);
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const date = d.toISOString().slice(0, 10);
+    const seed = d.getTime();
+    const r = seededRandom(seed);
+
+    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+    const baseScore = isWeekend ? 82 : 74;
+    const baseDuration = isWeekend ? 480 : 420;
+    const bedHour = isWeekend ? 0 : 23;
+    const bedMin = Math.round(r * 45);
+
+    daily.push({
+      date,
+      day: dayLabel(date),
+      score: Math.round(baseScore + (r - 0.5) * 20),
+      duration_minutes: Math.round(baseDuration + (r - 0.5) * 90),
+      hrv: Math.round(48 + (r - 0.3) * 18),
+      resting_hr: Math.round(52 + (r - 0.5) * 8),
+      body_battery_gain: Math.round(35 + r * 25),
+      bedtime: `${bedHour}:${bedMin.toString().padStart(2, "0")}`,
+      waketime: `${6 + Math.round(r)}:${(Math.round(r * 50)).toString().padStart(2, "0")}`,
+    });
+  }
+  return daily;
+}
+
+// ── Overview mock (30 days) ──────────────────────────────────────────
+
+const daily30 = generateDaily("2026-02-11", 30);
+
+export const SLEEP_OVERVIEW_MOCK: SleepOverviewRaw = {
+  current_month: {
+    avg_score: 77,
+    avg_duration_minutes: 438,
+    avg_hrv: 52,
+    avg_resting_hr: 52,
+    avg_body_battery_gain: 42,
+    avg_bedtime: "23:25",
+    avg_waketime: "6:45",
   },
-  body_battery: {
-    average_gain: 42,
-    daily: [
-      { date: "2026-03-06", day: "V", bedtime: 12, waketime: 55, gain: 43 },
-      { date: "2026-03-07", day: "S", bedtime: 8, waketime: 62, gain: 54 },
-      { date: "2026-03-08", day: "D", bedtime: 15, waketime: 60, gain: 45 },
-      { date: "2026-03-09", day: "L", bedtime: 18, waketime: 48, gain: 30 },
-      { date: "2026-03-10", day: "M", bedtime: 10, waketime: 52, gain: 42 },
-      { date: "2026-03-11", day: "M", bedtime: 14, waketime: 58, gain: 44 },
-      { date: "2026-03-12", day: "J", bedtime: 11, waketime: 47, gain: 36 },
-    ],
+  previous_month: {
+    avg_score: 73,
+    avg_duration_minutes: 415,
+    avg_hrv: 48,
+    avg_resting_hr: 54,
+    avg_body_battery_gain: 38,
+    avg_bedtime: "23:50",
+    avg_waketime: "6:55",
   },
-  hrv: {
-    average: 52,
-    baseline: 48,
-    daily: [
-      { date: "2026-03-06", day: "V", value: 45, is_above_baseline: false },
-      { date: "2026-03-07", day: "S", value: 58, is_above_baseline: true },
-      { date: "2026-03-08", day: "D", value: 55, is_above_baseline: true },
-      { date: "2026-03-09", day: "L", value: 42, is_above_baseline: false },
-      { date: "2026-03-10", day: "M", value: 51, is_above_baseline: true },
-      { date: "2026-03-11", day: "M", value: 56, is_above_baseline: true },
-      { date: "2026-03-12", day: "J", value: 49, is_above_baseline: true },
-    ],
-  },
-  resting_hr: {
-    average: 52,
-    daily: [
-      { date: "2026-03-06", day: "V", value: 54 },
-      { date: "2026-03-07", day: "S", value: 50 },
-      { date: "2026-03-08", day: "D", value: 51 },
-      { date: "2026-03-09", day: "L", value: 55 },
-      { date: "2026-03-10", day: "M", value: 53 },
-      { date: "2026-03-11", day: "M", value: 50 },
-      { date: "2026-03-12", day: "J", value: 52 },
-    ],
-  },
-  sleep_duration: {
-    average_minutes: 443,
-    daily: [
-      { date: "2026-03-06", day: "V", duration_minutes: 415, bedtime: "23:45", waketime: "6:40" },
-      { date: "2026-03-07", day: "S", duration_minutes: 510, bedtime: "23:10", waketime: "7:40" },
-      { date: "2026-03-08", day: "D", duration_minutes: 480, bedtime: "23:30", waketime: "7:30" },
-      { date: "2026-03-09", day: "L", duration_minutes: 390, bedtime: "0:15", waketime: "6:45" },
-      { date: "2026-03-10", day: "M", duration_minutes: 435, bedtime: "23:20", waketime: "6:35" },
-      { date: "2026-03-11", day: "M", duration_minutes: 460, bedtime: "23:00", waketime: "6:40" },
-      { date: "2026-03-12", day: "J", duration_minutes: 410, bedtime: "23:22", waketime: "6:52" },
-    ],
-  },
-  stress_daily: {
-    average_stress: 32,
-    daily: [
-      { date: "2026-03-06", day: "V", avg_stress: 38 },
-      { date: "2026-03-07", day: "S", avg_stress: 25 },
-      { date: "2026-03-08", day: "D", avg_stress: 28 },
-      { date: "2026-03-09", day: "L", avg_stress: 42 },
-      { date: "2026-03-10", day: "M", avg_stress: 35 },
-      { date: "2026-03-11", day: "M", avg_stress: 30 },
-      { date: "2026-03-12", day: "J", avg_stress: 26 },
-    ],
-  },
+  daily: daily30,
 };
+
+// ── Night detail mock (generates on demand) ──────────────────────────
+
+function generateStages(date: string) {
+  const bedtime = `${date}T23:22:00`;
+  return [
+    { level_name: "light", start_time: `${date}T23:22:00`, end_time: `${date}T23:48:00` },
+    { level_name: "deep", start_time: `${date}T23:48:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T00:35:00` },
+    { level_name: "light", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T00:35:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T01:10:00` },
+    { level_name: "rem", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T01:10:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T01:42:00` },
+    { level_name: "awake_restless", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T01:42:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T01:48:00` },
+    { level_name: "light", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T01:48:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T02:30:00` },
+    { level_name: "deep", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T02:30:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T03:15:00` },
+    { level_name: "rem", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T03:15:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T04:05:00` },
+    { level_name: "light", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T04:05:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T05:20:00` },
+    { level_name: "rem", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T05:20:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T06:05:00` },
+    { level_name: "awake_restless", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T06:05:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T06:12:00` },
+    { level_name: "light", start_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T06:12:00`, end_time: `${date.slice(0, 8)}${String(Number(date.slice(8)) + 1).padStart(2, "0")}T06:52:00` },
+  ];
+}
+
+export function getSleepNightMock(date: string): SleepNightRaw {
+  const dailyEntry = daily30.find((d) => d.date === date);
+  const r = seededRandom(new Date(date).getTime());
+
+  return {
+    date,
+    score: dailyEntry?.score ?? 76,
+    duration_minutes: dailyEntry?.duration_minutes ?? 430,
+    hrv: dailyEntry?.hrv ?? 50,
+    resting_hr: dailyEntry?.resting_hr ?? 52,
+    body_battery_gain: dailyEntry?.body_battery_gain ?? 40,
+    bedtime: dailyEntry?.bedtime ?? "23:20",
+    waketime: dailyEntry?.waketime ?? "6:45",
+    stress: Math.round(25 + r * 20),
+    stages: generateStages(date),
+  };
+}
